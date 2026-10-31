@@ -136,7 +136,7 @@
 }
 
 /* Never buy: the kept-out chips, then the picker that keeps one more out. */
-.tp-shop__never-add > span {
+.tp-shop__never-add > label {
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
   font-weight: 600;

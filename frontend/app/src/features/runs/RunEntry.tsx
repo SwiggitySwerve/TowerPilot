@@ -50,6 +50,11 @@ function EntryField({ field }: { readonly field: FieldVM }) {
     !['unchanged', 'pending', 'unknown', 'revision', 'unavailable', 'activeOnly'].includes(
       field.reason,
     );
+  // A changed field's own block (revision, active profile only) is said beside it and read
+  // with its control, as an invalid value's message is.
+  const hinted =
+    !invalid && field.reason !== null && FIELD_REASONS.has(field.reason) && field.dirty;
+  const said = invalid || hinted;
   const help = field.key === 'perk_bans' ? t.perks : field.key === 'max_wave' ? t.cap : null;
   // How a quest value is read is background, not state: it opens from the field's help icon.
   const tip = field.key === 'rides' || field.key === 'cycles' ? t.questValue : null;
@@ -70,6 +75,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
             id={inputId}
             type="checkbox"
             checked={field.raw === true}
+            aria-describedby={hinted ? reasonId : undefined}
             onChange={(event) => {
               edit(event.currentTarget.checked);
             }}
@@ -87,7 +93,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
               id={inputId}
               value={typeof field.raw === 'string' ? field.raw : ''}
               aria-invalid={invalid || undefined}
-              aria-describedby={invalid ? reasonId : undefined}
+              aria-describedby={said ? reasonId : undefined}
               onChange={(event) => {
                 edit(event.currentTarget.value);
               }}
@@ -114,7 +120,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
               value={typeof field.raw === 'string' ? field.raw : ''}
               rows={2}
               aria-invalid={invalid || undefined}
-              aria-describedby={invalid ? `${helpId} ${reasonId}` : helpId}
+              aria-describedby={said ? `${helpId} ${reasonId}` : helpId}
               onChange={(event) => {
                 edit(event.currentTarget.value);
               }}
@@ -128,7 +134,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
                 inputMode={field.type === 'number' ? 'numeric' : undefined}
                 value={typeof field.raw === 'string' ? field.raw : ''}
                 aria-invalid={invalid || undefined}
-                aria-describedby={invalid ? reasonId : help === null ? undefined : helpId}
+                aria-describedby={said ? reasonId : help === null ? undefined : helpId}
                 onChange={(event) => {
                   edit(event.currentTarget.value);
                 }}
@@ -178,7 +184,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
       )}
       {field.needsChainLightning ? <div>{t.chainLightning.short}</div> : null}
       {/* A field's own state: why it cannot save now, said once, beside the field. */}
-      {!invalid && field.reason !== null && FIELD_REASONS.has(field.reason) && field.dirty ? (
+      {hinted && field.reason !== null ? (
         <p id={reasonId} className="tp-run-entry__hint">
           {t.reasons[field.reason].short}
         </p>
@@ -235,8 +241,17 @@ function EntryField({ field }: { readonly field: FieldVM }) {
 }
 
 /** Reasons the bar says once for the group (one changed field's own reasons sit beside it). */
-function groupReason(reason: FieldVM['reason']): reason is 'pending' | 'unknown' | 'unavailable' {
-  return reason === 'pending' || reason === 'unknown' || reason === 'unavailable';
+/** Blocks the group's Save says by name; only an invalid value is "Fix the marked fields". */
+function groupReason(
+  reason: FieldVM['reason'],
+): reason is 'pending' | 'unknown' | 'unavailable' | 'revision' | 'activeOnly' {
+  return (
+    reason === 'pending' ||
+    reason === 'unknown' ||
+    reason === 'unavailable' ||
+    reason === 'revision' ||
+    reason === 'activeOnly'
+  );
 }
 
 /**

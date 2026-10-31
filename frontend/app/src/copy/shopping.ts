@@ -96,7 +96,8 @@ export const shopping = {
   otherSection: entry('Other'),
   excluded: entry('Never buy'),
   noneExcluded: entry('No upgrade is kept out.'),
-  excludeAdd: entry('Keep out'),
+  excludeAdd: entry('Upgrade to keep out'),
+  excludeSend: entry('Keep out'),
   excludePick: entry('Choose an upgrade'),
   excludedReason: entry('Excluded by default:'),
   orderProvisional: entry(

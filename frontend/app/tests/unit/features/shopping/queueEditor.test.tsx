@@ -151,7 +151,12 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
     expect(screen.queryByRole('list', { name: 'Never buy', hidden: true })).toBeNull();
     expect(screen.getByText('No upgrade is kept out.')).toBeVisible();
     expect(queued().at(-1)).toBe('Defense Absolute');
-    fireEvent.change(screen.getByLabelText('Keep out'), { target: { value: 'defense_absolute' } });
+    // Choosing only picks; Keep out acts.
+    fireEvent.change(screen.getByLabelText('Upgrade to keep out'), {
+      target: { value: 'defense_absolute' },
+    });
+    expect(queued().at(-1)).toBe('Defense Absolute');
+    fireEvent.click(screen.getByRole('button', { name: 'Keep out' }));
     expect(page('Never buy').getByRole('button', { name: 'Defense Absolute' })).toHaveAttribute(
       'aria-pressed',
       'true',

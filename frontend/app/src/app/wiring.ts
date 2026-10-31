@@ -1463,6 +1463,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
           const draft = command.draft;
           if (draft === null) return;
           const values = draft.values;
+          // A Discard or a newer edit of this field since the click wins: the group stops
+          // rather than send, or re-base, the value the person has since changed.
+          if (!sameJson(store.getSnapshot().runDrafts[draft.scope] ?? {}, values)) return;
           const snapshot = entryDraftSnapshot(values['base_revision']);
           if (snapshot === null || snapshot.raw === undefined) return;
           const marker = entryDraftMarker(revision, snapshot.raw, snapshot.remove ?? false);

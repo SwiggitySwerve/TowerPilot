@@ -441,6 +441,41 @@ describe('RL3 and RL6 saved entry editor', () => {
     });
   });
 
+  it('a Discard made while a group Save is sending stops the rest: the discarded value is never sent', async () => {
+    let during: () => void = () => undefined;
+    const page = await open('farm', {
+      before: (fake) => {
+        let answered = 0;
+        fake.route('POST', PATCH, () => {
+          answered += 1;
+          during();
+          return {
+            status: 200,
+            body: { ok: true, revision: `after-${String(answered)}`, profile: {}, warnings: [] },
+          };
+        });
+      },
+    });
+    await page.user.clear(row('label').getByLabelText('Run label'));
+    await page.user.type(row('label').getByLabelText('Run label'), 'Farm two');
+    await page.user.clear(row('tier').getByLabelText('Run tier'));
+    await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+    const tier = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+      (field) => field.key === 'tier',
+    );
+    // The person discards the tier while the label's patch is in flight.
+    during = () => {
+      if (tier !== undefined)
+        page.data.store.dispatch({ type: 'draft_discard', scope: tier.scope });
+    };
+    await page.user.click(entrySave('label'));
+    await page.advance(100);
+    const bodies = page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown);
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]).toMatchObject({ path: ['blueprints', 'farm', 'label'] });
+    expect(page.data.store.getSnapshot().runDrafts[tier?.scope ?? '']).toBeUndefined();
+  });
+
   it('a refused first patch of a group Save stops the rest; their drafts stay', async () => {
     const page = await open('farm', {
       before: (fake) => {

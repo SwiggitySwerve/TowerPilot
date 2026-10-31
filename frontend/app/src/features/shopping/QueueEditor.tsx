@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry, CopyNode, CopyText } from '../../copy/text.ts';
 import { entryKey, type EntryField, type FieldReview } from '../../core/shoppingPlan.ts';
@@ -7,6 +8,7 @@ import type {
   PickerSectionVM,
   QueueEditorVM,
 } from '../../store/selectors/shoppingQueue.ts';
+import { Button } from '../../ui/Button.tsx';
 import { ChipField } from '../../ui/ChipField.tsx';
 import { ChipGrid } from '../../ui/ChipGrid.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
@@ -302,6 +304,8 @@ function Page({ section, vm, idBase, actions }: Parts & { readonly section: Pick
  */
 function NeverBuy({ vm, idBase, actions }: Parts) {
   const addId = `${idBase}:never-buy-add`;
+  // Choosing only picks: arrowing through a closed select fires change, so Keep out acts.
+  const [pick, setPick] = useState('');
   const excluded = vm.picker.flatMap((section) =>
     section.items.filter((item) => item.excluded).map((item) => ({ item, tone: toneOf(section) })),
   );
@@ -333,15 +337,14 @@ function NeverBuy({ vm, idBase, actions }: Parts) {
           ))}
         </ChipGrid>
       )}
-      <label className="tp-shop__never-add" htmlFor={addId}>
-        <span>{t.excludeAdd.short}</span>
+      <div className="tp-shop__never-add">
+        <label htmlFor={addId}>{t.excludeAdd.short}</label>
         <select
           id={addId}
           className="tp-field-control"
-          value=""
+          value={pick}
           onChange={(event) => {
-            const id = event.currentTarget.value;
-            if (id !== '') actions.onExclude(id, true);
+            setPick(event.currentTarget.value);
           }}
         >
           <option value="">{t.excludePick.short}</option>
@@ -355,7 +358,17 @@ function NeverBuy({ vm, idBase, actions }: Parts) {
             </optgroup>
           ))}
         </select>
-      </label>
+        {pick === '' ? null : (
+          <Button
+            tier="secondary"
+            label={t.excludeSend.short}
+            onClick={() => {
+              actions.onExclude(pick, true);
+              setPick('');
+            }}
+          />
+        )}
+      </div>
     </Tile>
   );
 }
