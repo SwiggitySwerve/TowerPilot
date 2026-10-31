@@ -134,7 +134,11 @@ function EntryField({ field }: { readonly field: FieldVM }) {
                 inputMode={field.type === 'number' ? 'numeric' : undefined}
                 value={typeof field.raw === 'string' ? field.raw : ''}
                 aria-invalid={invalid || undefined}
-                aria-describedby={said ? reasonId : help === null ? undefined : helpId}
+                aria-describedby={
+                  [said ? reasonId : null, help === null ? null : helpId]
+                    .filter((id) => id !== null)
+                    .join(' ') || undefined
+                }
                 onChange={(event) => {
                   edit(event.currentTarget.value);
                 }}

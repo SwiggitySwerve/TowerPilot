@@ -365,6 +365,8 @@ function NeverBuy({ vm, idBase, actions }: Parts) {
             onClick={() => {
               actions.onExclude(pick, true);
               setPick('');
+              // The button leaves with the pick; focus stays on the picker.
+              document.getElementById(addId)?.focus();
             }}
           />
         )}

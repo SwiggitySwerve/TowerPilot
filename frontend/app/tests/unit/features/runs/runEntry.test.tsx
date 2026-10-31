@@ -463,18 +463,78 @@ describe('RL3 and RL6 saved entry editor', () => {
     const tier = selectRunEntry(page.data.store.getSnapshot()).fields.find(
       (field) => field.key === 'tier',
     );
+    if (tier === undefined) throw new Error('missing tier field');
     // The person discards the tier while the label's patch is in flight.
     during = () => {
-      if (tier !== undefined)
-        page.data.store.dispatch({ type: 'draft_discard', scope: tier.scope });
+      page.data.store.dispatch({ type: 'draft_discard', scope: tier.scope });
     };
     await page.user.click(entrySave('label'));
     await page.advance(100);
     const bodies = page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown);
     expect(bodies).toHaveLength(1);
     expect(bodies[0]).toMatchObject({ path: ['blueprints', 'farm', 'label'] });
-    expect(page.data.store.getSnapshot().runDrafts[tier?.scope ?? '']).toBeUndefined();
+    expect(page.data.store.getSnapshot().runDrafts[tier.scope]).toBeUndefined();
   });
+
+  it.each([
+    ['a Discard', null],
+    ['a newer edit', '7'],
+  ] as const)(
+    "%s made during a later step's click-time read stops that step; the person's draft stands",
+    async (_what, edit) => {
+      let armed = false;
+      let during: () => void = () => undefined;
+      const page = await open('farm', {
+        config: () => {
+          if (armed) {
+            armed = false;
+            during();
+          }
+          return CONFIG;
+        },
+        before: (fake) => {
+          fake.route('POST', PATCH, () => {
+            return {
+              status: 200,
+              body: { ok: true, revision: 'after-1', profile: {}, warnings: [] },
+            };
+          });
+        },
+      });
+      await page.user.clear(row('label').getByLabelText('Run label'));
+      await page.user.type(row('label').getByLabelText('Run label'), 'Farm two');
+      await page.user.clear(row('tier').getByLabelText('Run tier'));
+      await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+      const tier = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+        (field) => field.key === 'tier',
+      );
+      if (tier === undefined) throw new Error('missing tier field');
+      // Armed when the group re-bases the tier draft on the label's answer: the next config
+      // read is the tier step's own click-time read, after the group's check passed.
+      const stop = page.data.store.subscribe(() => {
+        const marker = page.data.store.getSnapshot().runDrafts[tier.scope]?.['base_revision'];
+        if (JSON.stringify(marker ?? null).includes('after-1')) {
+          armed = true;
+          stop();
+        }
+      });
+      during = () => {
+        page.data.store.dispatch(
+          edit === null
+            ? { type: 'draft_discard', scope: tier.scope }
+            : { type: 'draft_edit', scope: tier.scope, path: 'value', value: edit },
+        );
+      };
+      await page.user.click(entrySave('label'));
+      await page.advance(100);
+      const bodies = page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown);
+      expect(bodies).toHaveLength(1);
+      expect(bodies[0]).toMatchObject({ path: ['blueprints', 'farm', 'label'] });
+      expect(page.data.store.getSnapshot().runDrafts[tier.scope]?.['value']).toBe(
+        edit ?? undefined,
+      );
+    },
+  );
 
   it('a refused first patch of a group Save stops the rest; their drafts stay', async () => {
     const page = await open('farm', {

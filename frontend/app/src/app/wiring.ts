@@ -1366,7 +1366,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       activePoller.read('profileFiles');
       activePoller.read('vocab');
     },
-    patchRunEntry: async (command) => {
+    patchRunEntry: async (command, step) => {
       if (!fenced(command)) return;
       // Reuse the form's current source authority without substituting newer
       // draft text for the submission already reserved by this command.
@@ -1433,6 +1433,13 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
           notice('command_not_sent', 'target_unconfirmed');
           return;
         }
+        // Checked again after the click-time read: the person may have discarded or edited it.
+        if (
+          step?.draftUnchanged === true &&
+          command.draft !== null &&
+          !sameJson(store.getSnapshot().runDrafts[command.draft.scope] ?? {}, command.draft.values)
+        )
+          return;
         report(
           sendRunEntryPatch(
             machine,
@@ -1482,7 +1489,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
           };
         }
         const before = Math.max(0, ...machine.snapshot().map((record) => record.sentSeq));
-        await commands.patchRunEntry(next);
+        await commands.patchRunEntry(next, { draftUnchanged: revision !== null });
         const record = await new Promise<IntentRecord | null>((resolve) => {
           const sent = () =>
             machine
