@@ -10,8 +10,9 @@ class Exhausted(Exception):
 
 
 def run(monkeypatch, frames, *, session=None, requested=None, fence=None, gems=None, sleep=None, clock=None,
-        grabbed=None, screen=None, read_wave=None):
-    """Returns (events, polled, returned, gems). `gems` defaults to routines that record each polled frame."""
+        grabbed=None, screen=None, read_wave=None, entry='main'):
+    """Returns (events, polled, returned, gems). `gems` defaults to routines that record each polled frame.
+    `entry` is the worker function that is run: `main`, or `run_logged` to see how a failure leaves the process."""
     import gem_collector as worker
     from runtime import action_session, battle_session, device_lease, runners
     events, polled = [], []
@@ -33,6 +34,8 @@ def run(monkeypatch, frames, *, session=None, requested=None, fence=None, gems=N
             frame = next(remaining)
         except StopIteration:
             raise Exhausted from None
+        if isinstance(frame, Exception):      # a frame that is an error: the capture fails with it
+            raise frame
         if grabbed is not None:
             grabbed.append(frame)
         return frame
@@ -45,7 +48,7 @@ def run(monkeypatch, frames, *, session=None, requested=None, fence=None, gems=N
     if clock is not None:
         monkeypatch.setattr(worker, 'clock', clock)
     try:
-        worker.main('main', 'bp_farm')
+        getattr(worker, entry)('main', 'bp_farm')
         returned = True
     except Exhausted:
         returned = False
