@@ -2,7 +2,7 @@
 > **Status:** Open
 > **Type:** Task
 > **Created:** 2026-10-19
-> **Updated:** 2026-10-30
+> **Updated:** 2026-10-31
 > **Priority:** Medium
 > **Tags:** guild-store, calibration, recognition
 
@@ -50,6 +50,18 @@ Still open on master `076c4bc4` (checked 2026-10-30): cards are read only as
 `price` or `owned` (`backend/interactions/store.py:227-229`), any other complete
 card raises "no recognized price/owned state", and `backend/player/scan_targets.json`
 has no sold-out target.
+
+Unfinished code from 2026-10-30 is kept at the tag `archive/guild-store-sold-out-wip`
+(commit `1cadc0c0`; `git show archive/guild-store-sold-out-wip`). It has three parts:
+- `store.py` reads a SOLD OUT label as its own card state when the player's
+  `buttons/store_sold_out.png` cut exists, and refuses a card whose state changes between
+  scroll views.
+- New store regressions.
+- A `test_scan_plan` test written ahead of the code.
+
+That test still fails: the text-only target in `scan_targets.json`, its `template_docs` text,
+and a reference size taken from a real capture are missing. The `_target` buying policy for
+the new state is also unreviewed. Start from that tag rather than from scratch.
 
 Do not use runtime template writing or add subprocess OCR to the store flow.
 The current safe refusal is intentional and covered by
