@@ -207,7 +207,7 @@ it.each(['process', 'sending', 'unread'])(
         ? /while automation runs/
         : kind === 'sending'
           ? /is sending/
-          : /readable process list/,
+          : /can tell whether automation is running/,
     );
     await userEvent.click(button);
     expect(page.commands.reconnect).not.toHaveBeenCalled();

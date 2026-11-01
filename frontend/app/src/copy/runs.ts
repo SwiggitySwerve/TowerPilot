@@ -167,7 +167,7 @@ export const runs = {
     },
   },
   saved: {
-    routines: entry('Saved routines'),
+    routines: entry('Saved runs'),
     editor: entry('Routines of the run being edited'),
     title: entry('Saved settings'),
     scope: entry('Used by future battles'),
@@ -184,9 +184,15 @@ export const runs = {
       'The run list could not be read. Check it again before editing saved settings.',
     ),
     checkRuns: entry('Check runs'),
-    unavailable: entry("The saved settings can't be read"),
+    unavailable: entry("This run's saved settings couldn't be read."),
+    /** Why the read failed, beside the server's own message when it sends one. */
+    failures: {
+      network: entry('The server could not be reached.'),
+      expired: entry('The read took too long and was dropped.'),
+      refused: entry("The server didn't return this run's settings."),
+    },
     save: entry('Save run settings'),
-    check: entry('Check saved values'),
+    check: entry('Read saved values again'),
     prepare: entry('Prepare runs on the Recognition page'),
   },
   /** The list of every run: one record row each (the retired Runs tab's run cards). */
@@ -242,7 +248,7 @@ export const runs = {
     save_unresolved: entry('An earlier save has no answer yet; check the values first'),
     refreshing: entry('Reading the values the last save left'),
     invalid_value: entry('Fix the values marked above'),
-    no_changes: entry('No changes to save'),
+    no_changes: entry('No unsaved changes'),
     no_battle: entry('No battle is tracked'),
     battle_not_active: entry('The battle has not started yet'),
     report_stale: entry('Waiting for a fresh battle report'),

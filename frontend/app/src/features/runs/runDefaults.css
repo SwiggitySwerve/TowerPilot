@@ -9,3 +9,7 @@
   gap: 0 var(--tp-space-1);
   color: var(--tp-color-text-muted);
 }
+/* Open, the field states its own problem in full, so the summary keeps only its count. */
+.tp-disclosure[open] > summary .tp-run-defaults__problem {
+  display: none;
+}

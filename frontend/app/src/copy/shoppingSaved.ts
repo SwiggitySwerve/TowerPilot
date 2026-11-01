@@ -12,7 +12,7 @@ export const shoppingSaved = {
   ),
   create: entry('Create a queue'),
   createHint: entry(
-    'Choose a cash reserve, purchase pattern and cadence, then Save. Creating a draft sends nothing.',
+    'Creating a queue starts a draft: choose its cash reserve, purchase pattern and cadence, then Save. Nothing is sent until you Save.',
   ),
   conversion: entry('Review legacy conversion'),
   conversionWarning: entry(
@@ -38,5 +38,5 @@ export const shoppingSaved = {
   invalid: entry(
     'Enter a number for cash reserve and choose a purchase pattern and cadence. Correct any fields marked invalid before saving.',
   ),
-  unchanged: entry('No changes to save'),
+  unchanged: entry('No unsaved changes'),
 };

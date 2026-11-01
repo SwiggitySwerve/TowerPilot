@@ -91,7 +91,7 @@ test('RUN-05 SR-4 one Save click (a double click) sends exactly the recorded bod
   expect(problems).toEqual([]);
 });
 
-test('RUN-07 SR-4 SR-8 a save whose answer is lost reads Unknown with no resend; Check saved values reads the run that holds it', async ({
+test('RUN-07 SR-4 SR-8 a save whose answer is lost reads Unknown with no resend; Read saved values again reads the run that holds it', async ({
   page,
 }) => {
   const problems = await openRuns(page, 'runs_saved_lost', '#runs');
@@ -102,7 +102,7 @@ test('RUN-07 SR-4 SR-8 a save whose answer is lost reads Unknown with no resend;
   await region.screenshot({ path: path.join(OUT, 'runs-saved-unknown-1360.png') });
   await expect(region.getByRole('button', { name: 'Send same request again' })).toHaveCount(0);
   await expect(region.getByRole('button', { name: 'Dismiss' })).toHaveCount(0);
-  await region.getByRole('button', { name: 'Check saved values' }).click();
+  await region.getByRole('button', { name: 'Read saved values again' }).click();
   await expect(region.getByText('The saved settings now have your changes')).toBeVisible();
   await page.waitForTimeout(3_000);
   expect(await bodiesTo(page, '/api/run-controls')).toHaveLength(1);
@@ -258,7 +258,9 @@ for (const width of WIDTHS) {
       }
       const saved = page.locator('[data-region="runsSaved"]');
       const save = await saved.getByRole('button', { name: 'Save run settings' }).boundingBox();
-      const check = await saved.getByRole('button', { name: 'Check saved values' }).boundingBox();
+      const check = await saved
+        .getByRole('button', { name: 'Read saved values again' })
+        .boundingBox();
       expect(check?.y ?? 0).toBeGreaterThanOrEqual((save?.y ?? 0) + (save?.height ?? 0));
       expect(Math.abs((check?.x ?? 0) - (save?.x ?? 0))).toBeLessThanOrEqual(1);
     }

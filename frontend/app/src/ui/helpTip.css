@@ -32,8 +32,8 @@
   color: var(--tp-color-text-strong);
 }
 .tp-help__glyph {
-  inline-size: 0.875rem;
-  block-size: 0.875rem;
+  inline-size: 1rem;
+  block-size: 1rem;
   flex: none;
   fill: none;
   stroke: currentColor;
@@ -80,6 +80,11 @@
 @media (max-width: 600px), (pointer: coarse) {
   .tp-help__trigger {
     --tp-help-size: var(--tp-control-height-touch);
+  }
+  /* The glyph grows with its 44 px target, so a touch reader sees what it can press. */
+  .tp-help__glyph {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
   }
   .tp-help__tip {
     font-size: var(--tp-font-size-14);

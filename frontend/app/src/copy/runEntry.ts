@@ -65,7 +65,7 @@ export const runEntry = {
     choice: entry('Choose one of the available values.'),
     list: entry('Use nonblank perk fragments, one per line.'),
     text: entry('Enter a nonblank label.'),
-    unchanged: entry('No changes to save'),
+    unchanged: entry('No unsaved changes'),
     unavailable: entry('A current profile and vocabulary read is required.'),
     pending: entry('Wait for the save and its readback, or resolve its Unknown outcome.'),
     revision: entry(

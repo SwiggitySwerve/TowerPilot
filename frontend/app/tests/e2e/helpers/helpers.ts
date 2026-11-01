@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import { expect, type Page, type Request } from '@playwright/test';
+import { expect, type Locator, type Page, type Request } from '@playwright/test';
 
 /** Shared steps of the Dashboard browser checks against the fake backend (tests/support/fake-backend/fake-backend.mjs). */
 
@@ -204,4 +204,18 @@ export async function axeCounts(page: Page, tags?: readonly string[]): Promise<s
   return (await axeViolations(page, tags)).map(
     (violation) => `${violation.id} (${String(violation.nodes.length)})`,
   );
+}
+
+/**
+ * Opens the disclosure whose summary `label` names. A disclosure holding a problem opens itself
+ * once when its read arrives, so a plain click could close it again: click only while closed,
+ * retrying until it stays open.
+ */
+export async function reveal(label: Locator): Promise<void> {
+  const details = label.locator('xpath=ancestor::details[1]');
+  await expect(async () => {
+    if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open)))
+      await label.click();
+    expect(await details.evaluate((element) => (element as HTMLDetailsElement).open)).toBe(true);
+  }).toPass();
 }

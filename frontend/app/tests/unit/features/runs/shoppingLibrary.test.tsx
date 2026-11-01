@@ -1,4 +1,4 @@
-import { act, within } from '@testing-library/react';
+import { act, waitFor, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { entries, own, ownPath } from '../../../../src/core/read.ts';
@@ -73,11 +73,15 @@ async function open(source: () => DashboardCase = () => INITIAL, options: PageOp
     },
   });
   await page.advance(100);
-  await page.user.click(within(root()).getByText('Manage policies', { exact: true }));
+  await show(page, within(root()).getByText('Manage policies', { exact: true }));
   return page;
 }
+/** Opens the disclosure a summary label names; one with a problem may already be open. */
+async function show(page: PageHarness, label: HTMLElement) {
+  if (label.closest('details')?.open !== true) await page.user.click(label);
+}
 async function edit(page: PageHarness, id = 'main_list') {
-  await page.user.click(within(policy(id)).getByText('Edit shared policy', { exact: true }));
+  await show(page, within(policy(id)).getByText('Edit shared policy', { exact: true }));
   return within(policy(id));
 }
 async function weighted(page: PageHarness) {
@@ -136,7 +140,7 @@ describe('SQ9 shared shopping policies', () => {
     expect(page.fake.writes()).toEqual([]);
   });
 
-  it('RL3 invalid machine fallback settings are signalled before their disclosure opens', async () => {
+  it('RL3 invalid machine fallback settings open their disclosure with the problem in view', async () => {
     // The default settings read is valid; this recorded read saves a preset the machine no longer lists.
     const page = await open(() => INITIAL, {
       before: (fake) => {
@@ -152,15 +156,18 @@ describe('SQ9 shared shopping policies', () => {
     const summary = defaults.querySelector('summary');
     expect(summary).toHaveTextContent('Needs attention');
     expect(summary).toHaveTextContent('1 problem');
-    // Closed, the summary says what the first field needs; the field's own message opens with it.
+    // The summary says what the first field needs, and the problem opens it once so the
+    // field's own message is in view; a person's toggle wins from then on.
     expect(summary).toHaveTextContent('Choose one of the listed options');
     const message = defaults.querySelector('.tp-settings__invalid');
     expect(message).toHaveTextContent('Choose one of the listed options');
-    expect(message).not.toBeVisible();
+    await waitFor(() => {
+      expect(message).toBeVisible();
+    });
     await page.user.click(
       within(defaults).getByText('Saved defaults / Machine fallback', { exact: true }),
     );
-    expect(message).toBeVisible();
+    expect(message).not.toBeVisible();
     expect(page.fake.writes()).toEqual([]);
   });
 
@@ -206,7 +213,7 @@ describe('SQ9 shared shopping policies', () => {
         });
       },
     });
-    await page.user.click(within(root()).getByRole('button', { name: 'Create a shared queue' }));
+    await page.user.click(within(root()).getByRole('button', { name: 'Create a shopping policy' }));
     await page.user.type(create().getByLabelText('New policy ID'), 'new_queue');
     expect(create().getByRole('button', { name: 'Save shared policy' })).toHaveAttribute(
       'aria-disabled',
@@ -666,8 +673,8 @@ describe('SQ10 legacy shopping directives', () => {
     await page.user.click(directive.getByLabelText('Directive enabled'));
     await page.user.selectOptions(directive.getByLabelText('Shop tab'), 'utility');
     await page.user.selectOptions(directive.getByLabelText('Shop tab'), 'attack');
-    await page.user.click(directive.getByLabelText('health', { exact: true }));
-    await page.user.click(directive.getByLabelText('health', { exact: true }));
+    await page.user.click(directive.getByLabelText('Health', { exact: true }));
+    await page.user.click(directive.getByLabelText('Health', { exact: true }));
     for (const mode of ['once', 'best_cost', 'clicks', 'repeat']) {
       await page.user.selectOptions(directive.getByLabelText('Shopping mode'), mode);
     }
@@ -743,7 +750,7 @@ it.each(['same', 'changed'])(
       },
     });
     const before = policy('main_list');
-    await page.user.click(within(before).getByText('Edit shared policy', { exact: true }));
+    await show(page, within(before).getByText('Edit shared policy', { exact: true }));
     expect(within(before).queryByRole('textbox', { name: 'Cash reserve' })).toBeNull();
     expect(before).toHaveTextContent('Waiting for the emulator, account and profile to be read.');
     expect(page.data.store.getSnapshot().runDrafts).toEqual({});

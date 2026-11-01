@@ -14,9 +14,19 @@
   gap: var(--tp-space-1);
 }
 .tp-run-add__fields input[type='checkbox'] {
-  align-self: start;
+  flex: none;
   width: 24px;
   height: 24px;
+}
+/* A check box sits before its name, as every other check box on the page does, on the line of
+   the boxes beside it. */
+.tp-run-add__fields label:has(> input[type='checkbox']) {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  align-self: end;
+  gap: var(--tp-space-2);
+  min-block-size: 2.5rem;
 }
 .tp-run-add__actions {
   margin-block: var(--tp-space-3);

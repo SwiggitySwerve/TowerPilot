@@ -182,9 +182,9 @@ async function completedRead(page: Page, name: string) {
     await page.waitForLoadState('networkidle');
     if (surface === 'Collection') {
       await expect(page.getByText('Reading the saved settings', { exact: true })).toHaveCount(0);
-      await expect(page.getByText("The saved settings can't be read", { exact: true })).toHaveCount(
-        0,
-      );
+      await expect(
+        page.getByText("This run's saved settings couldn't be read.", { exact: true }),
+      ).toHaveCount(0);
       await expect(
         page.getByText('The last settings read was for another emulator, account or profile', {
           exact: true,
@@ -264,7 +264,7 @@ async function savedReadback(page: Page, name: string) {
     } else {
       await expect(row.getByRole('textbox')).toHaveValue('Offline farm');
       // The group's one Save says so once the saved value is read back.
-      await expect(entrySave(row)).toHaveAccessibleDescription('No changes to save');
+      await expect(entrySave(row)).toHaveAccessibleDescription('No unsaved changes');
     }
     await expect(row.locator('[data-outcome="saved"]')).toBeVisible();
   }

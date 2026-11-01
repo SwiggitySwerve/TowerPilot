@@ -441,6 +441,12 @@ export function QueueEditor(props: QueueEditorProps) {
       return problem === null ? [] : [{ entry, field, problem }];
     }),
   );
+  // The purchase rules that block sending, by name, so the count says which fields to fix.
+  const ruleProblems = [
+    ...(review.reserve.problem === null ? [] : [t.reserve.short]),
+    ...(review.modeProblem === null ? [] : [t.mode.short]),
+    ...(review.cadenceProblem === null ? [] : [t.cadence.short]),
+  ];
   return (
     <div className="tp-shop">
       <Tile
@@ -516,7 +522,13 @@ export function QueueEditor(props: QueueEditorProps) {
           titleId={`${idBase}:picker`}
           title={t.picker.short}
           level={4}
-          intro={t.pickerHint}
+          intro={
+            vm.picker.length === 0
+              ? t.pickerEmpty
+              : vm.mode.value === 'weighted_split'
+                ? t.pickerHintWeighted
+                : t.pickerHint
+          }
         >
           {vm.orderProvisional ? <p className="tp-shop__hint">{t.orderProvisional.short}</p> : null}
           {vm.picker.map((section) => (
@@ -543,7 +555,11 @@ export function QueueEditor(props: QueueEditorProps) {
         </ul>
       )}
       {review.problems === 0 ? null : (
-        <p className="tp-shop__problem">{t.problemCount(review.problems)}</p>
+        <p className="tp-shop__problem">
+          {review.problems === problems.length + ruleProblems.length && ruleProblems.length > 0
+            ? t.problemFields(ruleProblems)
+            : t.problemCount(review.problems)}
+        </p>
       )}
     </div>
   );

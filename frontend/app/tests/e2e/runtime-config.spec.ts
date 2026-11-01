@@ -7,6 +7,7 @@ import {
   navigateApp,
   openScenario,
   posts,
+  reveal,
   WCAG_AA_TAGS,
 } from './helpers/helpers.ts';
 import { RUNTIME_CONFIG_SAVES } from '../support/fake-backend/runtime-config-fixtures.mjs';
@@ -53,8 +54,14 @@ async function open(page: Page, width: number, module: Module, mode = 'saved') {
   await navigateApp(page, module === 'run-defaults' ? 'Runs' : 'Runtime');
   if (module === 'run-defaults') {
     const disclosure = page.locator('[data-run-defaults] > details > summary');
+    // An invalid saved preset opens it by itself; the keyboard opens it only while closed.
     await disclosure.focus();
-    await page.keyboard.press('Enter');
+    await expect(async () => {
+      const details = page.locator('[data-run-defaults] > details');
+      if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open)))
+        await page.keyboard.press('Enter');
+      expect(await details.evaluate((element) => (element as HTMLDetailsElement).open)).toBe(true);
+    }).toPass();
     await expect(disclosure).toBeFocused();
   }
   await expect(save(page, module)).toBeVisible();
@@ -151,14 +158,17 @@ for (const width of [1360, 1054, 390]) {
         },
       );
       await page.reload();
-      await page.locator('[data-run-defaults] > details > summary').click();
+      await reveal(page.locator('[data-run-defaults] > details > summary'));
       await expect(picker).toHaveValue('');
       await expect(
         picker.getByRole('option', { name: 'Empty value (not listed)', exact: true }),
       ).toHaveJSProperty('selected', true);
       await expect(picker).toHaveAttribute('aria-invalid', 'true');
       await expect(
-        form(page, 'run-defaults').getByText('Choose one of the listed options', { exact: true }),
+        form(page, 'run-defaults').getByText(
+          "This value isn't on the list. Choose one of the listed options",
+          { exact: true },
+        ),
       ).toBeVisible();
       await expect(save(page, 'run-defaults')).toBeDisabled();
       expect(await posts(page)).toEqual([]);
@@ -228,7 +238,8 @@ for (const width of [1360, 1054, 390]) {
     });
     test(`${title} C-03 ${module} save, scope, keyboard and axe at ${width}`, async ({ page }) => {
       const errors = await open(page, width, module, 'override');
-      const picker = page.locator('[data-focus-key="runs:run"]');
+      // The page's run choice (Entry and equipment's Entry run) stays put when defaults save.
+      const picker = page.locator('[data-run-entry] .tp-runs__picker-label select');
       const pickerBefore = module === 'run-defaults' ? await picker.inputValue() : null;
       const override = module.replace('-defaults', '');
       const overrideKey =

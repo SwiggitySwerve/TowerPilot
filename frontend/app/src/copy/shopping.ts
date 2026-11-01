@@ -38,7 +38,9 @@ export const shopping = {
   },
   unknownChoice: entry('Not a known choice; shown as the server sent it'),
   queue: entry('Queue (priority order)'),
-  queueHint: entry('Leaving an upgrade out keeps its limits and place.'),
+  queueHint: entry(
+    'Deselecting an upgrade keeps its limits and place in the queue for when you select it again.',
+  ),
   emptyQueue: entry('No upgrades in the queue. Include upgrades from the shop pages.'),
   included: entry('Included in queue'),
   added: entry('Added in this draft'),
@@ -82,11 +84,23 @@ export const shopping = {
         ? '1 field needs a value before this queue can be sent.'
         : `${String(count)} fields need a value before this queue can be sent.`,
     ),
+  /** The queue's own fields that block sending, named (entry fields are listed one by one). */
+  problemFields: (names: readonly CopyText[]) =>
+    made(
+      `${names.length === 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names.at(-1) ?? ''}`} ${names.length === 1 ? 'needs' : 'need'} a valid value before this queue can be sent.`,
+    ),
   picker: entry('Shop pages'),
   /** One line for the pages; how a chip's fields count lives in its help. */
   pickerHint: entry(
     'Selecting an upgrade adds it to the end of the queue and shows its tap limit.',
     'Selecting an excluded upgrade removes its exclusion. The tap limit counts taps sent, not levels bought; blank means unlimited. In Weighted split a selected upgrade also shows its weight: the confirmed single purchases per weighted turn; blank uses the server default.',
+  ),
+  /** No catalogue yet, so no pages: say where the choices come from instead of how to pick. */
+  pickerEmpty: entry("No upgrade choices yet: they come with this run's saved settings."),
+  /** Weighted split: the key to a selected chip's two numbers, in the order they appear. */
+  pickerHintWeighted: entry(
+    'Selecting an upgrade adds it to the end of the queue and shows its tap limit × weight.',
+    'Selecting an excluded upgrade removes its exclusion. The tap limit counts taps sent, not levels bought; blank means unlimited. The weight is the confirmed single purchases per weighted turn; blank uses the server default.',
   ),
   sections: {
     attack: entry('Attack'),

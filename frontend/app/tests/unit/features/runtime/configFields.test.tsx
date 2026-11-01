@@ -80,7 +80,8 @@ async function openConfig(module: Module, initial?: string) {
   if (module === 'run-defaults') {
     const summary = document.querySelector<HTMLElement>('[data-run-defaults] > details > summary');
     if (summary === null) throw new Error('run defaults disclosure missing');
-    await page.user.click(summary);
+    // An invalid saved preset opens the disclosure by itself; open it only while closed.
+    if (summary.closest('details')?.open !== true) await page.user.click(summary);
   }
   return {
     ...page,

@@ -166,7 +166,9 @@ describe('Runs page on the recorded saved-run save (run_controls_save)', () => {
       await page.advance(60_000);
       expect(postBodies(page.fake, '/api/run-controls')).toHaveLength(1);
       read = () => save(after);
-      await page.user.click(within(saved()).getByRole('button', { name: 'Check saved values' }));
+      await page.user.click(
+        within(saved()).getByRole('button', { name: 'Read saved values again' }),
+      );
       await page.advance(1_000);
       expect(within(saved()).getByText(wording)).toBeVisible();
       expect(within(saved()).getByRole('checkbox', { name: 'Ad gems On' })).not.toBeChecked();
@@ -464,7 +466,7 @@ describe('Runs review fixes (frontend-f6-runs-review F6R-01 to F6R-04)', () => {
     expect(next.fake.writes()).toEqual([]);
     // The unchanged read: nothing was written; the person's values are all still there.
     read = () => save('read_after_the_failed_write_the_revision_is_unchanged');
-    await next.user.click(within(saved()).getByRole('button', { name: 'Check saved values' }));
+    await next.user.click(within(saved()).getByRole('button', { name: 'Read saved values again' }));
     await next.advance(1_000);
     expect(every()).toHaveValue('0600');
     expect(window()).toHaveValue('1e3');

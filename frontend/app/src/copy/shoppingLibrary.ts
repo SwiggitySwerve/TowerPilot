@@ -20,7 +20,7 @@ export const shoppingLibrary = {
   ),
   empty: entry('No shared shopping policies in this profile.'),
   check: entry('Check shared policies'),
-  create: entry('Create a shared queue'),
+  create: entry('Create a shopping policy'),
   createTitle: entry('New shared shopping queue'),
   copyTitle: entry('Copy shared shopping policy'),
   copy: entry('Copy policy'),
@@ -51,9 +51,16 @@ export const shoppingLibrary = {
   stats: entry('Stats'),
   statsHint: entry('Choose every stat this directive should shop for.'),
   mode: entry('Shopping mode'),
+  /** The shopper's modes (profiles/SCHEMA.md); an unknown mode shows as sent. */
+  modes: {
+    repeat: entry('Repeat while affordable'),
+    once: entry('Once per run'),
+    best_cost: entry('Cheapest first'),
+    clicks: entry('Fixed clicks'),
+  },
   choose: entry('Choose a value'),
   clicks: entry('Clicks'),
-  clicksHint: entry('Required only for clicks mode. The server validates the integer and range.'),
+  clicksHint: entry('A whole number of taps; needed only for Fixed clicks.'),
   clicksEmpty: entry('Enter clicks for clicks mode.'),
   clicksNumber: entry('Enter a number; the draft is kept as typed.'),
   add: entry('Add directive'),
@@ -63,6 +70,17 @@ export const shoppingLibrary = {
   first: entry('Already first.'),
   last: entry('Already last.'),
   line: (position: number) => made(`Directive ${position}`),
+  /** A legacy policy's directives, in order, shown outside its editor. */
+  directives: entry('Directives'),
+  listSep: made(', '),
+  modeSep: made(' · '),
+  clicksCount: (raw: string) => made(` (${raw})`),
+  lineOff: entry('turned off'),
+  /** A closed legacy policy's one line: its master switch (a bare list has none) and size. */
+  summary: (enabled: boolean | null, directives: number) =>
+    made(
+      `${enabled === null ? '' : enabled ? 'On · ' : 'Off · '}${String(directives)} ${directives === 1 ? 'directive' : 'directives'}`,
+    ),
   moved: (position: number) => made(`Directive moved to position ${position}.`),
   reasons: {
     unavailable: entry('Confirm the active profile with a successful read before saving.'),
@@ -76,7 +94,7 @@ export const shoppingLibrary = {
     invalid: entry(
       'Complete the fields marked invalid; legacy choices also require the shopping vocabulary.',
     ),
-    unchanged: entry('Edit this policy before saving.'),
+    unchanged: entry('No unsaved changes'),
     used: entry(
       'This policy is referenced by runs. Change their shopping bindings in the run entry editor before deleting it.',
     ),

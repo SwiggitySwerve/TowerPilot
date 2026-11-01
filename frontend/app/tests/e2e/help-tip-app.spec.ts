@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { axeCounts, posts, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import { axeCounts, posts, reveal, WCAG_AA_TAGS } from './helpers/helpers.ts';
 import { measureVisibleWords } from './helpers/glance.ts';
 
 /** Exercise the mounted React component in real pages, using only the fixture backend. */
@@ -219,9 +219,9 @@ for (const { name, touch, width } of [
       await page.request.get('/__fake/use?scenario=shopping_library_v2');
       await page.goto('/ui/app/#runs/saved/farm');
       const library = page.locator('[data-shopping-library]');
-      await library.getByText('Manage policies', { exact: true }).click();
+      await reveal(library.getByText('Manage policies', { exact: true }));
       const form = library.locator('[data-library-policy="main_list"]');
-      await form.getByText('Edit shared policy', { exact: true }).click();
+      await reveal(form.getByText('Edit shared policy', { exact: true }));
       const pattern = form.getByLabel('Purchase pattern', { exact: true });
       const selected = await pattern.inputValue();
       await checkTip(

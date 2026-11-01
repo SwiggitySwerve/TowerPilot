@@ -19,9 +19,10 @@ export function RunDefaults() {
   const first = invalid[0] ?? null;
   return (
     <div className="tp-run-defaults" data-run-defaults="true">
-      {/* Closed, it still names the first field that needs attention and what it needs. */}
+      {/* A problem opens it once; closed, it still names the first field that needs attention. */}
       <Disclosure
         label={t.fallback.short}
+        initiallyOpen={invalid.length > 0}
         preview={
           <>
             <ValidationSummary problems={invalid.length} />

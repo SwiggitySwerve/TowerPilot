@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { createContext, useContext, useId, useState } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry, CopyNode } from '../../copy/text.ts';
 import { actionName, COMPAT_FIELDS, fieldLabel } from '../../core/actions.ts';
@@ -224,12 +224,15 @@ function RoutineRow({
   scope,
   live,
   described,
+  resets,
 }: {
   readonly group: RunGroupVM;
   readonly scope: string;
   readonly live: boolean;
   /** A2-7 AC2: descriptor labels: every field shows its name, in descriptor order. */
   readonly described: boolean;
+  /** This battle's overrides of this routine, each with its undo, at the end of the row. */
+  readonly resets: readonly LiveResetVM[];
 }) {
   const own = useId();
   const nameId = `${own}-name`;
@@ -245,8 +248,8 @@ function RoutineRow({
         <strong id={nameId} className="tp-run-row__name">
           <ActionName routine={group.routine} label={group.label} />
         </strong>
-        {/* A change is named, with its undo, in the list below the table (as a switch's is);
-            only a change still waiting to apply is marked in the row itself. */}
+        {/* A change is named, with its undo, at the end of the row; a change still waiting to
+            apply has no undo, so it is marked under the name. */}
         {mark === 'changed' ? (
           <span className="tp-visually-hidden">{t.live.marks.changed.short}</span>
         ) : mark === null ? null : (
@@ -270,6 +273,7 @@ function RoutineRow({
       ) : (
         group.fields.map((field) => fieldCell(field, scope, nameId, false))
       )}
+      <RowResets resets={resets} />
     </li>
   );
 }
@@ -313,57 +317,63 @@ function SwitchRow({
   groups,
   scope,
   live,
+  resets,
 }: {
   readonly groups: readonly RunGroupVM[];
   readonly scope: string;
   readonly live: boolean;
+  /** The switches' overrides, each with its undo, beside its own switch. */
+  readonly resets: readonly LiveResetVM[];
 }) {
   const { commands } = useDashboard();
   const own = useId();
   return (
     <li className="tp-run-row tp-run-row--switches">
-      <span className="tp-run-switches">
-        {groups.map((group) =>
-          group.fields.map((field) => (
-            <label
-              key={field.path}
-              className="tp-run-switch"
-              data-routine={group.routine}
-              data-edited={field.edited}
-            >
-              <input
-                type="checkbox"
-                className="tp-run-toggle"
-                checked={field.shown === true}
-                data-focus-key={`${scope}:${field.path}`}
-                aria-describedby={field.value === null ? `${own}-${group.routine}` : undefined}
-                onChange={(event) => {
-                  commands.editDraft(scope, field.path, event.currentTarget.checked);
-                }}
-              />
-              <span>
-                <ActionName routine={group.routine} label={group.label} />
-              </span>
-              {field.value === null && field.shown === null ? (
-                <span id={`${own}-${group.routine}`} className="tp-run-cell__note">
-                  {t.notReported.short}
+      <div className="tp-run-switches">
+        {groups.map((group) => (
+          <div key={group.routine} className="tp-run-switch-cell">
+            {group.fields.map((field) => (
+              <label
+                key={field.path}
+                className="tp-run-switch"
+                data-routine={group.routine}
+                data-edited={field.edited}
+              >
+                <input
+                  type="checkbox"
+                  className="tp-run-toggle"
+                  checked={field.shown === true}
+                  data-focus-key={`${scope}:${field.path}`}
+                  aria-describedby={field.value === null ? `${own}-${group.routine}` : undefined}
+                  onChange={(event) => {
+                    commands.editDraft(scope, field.path, event.currentTarget.checked);
+                  }}
+                />
+                <span>
+                  <ActionName routine={group.routine} label={group.label} />
                 </span>
-              ) : null}
-              {/* A change is named, with its undo, in the list below the table; a change still
-                  waiting to apply has no undo there, so it is marked on the switch itself. */}
-              {!live || field.mark === null || field.mark === 'saved' ? null : field.mark ===
-                'changed' ? (
-                <span className="tp-visually-hidden">{t.live.marks.changed.short}</span>
-              ) : (
-                <span className="tp-run-row__mark">
-                  <span>{t.live.marks.waiting.short}</span>
-                  <Why why={t.live.marks.waiting.why} />
-                </span>
-              )}
-            </label>
-          )),
-        )}
-      </span>
+                {field.value === null && field.shown === null ? (
+                  <span id={`${own}-${group.routine}`} className="tp-run-cell__note">
+                    {t.notReported.short}
+                  </span>
+                ) : null}
+                {/* A change is named, with its undo, beside the switch; a change still waiting to
+                  apply has no undo, so it is marked on the switch itself. */}
+                {!live || field.mark === null || field.mark === 'saved' ? null : field.mark ===
+                  'changed' ? (
+                  <span className="tp-visually-hidden">{t.live.marks.changed.short}</span>
+                ) : (
+                  <span className="tp-run-row__mark">
+                    <span>{t.live.marks.waiting.short}</span>
+                    <Why why={t.live.marks.waiting.why} />
+                  </span>
+                )}
+              </label>
+            ))}
+            <RowResets resets={resets.filter((item) => item.routine === group.routine)} />
+          </div>
+        ))}
+      </div>
     </li>
   );
 }
@@ -414,6 +424,22 @@ function ResetRow({
   );
 }
 
+/** Opens the confirmation of one override's reset; null outside a live editor. */
+const ResetAsk = createContext<((item: LiveResetVM) => void) | null>(null);
+
+/** The overrides of one row, each with "Use starting value", beside what they change. */
+function RowResets({ resets }: { readonly resets: readonly LiveResetVM[] }) {
+  const ask = useContext(ResetAsk);
+  if (ask === null || resets.length === 0) return null;
+  return (
+    <ul className="tp-run-resets__list tp-run-row__resets">
+      {resets.map((item) => (
+        <ResetRow key={item.path} item={item} onAsk={ask} />
+      ))}
+    </ul>
+  );
+}
+
 /** The routine and field names of one override, as one line. */
 function OverrideName({
   item,
@@ -449,6 +475,35 @@ function OverrideName({
   );
 }
 
+/**
+ * Where the resets without a row of their own stand: a titled group when it lists any; with
+ * every override named in its own row, the undo-all stands alone with no heading over it.
+ */
+function ResetsGroup({
+  rowless,
+  titleId,
+  children,
+}: {
+  readonly rowless: boolean;
+  readonly titleId: string;
+  readonly children: CopyNode;
+}) {
+  const o = t.live.overrides;
+  return rowless ? (
+    <Tile
+      className="tp-run-resets"
+      titleId={titleId}
+      title={o.title.short}
+      level={4}
+      end={<Why why={o.title.why} />}
+    >
+      {children}
+    </Tile>
+  ) : (
+    <div className="tp-run-resets">{children}</div>
+  );
+}
+
 /** What an open confirmation was opened for: one override, or all of them (RL2). */
 type Asking =
   | { readonly kind: 'one'; readonly target: string | null }
@@ -456,15 +511,22 @@ type Asking =
 
 /**
  * F6-11 RL1 and RL2 (spec F-060, RUN-15): this battle's overrides, each with "Use the battle's
- * starting value", and with two or more a reset of all of them in one request, each behind a
- * confirmation that says what that value is relative to.
+ * starting value" in its own routine's row (one with no row is listed here), and with two or
+ * more a reset of all of them in one request, each behind a confirmation that says what that
+ * value is relative to.
  */
 function LiveResets({
   resets,
   resetAll,
+  rows,
+  children,
 }: {
   readonly resets: readonly LiveResetVM[];
   readonly resetAll: LiveResetAllVM | null;
+  /** The routines that have a row of their own in the table. */
+  readonly rows: ReadonlySet<string>;
+  /** The routine table, whose rows show their own overrides. */
+  readonly children: CopyNode;
 }) {
   const { commands } = useDashboard();
   const own = useId();
@@ -484,60 +546,59 @@ function LiveResets({
       ? resetAll
       : null;
   if (asking !== null && current === null && all === null) setAsking(null);
-  if (resets.length === 0 && resetAll === null) return null;
   const o = t.live.overrides;
   const command = current?.reset.command ?? all?.reset.command ?? null;
+  const ask = (asked: LiveResetVM) => {
+    setAsking({ kind: 'one', target: asked.target });
+  };
+  const rowless = resets.filter((item) => !rows.has(item.routine));
   return (
-    <Tile
-      className="tp-run-resets"
-      titleId={titleId}
-      title={o.title.short}
-      level={4}
-      end={<Why why={o.title.why} />}
-    >
-      <ul className="tp-run-resets__list">
-        {resets.map((item) => (
-          <ResetRow
-            key={item.path}
-            item={item}
-            onAsk={(asked) => {
-              setAsking({ kind: 'one', target: asked.target });
-            }}
-          />
-        ))}
-      </ul>
-      {resetAll === null ? null : (
-        <div className="tp-run-reset tp-run-reset--all" data-reset-all="true">
-          {/* The undo-all names its items in its confirmation (one may have no row above). */}
-          {resetAll.reset.enabled ? (
-            <Button
-              tier="quiet"
-              label={o.resetAll(resetAll.items.length)}
-              focusKey="reset:all"
-              onClick={() => {
-                setAsking({ kind: 'all', target: resetAll.target });
-              }}
-            />
-          ) : (
-            <>
-              <Button
-                tier="quiet"
-                label={o.resetAll(resetAll.items.length)}
-                focusKey="reset:all"
-                busy={resetAll.reset.sending}
-                disabled
-                reasonId={`${own}-all-reason`}
-                onClick={() => undefined}
-              />
-              <span id={`${own}-all-reason`} className="tp-reason">
-                {
-                  ownOr(t.reasons, resetAll.reset.reason ?? 'no_changes', t.reasons.no_changes)
-                    .short
-                }
-              </span>
-            </>
+    <>
+      <ResetAsk.Provider value={ask}>{children}</ResetAsk.Provider>
+      {rowless.length === 0 && resetAll === null ? null : (
+        <ResetsGroup rowless={rowless.length > 0} titleId={titleId}>
+          {rowless.length === 0 ? null : (
+            <ul className="tp-run-resets__list">
+              {rowless.map((item) => (
+                <ResetRow key={item.path} item={item} onAsk={ask} />
+              ))}
+            </ul>
           )}
-        </div>
+          {resetAll === null ? null : (
+            <div className="tp-run-reset tp-run-reset--all" data-reset-all="true">
+              {/* The undo-all names its items in its confirmation (one may have no row above). */}
+              {resetAll.reset.enabled ? (
+                <Button
+                  tier="quiet"
+                  label={o.resetAll(resetAll.items.length)}
+                  focusKey="reset:all"
+                  onClick={() => {
+                    setAsking({ kind: 'all', target: resetAll.target });
+                  }}
+                />
+              ) : (
+                <>
+                  <Button
+                    tier="quiet"
+                    label={o.resetAll(resetAll.items.length)}
+                    focusKey="reset:all"
+                    busy={resetAll.reset.sending}
+                    disabled
+                    reasonId={`${own}-all-reason`}
+                    onClick={() => undefined}
+                  />
+                  <span id={`${own}-all-reason`} className="tp-reason">
+                    {
+                      ownOr(t.reasons, resetAll.reset.reason ?? 'no_changes', t.reasons.no_changes)
+                        .short
+                    }
+                  </span>
+                </>
+              )}
+              {rowless.length > 0 ? null : <Why why={o.title.why} />}
+            </div>
+          )}
+        </ResetsGroup>
       )}
       <ConfirmDialog
         open={asking !== null}
@@ -573,7 +634,7 @@ function LiveResets({
             void commands.resetLive(command);
         }}
       />
-    </Tile>
+    </>
   );
 }
 
@@ -603,6 +664,36 @@ export function RunEditor<C>({
   const command = save.command;
   const reasons: Readonly<Record<string, CopyEntry>> = t.reasons;
   const described = editor.labels === 'descriptor';
+  const resetsOf = (routines: readonly string[]) =>
+    live ? editor.resets.filter((item) => routines.includes(item.routine)) : [];
+  const switches = editor.groups.filter(switchOnly);
+  const rows = (
+    <ul className="tp-run-rows">
+      {editor.groups
+        .filter((group) => !switchOnly(group))
+        .map((group) => (
+          <RoutineRow
+            key={group.routine}
+            group={group}
+            scope={editor.scope}
+            live={live}
+            described={described}
+            resets={resetsOf([group.routine])}
+          />
+        ))}
+      {editor.unaddressable.map((item) => (
+        <UnaddressableRow key={`${item.id}@${item.instance}`} item={item} />
+      ))}
+      {switches.length > 0 ? (
+        <SwitchRow
+          groups={switches}
+          scope={editor.scope}
+          live={live}
+          resets={resetsOf(switches.map((group) => group.routine))}
+        />
+      ) : null}
+    </ul>
+  );
   return (
     <div
       className="tp-run-editor"
@@ -618,26 +709,17 @@ export function RunEditor<C>({
           ))}
         </div>
       )}
-      <ul className="tp-run-rows">
-        {editor.groups
-          .filter((group) => !switchOnly(group))
-          .map((group) => (
-            <RoutineRow
-              key={group.routine}
-              group={group}
-              scope={editor.scope}
-              live={live}
-              described={described}
-            />
-          ))}
-        {editor.unaddressable.map((item) => (
-          <UnaddressableRow key={`${item.id}@${item.instance}`} item={item} />
-        ))}
-        {editor.groups.some(switchOnly) ? (
-          <SwitchRow groups={editor.groups.filter(switchOnly)} scope={editor.scope} live={live} />
-        ) : null}
-      </ul>
-      {live ? <LiveResets resets={editor.resets} resetAll={editor.resetAll} /> : null}
+      {live ? (
+        <LiveResets
+          resets={editor.resets}
+          resetAll={editor.resetAll}
+          rows={new Set(editor.groups.map((group) => group.routine))}
+        >
+          {rows}
+        </LiveResets>
+      ) : (
+        rows
+      )}
       <div className="tp-run-editor__actions">
         <ActionRow
           reason={

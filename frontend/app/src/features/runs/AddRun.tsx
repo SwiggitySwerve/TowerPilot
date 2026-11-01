@@ -12,7 +12,7 @@ import './addRun.css';
 const t = copy.runsAdd;
 
 /** RL4 displays the selector's choices. Core owns allowed options and save eligibility. */
-export function AddRun() {
+export function AddRun({ openFirst = false }: { readonly openFirst?: boolean }) {
   const vm = useView(selectRunsAdd);
   const { commands } = useDashboard();
   const reasonId = useId();
@@ -23,7 +23,7 @@ export function AddRun() {
   };
   return (
     <div className="tp-run-add" data-run-add="true">
-      <Disclosure label={t.title.short} focusKey="run-add:open">
+      <Disclosure label={t.title.short} focusKey="run-add:open" initiallyOpen={openFirst}>
         <CopyLine entry={t.scope} variant="intro" />
         <div className="tp-run-add__fields">
           <label>
