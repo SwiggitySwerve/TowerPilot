@@ -31,6 +31,7 @@ LADDER = ["epic_relic", "blue_relic", "chip", "background", "banner",
 INTERCHANGEABLE = frozenset({'chip', 'shards'})
 MAX_PAGES = 8
 IDENTITY_MATCH = .98
+SOLD_OUT_TEMPLATE = "buttons/store_sold_out.png"
 
 
 @dataclass(frozen=True, eq=False)
@@ -114,9 +115,8 @@ def _price_buttons(frame):
     return out
 
 
-def _owned_spots(frame):
-    tpl = cv2.cvtColor(detect._tpl("buttons/store_owned.png"),
-                       cv2.COLOR_BGR2GRAY)
+def _label_spots(frame, template):
+    tpl = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     res = cv2.matchTemplate(gray, tpl, cv2.TM_CCOEFF_NORMED)
     ys, xs = np.where(res > 0.8)
@@ -127,6 +127,26 @@ def _owned_spots(frame):
         if all(abs(cx - a) > 60 or abs(cy - b) > 40 for a, b in spots):
             spots.append((cx, cy))
     return spots
+
+
+def _owned_spots(frame):
+    return _label_spots(frame, detect._tpl("buttons/store_owned.png"))
+
+
+def _sold_out_template():
+    """The player's own SOLD OUT cut, or None until they have made one."""
+    try:
+        return detect._tpl(SOLD_OUT_TEMPLATE)
+    except detect.TemplateMissing:
+        return None
+
+
+def _sold_out_spots(frame):
+    """SOLD OUT labels. Without the template the state is simply not
+    recognized: no label is guessed, nothing is written or logged, and a card
+    showing it keeps refusing the catalogue as an unrecognized state."""
+    template = _sold_out_template()
+    return [] if template is None else _label_spots(frame, template)
 
 
 def _header_ys(frame):
@@ -227,11 +247,13 @@ def scan_frame(frame, page=0, *, bounds=None):
     controls = [('price', x, y, price, scale)
                 for x, y, price, scale in _price_buttons(frame)]
     controls += [('owned', x, y, None, None) for x, y in _owned_spots(frame)]
+    controls += [('sold_out', x, y, None, None) for x, y in _sold_out_spots(frame)]
     panels = _card_rects(frame, bounds)
-    # Both states use the same exclusion band, so a price -> OWNED transition
-    # cannot change the pixels used as the item's identity.
+    # Every state uses the same exclusion band, so a price -> OWNED / SOLD OUT
+    # transition cannot change the pixels used as the item's identity.
     control_height = max(detect._tpl('icons/guild_coin.png').shape[0],
-                         detect._tpl('buttons/store_owned.png').shape[0])
+                         detect._tpl('buttons/store_owned.png').shape[0],
+                         *(t.shape[0] for t in [_sold_out_template()] if t is not None))
     found = []
     partial = []
 
@@ -271,7 +293,7 @@ def scan_frame(frame, page=0, *, bounds=None):
             raise StoreEvidenceError('multiple purchase/owned controls in one card')
         grouped[rect] = (status, cx, cy, price, scale)
     if len(grouped) != len(panels):
-        raise StoreEvidenceError('complete card has no recognized price/owned state')
+        raise StoreEvidenceError('complete card has no recognized price/owned/sold-out state')
     for rect, (status, cx, cy, price, scale) in grouped.items():
         x, y, w, h = rect
         # The control must occupy the lower part of the observed panel. Its
@@ -418,11 +440,17 @@ def _walk(guard, frame):
     """
     top, bottom = _content_band(frame)
     mosaic = frame[:bottom].copy()
+    prior = []
     for page in range(MAX_PAGES):
         scanned = scan_frame(frame, page)
         observed = scanned.items
         if any(_same_item(a, b) for n, a in enumerate(observed) for b in observed[n+1:]):
             raise StoreEvidenceError('two visible cards have indistinguishable identities')
+        # A control is far too small to move the whole-body difference below, so
+        # a card seen in both views must read the same state in each.
+        if any(_same_item(a, b) and a.status != b.status for a in prior for b in observed):
+            raise StoreEvidenceError('a store card changed state during scan')
+        prior = observed
         previous = frame
         guard.swipe(frame, 540, 1900, 540, 700, 400,
                     screen='guild_store', reason='store scroll')

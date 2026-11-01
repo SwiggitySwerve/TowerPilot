@@ -38,7 +38,14 @@ def world(monkeypatch, tmp_path):
     templates = {rel: rng.integers(0, 180, (8, 16, 3), dtype=np.uint8)
                  for rel in [*store._HEADERS.values(), *store._TITLES.values(),
                              'icons/guild_coin.png', 'buttons/store_owned.png']}
-    monkeypatch.setattr(store.detect, '_tpl', lambda rel: templates[rel])
+
+    def tpl(rel):
+        # Like the real loader: a template the account never captured is missing.
+        if rel not in templates:
+            raise store.detect.TemplateMissing(f'missing template {rel}')
+        return templates[rel]
+
+    monkeypatch.setattr(store.detect, '_tpl', tpl)
     monkeypatch.setattr(store, '_content_band', lambda frame: (120, 920))
     names = {1: 'battle_menu', 2: 'guild', 3: 'guild_store', 4: 'reward', 5: 'battle', 6: 'cards'}
     codes = {v: k for k, v in names.items()}
@@ -84,6 +91,14 @@ def world(monkeypatch, tmp_path):
                 rel = 'icons/guild_coin.png' if card['status'] == 'price' else 'buttons/store_owned.png'
                 put(image, templates[rel], cx, cy)
                 image[cy-8, cx, 2] = card['price']
+            elif card['status'] == 'sold_out':
+                # Drawn whether or not the account has captured its template.
+                put(image, state.sold_out_label, cx, cy)
+            elif card['status'] == 'both':
+                put(image, templates['buttons/store_owned.png'], cx-50, cy)
+                put(image, state.sold_out_label, cx+50, cy)
+            elif card['status'] == 'glyph':
+                put(image, state.unknown_label, cx, cy)
         return image
 
     def render():
@@ -165,6 +180,11 @@ def world(monkeypatch, tmp_path):
 
     monkeypatch.setattr(act, 'tap', tap)
     monkeypatch.setattr(act, 'swipe', swipe)
+    # Separate generators keep every pre-existing synthetic pixel unchanged.
+    state.sold_out_label = np.random.default_rng(23).integers(0, 180, (8, 24, 3), dtype=np.uint8)
+    state.unknown_label = np.random.default_rng(24).integers(0, 180, (8, 24, 3), dtype=np.uint8)
+    state.capture_sold_out = lambda: templates.update(
+        {'buttons/store_sold_out.png': state.sold_out_label.copy()})
     state.render = render
     state.content = content
     state.templates = templates
@@ -485,3 +505,98 @@ def test_card_crossing_a_section_boundary_cannot_certify_higher_priority_absence
     mosaic[120:2020] = world.content()
     with pytest.raises(store.StoreEvidenceError):
         store._catalogue(mosaic, 120)
+
+
+# ---------------------------------------------------------------- SOLD OUT
+
+def sold_out_relic(world):
+    """The only relic is sold out, so the ladder must fall through to the chips."""
+    world.target['status'] = 'sold_out'
+    world.target = world.cards[3]
+
+
+def test_uncaptured_sold_out_template_keeps_todays_refusal(world):
+    sold_out_relic(world)
+    run(world)
+    assert purchases(world) == []
+    assert 'no recognized' in events(world, 'store_refused')[0]['reason']
+    assert not events(world, 'template_missing')
+
+
+def test_sold_out_spots_without_a_template_are_simply_absent(world):
+    world.kind = 'guild_store'
+    world.cards[2]['status'] = 'sold_out'
+    assert store._sold_out_spots(world.render()) == []
+    assert all(item.status != 'sold_out' for item in store.scan_frame(world.render(), 0).items)
+
+
+def test_sold_out_card_is_positive_identity_bound_and_not_owned(world):
+    world.capture_sold_out()
+    world.kind = 'guild_store'
+    world.offset = 800
+    before = {i.category: i for i in store.scan_frame(world.render()).items}['epic_relic']
+    world.cards[2]['status'] = 'sold_out'
+    after = {i.category: i for i in store.scan_frame(world.render()).items}['epic_relic']
+    assert (before.status, after.status) == ('price', 'sold_out')
+    assert after.price is None
+    # Same exclusion band: a price -> SOLD OUT transition keeps the card identity.
+    assert store._same_item(before, after)
+
+
+def test_sold_out_higher_priority_card_does_not_block_the_ladder(world):
+    world.capture_sold_out()
+    sold_out_relic(world)
+    run(world)
+    assert world.bought is world.cards[3]
+    assert len(purchases(world)) == 1
+    assert events(world, 'store_buy')[0]['proof'] == 'same_item_owned_and_exact_debit'
+    assert not events(world, 'store_refused')
+
+
+def test_sold_out_card_is_never_the_purchase_target(world):
+    world.capture_sold_out()
+    for card in world.cards:
+        card['status'] = 'sold_out'
+    world.cards[3]['status'] = 'price'
+    world.target = world.cards[3]
+    run(world)
+    assert world.bought is world.cards[3]
+    assert [row[-1] for row in purchases(world)] == ['store_buy_chip']
+
+
+def test_unknown_glyph_still_refuses_the_catalogue_with_sold_out_known(world):
+    world.capture_sold_out()
+    world.target['status'] = 'glyph'  # a label that is neither price, OWNED nor SOLD OUT
+    run(world)
+    assert purchases(world) == []
+    assert 'no recognized' in events(world, 'store_refused')[0]['reason']
+
+
+def test_sold_out_beside_an_owned_control_is_ambiguous(world):
+    world.capture_sold_out()
+    sold_out_relic(world)
+    world.cards[3]['status'] = 'both'
+    run(world)
+    assert purchases(world) == []
+    assert 'multiple' in events(world, 'store_refused')[0]['reason']
+
+
+def test_target_becoming_sold_out_before_purchase_is_not_bought(world):
+    world.capture_sold_out()
+    world.on_relocate = lambda: world.target.update(status='sold_out')
+    run(world)
+    assert purchases(world) == []
+    assert 'availability' in events(world, 'store_refused')[0]['reason']
+
+
+def test_card_changing_state_while_scrolling_refuses_buying(world):
+    world.capture_sold_out()
+    chip = world.cards[3]
+
+    def flip():
+        chip['status'] = 'sold_out' if chip['status'] == 'price' else 'price'
+
+    world.mutate = flip
+    run(world)
+    assert purchases(world) == []
+    assert 'changed state' in events(world, 'store_refused')[0]['reason']

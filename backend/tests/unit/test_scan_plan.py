@@ -1,6 +1,7 @@
 """Image-free setup: coverage, isolation and no-input startup guards."""
 
 import paths as test_paths
+from pathlib import Path
 import cv2
 import numpy as np
 from player import accounts, scan_plan
@@ -112,3 +113,17 @@ def test_boot_finishes_without_waiting_for_missing_game_images(tmp_path, monkeyp
     assert events[-1]["kind"] == "boot_done"
     assert events[-1]["calibration_required"] and events[-1]["ok"]
     assert not any(e.get("stage") == "screen" for e in events)
+
+
+def test_sold_out_label_is_a_text_only_store_target_never_auto_written():
+    from player import template_docs
+    from player.bootstrap_layout import writable_targets
+    rel = "buttons/store_sold_out.png"
+    assert rel in accounts.generic_names()
+    assert scan_plan.step_for(rel) == "store"
+    assert template_docs.TEXT[rel] == "SOLD OUT"
+    row = next(r for r in scan_plan.targets() if r["rel"] == rel)
+    assert row["reference_size"]
+    # Only a person's cropper may cut it; no detector or setup flow writes it.
+    assert rel not in writable_targets()
+    assert not any(Path(__file__).parents[2].joinpath("player").glob("**/store_sold_out.png"))
