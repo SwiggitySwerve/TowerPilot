@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_ROUTE, hrefFor, matchHash } from '../../../src/app/router.ts';
+import { DEFAULT_ROUTE, hrefFor, matchHash, navigationPage } from '../../../src/app/router.ts';
 
 describe('matchHash', () => {
   it.each(['', '#', '#/'])('opens the default page for %j', (hash) => {
@@ -8,6 +8,13 @@ describe('matchHash', () => {
 
   it.each(['#dashboard', '#/dashboard'])('matches %s', (hash) => {
     expect(matchHash(hash)).toEqual({ kind: 'page', id: 'dashboard', target: null });
+  });
+
+  it('opens the item gallery by address and keeps it out of the navigation', () => {
+    expect(matchHash('#gallery')).toEqual({ kind: 'page', id: 'gallery', target: null });
+    expect(matchHash('#gallery/extra')).toEqual({ kind: 'not_found', hash: '#gallery/extra' });
+    expect(navigationPage('gallery')).toBeNull();
+    expect(navigationPage('runs')).toBe('runs');
   });
 
   it.each([

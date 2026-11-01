@@ -1,0 +1,414 @@
+/*
+ * The item family: chips, marked cells, the priority queue, record rows, status dots
+ * and compact fields (ported from the retired dashboard's workshop chips, .know-grid
+ * and .rowline). A Region is the outlined container; `.tp-item` is the one sanctioned
+ * outlined item inside it, and only src/ui draws one. Colours are tokens; glyphs are
+ * inline SVG, never CSS text.
+ */
+
+/* The item surface: an edge in the item's section colour and the inner fill. */
+.tp-item {
+  --tp-item-edge: var(--tp-color-border);
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  list-style: none;
+  border: 1px solid var(--tp-item-edge);
+  border-radius: var(--tp-radius-item);
+  background: var(--tp-color-surface-inner);
+  color: var(--tp-color-text);
+}
+.tp-item[data-tone='attack'] {
+  --tp-item-edge: var(--tp-color-section-attack);
+}
+.tp-item[data-tone='defense'] {
+  --tp-item-edge: var(--tp-color-section-defense);
+}
+.tp-item[data-tone='utility'] {
+  --tp-item-edge: var(--tp-color-section-utility);
+}
+.tp-item[data-tone='neutral'] {
+  --tp-item-edge: var(--tp-color-section-neutral);
+}
+.tp-item[data-tone='ok'] {
+  --tp-item-edge: var(--tp-color-border);
+  --tp-item-tint: var(--tp-color-ok);
+}
+/* On: the section colour tints the fill, 20% into the inner surface. */
+.tp-item[data-on='true'] {
+  border-color: var(--tp-item-edge);
+  background: color-mix(
+    in srgb,
+    var(--tp-item-tint, var(--tp-item-edge)) 20%,
+    var(--tp-color-surface-inner)
+  );
+}
+.tp-item[data-tone='ok'][data-on='true'] {
+  border-color: color-mix(in srgb, var(--tp-color-ok) 45%, transparent);
+}
+/* Invalid is an edge you can see and a mark you can read; the mark is in the markup. */
+.tp-item[data-invalid='true'] {
+  --tp-item-edge: var(--tp-color-bad);
+  box-shadow: inset 0 0 0 1px var(--tp-color-bad);
+}
+
+/* Marks and glyphs. */
+.tp-glyph {
+  display: block;
+  inline-size: 0.9em;
+  block-size: 0.9em;
+  flex: none;
+}
+.tp-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-inline-size: 1.1em;
+  color: var(--tp-color-text-muted);
+}
+.tp-mark[data-mark='check'] {
+  color: var(--tp-color-ok);
+}
+.tp-mark[data-mark='star'] {
+  color: var(--tp-color-mark-mastered);
+}
+.tp-mark[data-mark='warning'] {
+  color: var(--tp-color-bad);
+}
+
+/* The grid: as many equal columns as fit the container. */
+.tp-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--tp-chip-min-width), 100%), 1fr));
+  grid-auto-rows: var(--tp-chip-height);
+  gap: var(--tp-chip-gap);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tp-chip-grid[data-size='cell'] {
+  --tp-chip-min-width: 13rem;
+  grid-auto-rows: auto;
+  gap: 0.3rem;
+}
+
+/* Toggle chip: a toggle button, and its inline fields only while it is on. */
+.tp-toggle-chip {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.2rem;
+  block-size: var(--tp-chip-height);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+}
+.tp-toggle-chip[data-disabled='true'] {
+  color: var(--tp-color-text-muted);
+}
+.tp-toggle-chip[draggable='true'] {
+  cursor: grab;
+}
+.tp-toggle-chip__button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  align-self: stretch;
+  inline-size: 100%;
+  min-width: 0;
+  min-height: 24px;
+  margin: 0;
+  padding: 0 0.2rem 0 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1.2;
+  text-align: start;
+  cursor: pointer;
+}
+.tp-toggle-chip[data-disabled='true'] .tp-toggle-chip__button {
+  cursor: not-allowed;
+}
+.tp-toggle-chip__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.tp-toggle-chip__marks {
+  display: flex;
+  flex: none;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+}
+.tp-toggle-chip__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* A number field inside a chip: compact, and a 44 px target when touch or narrow. */
+.tp-chip-field {
+  inline-size: 3.2rem;
+  min-width: 0;
+  block-size: var(--tp-chip-field-height);
+  min-block-size: 24px;
+  margin: 0;
+  padding: 0.1rem 0.25rem;
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: 5px;
+  background: var(--tp-color-surface-strong);
+  color: var(--tp-color-text);
+  font-family: var(--tp-font-sans);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.tp-chip-field::placeholder {
+  color: var(--tp-color-text-muted);
+  opacity: 1;
+}
+.tp-chip-field[aria-invalid='true'] {
+  border-color: var(--tp-color-bad);
+  box-shadow: inset 0 0 0 1px var(--tp-color-bad);
+}
+
+/* Mark cell: a one-line name with the check and star in two fixed slots. */
+.tp-mark-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.83rem;
+}
+.tp-mark-chip__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tp-mark-chip__marks {
+  display: grid;
+  flex: none;
+  grid-template-columns: repeat(2, 1.1em);
+  gap: 0.25rem;
+  text-align: center;
+}
+.tp-mark-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  list-style: none;
+}
+.tp-mark-legend > li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Priority queue: numbered entries of one fixed height, a dashed end slot for drops. */
+.tp-queue {
+  display: grid;
+  grid-auto-rows: var(--tp-queue-item-height);
+  gap: var(--tp-chip-gap);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tp-queue[data-drag-over='true'] {
+  outline: 1px dashed var(--tp-color-focus);
+  outline-offset: 4px;
+}
+.tp-queue__item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.8rem;
+}
+.tp-queue__item[draggable='true'] {
+  cursor: grab;
+}
+.tp-queue__item[data-drop-target='true'] {
+  border-color: var(--tp-color-focus);
+  box-shadow: inset 3px 0 var(--tp-color-focus);
+}
+.tp-queue__grip {
+  display: inline-flex;
+  flex: none;
+  color: var(--tp-color-text-muted);
+}
+.tp-queue__position {
+  flex: none;
+  min-inline-size: 1.4em;
+  color: var(--tp-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+.tp-queue__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.tp-queue__end {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.15rem 0.3rem;
+  border: 1px dashed var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+  list-style: none;
+  text-align: center;
+}
+.tp-queue__end[data-drop-target='true'] {
+  border-color: var(--tp-color-focus);
+  color: var(--tp-color-text);
+}
+/* Round icon buttons: 24 px, 44 px when touch or narrow. */
+.tp-item-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: var(--tp-item-button-size);
+  block-size: var(--tp-item-button-size);
+  min-inline-size: 24px;
+  min-block-size: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: 50%;
+  background: var(--tp-color-surface-strong);
+  color: var(--tp-color-text-strong);
+  cursor: pointer;
+}
+.tp-item-button[aria-disabled='true'] {
+  border-color: color-mix(in srgb, var(--tp-color-border-active) 55%, transparent);
+  background: transparent;
+  color: var(--tp-color-text-muted);
+  cursor: not-allowed;
+}
+
+/* Record row: name, tag, summary, who uses it, and the actions at the end. */
+.tp-record-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.5rem;
+  min-width: 0;
+}
+.tp-record-row__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tp-record-row__summary {
+  min-width: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  overflow-wrap: anywhere;
+}
+.tp-record-row__used {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+}
+.tp-record-row__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-inline-start: auto;
+}
+
+/* Status dot: shape as well as colour. */
+.tp-dot {
+  display: inline-block;
+  inline-size: 0.6rem;
+  block-size: 0.6rem;
+  margin-inline-end: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: baseline;
+}
+.tp-dot[data-tone='ok'] {
+  color: var(--tp-color-ok);
+  box-shadow: 0 0 8px currentColor;
+}
+.tp-dot[data-tone='warn'] {
+  color: var(--tp-color-warn);
+  border-radius: 1px;
+  rotate: 45deg;
+}
+.tp-dot[data-tone='bad'] {
+  color: var(--tp-color-bad);
+  border-radius: 1px;
+  box-shadow: 0 0 8px currentColor;
+}
+.tp-dot[data-tone='unknown'] {
+  color: var(--tp-color-quiet);
+  background: transparent;
+  border: 2px solid currentColor;
+}
+
+/* Compact field: label and input inline, saves on blur or Enter. */
+.tp-compact-field {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.5rem;
+  min-width: 0;
+}
+.tp-compact-field__label {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-compact-field__input {
+  inline-size: var(--tp-compact-field-width, 8rem);
+}
+.tp-compact-field[data-state='pending'] .tp-compact-field__input {
+  color: var(--tp-color-text-muted);
+}
+.tp-compact-field__note {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+  overflow-wrap: anywhere;
+}
+.tp-compact-field__note[data-tone='bad'] {
+  color: var(--tp-color-bad);
+}
+
+/* Touch or narrow: every control of an item is a 44 px target (spec 8.4). */
+@media (max-width: 600px), (pointer: coarse) {
+  .tp-toggle-chip__button {
+    min-height: var(--tp-control-height-touch);
+  }
+  .tp-chip-field {
+    min-inline-size: var(--tp-control-height-touch);
+    min-block-size: var(--tp-control-height-touch);
+  }
+  .tp-item-button {
+    min-inline-size: var(--tp-control-height-touch);
+    min-block-size: var(--tp-control-height-touch);
+  }
+}

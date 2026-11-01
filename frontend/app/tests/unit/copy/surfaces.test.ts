@@ -7,9 +7,11 @@ import { AtRule, Declaration, parse, type Rule } from 'postcss';
 import { describe, expect, it } from 'vitest';
 
 /**
- * One surface grammar (council-tiles synthesis, commit 0): a Region is the only
- * outlined surface, a tile is a borderless fill, and a tile inside a tile
- * collapses to a divider. src/ui/ owns every surface; a stylesheet anywhere else
+ * One surface grammar (council-tiles synthesis, commit 0): a Region is the outlined
+ * container, a tile is a borderless fill, and a tile inside a tile collapses to a
+ * divider. The one other outlined thing is the src/ui item family (`.tp-item` in
+ * items.css: chips, marked cells, queue entries), the sanctioned outlined item inside a
+ * Region. src/ui/ owns every surface; a stylesheet anywhere else
  * that gives one rule both an edge (a border or a radius) and a surface fill
  * (`var(--tp-color-surface*)`) is drawing its own card.
  *
@@ -119,6 +121,27 @@ describe('one surface grammar', () => {
     const names = new Set(outside.map(([name]) => name));
     expect(Object.keys(ALLOWLIST).filter((name) => !names.has(name))).toEqual([]);
     expect(Object.keys(ALLOWLIST).filter((name) => ALLOWLIST[name]?.length === 0)).toEqual([]);
+  });
+
+  it('src/ui/items.css pins the outlined item surface: edge, radius and fill', () => {
+    const rules = new Map<string, Map<string, string>>();
+    parse(readFileSync(path.join(UI, 'items.css'), 'utf8')).walkRules((rule) => {
+      const declarations = rules.get(ruleKey(rule)) ?? new Map<string, string>();
+      rule.walkDecls((declaration) => {
+        declarations.set(identifier(declaration.prop), declaration.value.trim());
+      });
+      rules.set(ruleKey(rule), declarations);
+    });
+    const item = rules.get('.tp-item');
+    expect(item?.get('border')).toBe('1px solid var(--tp-item-edge)');
+    expect(item?.get('border-radius')).toBe('var(--tp-radius-item)');
+    expect(item?.get('background')).toBe('var(--tp-color-surface-inner)');
+    // The only edge-plus-fill rules of the item family: the item and its two compact controls.
+    expect(surfaceRules(readFileSync(path.join(UI, 'items.css'), 'utf8')).sort()).toEqual([
+      '.tp-chip-field',
+      '.tp-item',
+      '.tp-item-button',
+    ]);
   });
 
   it('src/ui/ui.css keeps the grammar: an outlined Region, a borderless tile, a tile-in-tile divider', () => {

@@ -45,7 +45,7 @@ this machine and forwards GET and HEAD only.
 | `src/api/`      | The only code that talks to the server                                |
 | `src/store/`    | Store and selectors (`useSyncExternalStore`)                          |
 | `src/copy/`     | Every user-visible string, as `{short, why?}`                         |
-| `src/ui/`       | Design system: tokens, `Chip`, `Button`, `CopyLine`, `Why`            |
+| `src/ui/`       | Design system: tokens, `Chip`, `Button`, `CopyLine`, `Why`, the item family (`ToggleChip`, `ChipGrid`, `PriorityQueue`, `RecordRow`, ...), shown in `#gallery` |
 | `src/features/` | One folder per page                                                   |
 | `src/app/`      | Shell, hash router, error boundary, live region, wiring               |
 

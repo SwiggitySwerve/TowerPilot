@@ -65,6 +65,10 @@
   font-size: var(--tp-font-size-12);
   white-space: nowrap;
 }
+.tp-pill[data-tone='ok'] {
+  border-color: color-mix(in srgb, var(--tp-color-ok) 45%, transparent);
+  background: color-mix(in srgb, var(--tp-color-ok) 20%, var(--tp-color-surface-strong));
+}
 .tp-pill__prefix,
 .tp-pill__age {
   color: var(--tp-color-text-muted);
@@ -529,6 +533,11 @@ fieldset.tp-tile > .tp-tile__end + * {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+.tp-shown--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--tp-chip-min-width), 100%), 1fr));
+  gap: var(--tp-space-2);
 }
 .tp-shown-list > .tp-disclosure {
   margin-block-start: var(--tp-space-2);

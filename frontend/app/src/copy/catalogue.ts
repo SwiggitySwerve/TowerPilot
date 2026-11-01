@@ -21,6 +21,8 @@ import { runsAdd } from './runsAdd.ts';
 import { runEntry } from './runEntry.ts';
 import { history } from './history.ts';
 import { helpTip } from './helpTip.ts';
+import { items } from './items.ts';
+import { gallery } from './gallery.ts';
 import { runtime } from './runtime.ts';
 import { runtimeConfig } from './runtimeConfig.ts';
 import { shopping } from './shopping.ts';
@@ -73,6 +75,8 @@ export const copy = {
   shoppingSaved,
   history,
   helpTip,
+  items,
+  gallery,
   runtime,
   runtimeConfig,
   recognition,
