@@ -339,6 +339,16 @@ export function includeUpgrade(base: QueueBase, draft: QueueDraft, upgrade: stri
     : included;
 }
 
+/**
+ * Include an upgrade at the end of the queue (a drop on the queue): unlike a click, a
+ * left-out upgrade does not return to its old place but goes where it was dropped.
+ */
+export function appendUpgrade(base: QueueBase, draft: QueueDraft, upgrade: string): QueueDraft {
+  const included = includeUpgrade(base, draft, upgrade);
+  const last = orderOf(baseOf(base, included), included).length - 1;
+  return moveUpgradeTo(base, included, upgrade, last) ?? included;
+}
+
 /** Leave an upgrade out: it stays in the queue, switched off, with its limits and place. */
 export function leaveOutUpgrade(draft: QueueDraft, upgrade: string): QueueDraft {
   return { ...draft, [entryKey(upgrade, 'enabled')]: false };

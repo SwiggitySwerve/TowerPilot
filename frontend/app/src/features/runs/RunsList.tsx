@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyText } from '../../copy/text.ts';
+import { recognitionHref } from '../../core/recognition.ts';
 import { selectRunsPage, type RunChoiceVM } from '../../store/selectors/runs.ts';
 import { Button } from '../../ui/Button.tsx';
 import { KindTag } from '../../ui/Pill.tsx';
@@ -14,7 +15,6 @@ const t = copy.runs;
 const words = copy.dashboard.startNext;
 
 /** The Recognition page prepares runs; the list links there (the old Prepare button). */
-const RECOGNITION = '#recognition';
 
 const TONES: Readonly<Record<RunChoiceVM['readiness'], DotTone>> = {
   ready: 'ok',
@@ -64,10 +64,8 @@ function RunRow({ run, selected }: { readonly run: RunChoiceVM; readonly selecte
         <>
           {t.list.equipment.short}
           {t.list.space}
-          {run.asIs ? (
+          {run.asIs || run.loadout === null ? (
             t.list.currentEquipment.short
-          ) : run.loadout === null ? (
-            t.list.noEquipment.short
           ) : (
             <ServerValue kind="name" value={run.loadout} />
           )}
@@ -82,7 +80,7 @@ function RunRow({ run, selected }: { readonly run: RunChoiceVM; readonly selecte
             {readinessText(run)}
           </span>
           {run.readiness === 'ready' ? null : (
-            <a className="tp-button" data-tier="quiet" href={RECOGNITION}>
+            <a className="tp-button" data-tier="quiet" href={recognitionHref(run.key)}>
               {t.list.prepare.short}
             </a>
           )}

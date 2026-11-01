@@ -2,6 +2,7 @@ import type { CopyEntry } from '../../copy/text.ts';
 import { copy } from '../../copy/catalogue.ts';
 import {
   draftChanges,
+  appendUpgrade,
   includeUpgrade,
   leaveOutUpgrade,
   moveUpgradeTo,
@@ -213,6 +214,9 @@ export function SavedShopping() {
                 }}
                 onInclude={(upgrade) => {
                   stage(includeUpgrade(vm.base, vm.draft, upgrade));
+                }}
+                onAppend={(upgrade) => {
+                  stage(appendUpgrade(vm.base, vm.draft, upgrade));
                 }}
                 onLeaveOut={(upgrade) => {
                   stage(leaveOutUpgrade(vm.draft, upgrade));

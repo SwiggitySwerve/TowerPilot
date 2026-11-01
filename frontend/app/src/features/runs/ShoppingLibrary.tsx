@@ -4,6 +4,7 @@ import type { CopyEntry } from '../../copy/text.ts';
 import { pinLibrary } from '../../core/shoppingLibrary.ts';
 import {
   draftChanges,
+  appendUpgrade,
   includeUpgrade,
   leaveOutUpgrade,
   moveUpgradeTo,
@@ -102,6 +103,9 @@ function LibraryQueue({
       }}
       onInclude={(upgrade) => {
         onDraft(includeUpgrade(base, draft, upgrade));
+      }}
+      onAppend={(upgrade) => {
+        onDraft(appendUpgrade(base, draft, upgrade));
       }}
       onLeaveOut={(upgrade) => {
         onDraft(leaveOutUpgrade(draft, upgrade));

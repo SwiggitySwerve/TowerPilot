@@ -666,7 +666,9 @@ function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): S
         label: fromServer('name', own(run, 'label')),
         kind: text(own(run, 'kind')) ?? null,
         loadout: loadout === undefined || loadout === 'as_is' ? null : fromServer('name', loadout),
-        asIs: loadout === 'as_is',
+        // The compiled run sends `as_is` as null (playerprofile compile_preset): no loadout
+        // means nothing to equip, the run's current equipment.
+        asIs: loadout === undefined || loadout === 'as_is',
         tier: finite(own(run, 'tier')) ?? null,
         restartViaHome: own(run, 'restart_via_home') === true,
         readiness: ready.line,

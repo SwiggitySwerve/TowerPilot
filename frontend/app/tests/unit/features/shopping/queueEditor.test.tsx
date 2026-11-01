@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { own, ownPath } from '../../../../src/core/read.ts';
 import {
+  appendUpgrade,
   includeUpgrade,
   leaveOutUpgrade,
   moveUpgradeTo,
@@ -42,6 +43,9 @@ function Harness({ initial = {} }: { readonly initial?: QueueDraft }) {
       onInclude={(upgrade) => {
         setDraft((current) => includeUpgrade(BASE, current, upgrade));
       }}
+      onAppend={(upgrade) => {
+        setDraft((current) => appendUpgrade(BASE, current, upgrade));
+      }}
       onLeaveOut={(upgrade) => {
         setDraft((current) => leaveOutUpgrade(current, upgrade));
       }}
@@ -66,6 +70,14 @@ const chip = (grid: string, name: string) =>
   });
 
 describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', () => {
+  it('a drop puts a left-out upgrade at the end of the queue; a click puts it back in its place', () => {
+    const out = leaveOutUpgrade({}, 'damage');
+    const order = (draft: QueueDraft) =>
+      selectQueueEditor(BASE, draft).entries.map((entry) => entry.id);
+    expect(order(includeUpgrade(BASE, out, 'damage'))[0]).toBe('damage');
+    expect(order(appendUpgrade(BASE, out, 'damage')).at(-1)).toBe('damage');
+  });
+
   it('SQ6 named Up/Down keep focus on the moved entry, announce its position and stop at the ends', async () => {
     renderRegion(
       initialDashboardState(),
