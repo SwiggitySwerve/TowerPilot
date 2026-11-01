@@ -182,6 +182,27 @@ export const runs = {
     check: entry('Check saved values'),
     prepare: entry('Prepare runs on the Recognition page'),
   },
+  /** The list of every run: one record row each (the retired Runs tab's run cards). */
+  list: {
+    label: entry('Runs'),
+    edit: entry('Edit'),
+    editing: entry('Editing'),
+    prepare: entry('Prepare'),
+    equipment: entry('Equipment:'),
+    currentEquipment: entry('use current equipment'),
+    space: made(' '),
+    tier: (tier: number) => made(` · tier ${number(tier)}`),
+    restartViaHome: entry(' · restarts via Home'),
+    kinds: {
+      coin: entry('Coin run'),
+      shard: entry('Shard run'),
+      tournament: entry('Tournament run'),
+      /** The kinds the profile compiler knows (playerprofile _BUILTIN_KINDS); others read Other. */
+      uw_grant_quest: entry('UW grant quest'),
+      cycle_quest: entry('Cycle quest'),
+    },
+    otherKind: entry('Other run'),
+  },
   discard: entry('Discard'),
   readAge: (seconds: number) => made(`read ${durationText(seconds)} ago`),
   seconds: entry('s'),

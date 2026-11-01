@@ -339,9 +339,37 @@ export function includeUpgrade(base: QueueBase, draft: QueueDraft, upgrade: stri
     : included;
 }
 
+/**
+ * Include an upgrade at the end of the queue (a drop on the queue): unlike a click, a
+ * left-out upgrade does not return to its old place but goes where it was dropped.
+ */
+export function appendUpgrade(base: QueueBase, draft: QueueDraft, upgrade: string): QueueDraft {
+  const included = includeUpgrade(base, draft, upgrade);
+  const last = orderOf(baseOf(base, included), included).length - 1;
+  return moveUpgradeTo(base, included, upgrade, last) ?? included;
+}
+
 /** Leave an upgrade out: it stays in the queue, switched off, with its limits and place. */
 export function leaveOutUpgrade(draft: QueueDraft, upgrade: string): QueueDraft {
   return { ...draft, [entryKey(upgrade, 'enabled')]: false };
+}
+
+/**
+ * Move an upgrade to zero-based place `to` of the queue (the place it holds after the move);
+ * null when it is not queued or `to` is outside the queue. A drag moves any distance.
+ */
+export function moveUpgradeTo(
+  base: QueueBase,
+  draft: QueueDraft,
+  upgrade: string,
+  to: number,
+): QueueDraft | null {
+  const order = [...orderOf(baseOf(base, draft), draft)];
+  const from = order.indexOf(upgrade);
+  if (from < 0 || to < 0 || to >= order.length) return null;
+  order.splice(from, 1);
+  order.splice(to, 0, upgrade);
+  return withOrder(draft, order);
 }
 
 /** Move an upgrade one place up (-1) or down (1); null at either end. */
@@ -351,13 +379,8 @@ export function moveUpgrade(
   upgrade: string,
   step: -1 | 1,
 ): QueueDraft | null {
-  const order = [...orderOf(baseOf(base, draft), draft)];
-  const from = order.indexOf(upgrade);
-  const to = from + step;
-  if (from < 0 || to < 0 || to >= order.length) return null;
-  order.splice(from, 1);
-  order.splice(to, 0, upgrade);
-  return withOrder(draft, order);
+  const from = orderOf(baseOf(base, draft), draft).indexOf(upgrade);
+  return from < 0 ? null : moveUpgradeTo(base, draft, upgrade, from + step);
 }
 
 /**

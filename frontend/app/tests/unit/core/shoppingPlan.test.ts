@@ -7,6 +7,7 @@ import {
   leaveOutUpgrade,
   legacyConversion,
   moveUpgrade,
+  moveUpgradeTo,
   newQueue,
   planHolds,
   queuePlan,
@@ -166,6 +167,25 @@ describe('F6-12 core shopping plan (pages fixture shopping_queue)', () => {
     expect(moveUpgrade(P1, {}, 'health', 1)).toBeNull();
     const moved = moveUpgrade(P1, {}, 'damage', 1) ?? {};
     expect(reviewQueue(P1, moved).entries.map((entry) => entry.id)).toEqual(['health', 'damage']);
+  });
+
+  it('SQ6 a drag moves an upgrade to any place of the queue, and refuses a place outside it', () => {
+    const three = includeUpgrade(P1, {}, 'attack_speed');
+    const first = moveUpgradeTo(P1, three, 'attack_speed', 0) ?? {};
+    expect(reviewQueue(P1, first).entries.map((entry) => entry.id)).toEqual([
+      'attack_speed',
+      'damage',
+      'health',
+    ]);
+    const last = moveUpgradeTo(P1, first, 'attack_speed', 2) ?? {};
+    expect(reviewQueue(P1, last).entries.map((entry) => entry.id)).toEqual([
+      'damage',
+      'health',
+      'attack_speed',
+    ]);
+    expect(moveUpgradeTo(P1, three, 'attack_speed', 3)).toBeNull();
+    expect(moveUpgradeTo(P1, three, 'attack_speed', -1)).toBeNull();
+    expect(moveUpgradeTo(P1, three, 'range', 0)).toBeNull();
   });
 
   it('SQ2 a reviewed legacy conversion is staged with every warning; an unset reserve blocks it until typed', () => {

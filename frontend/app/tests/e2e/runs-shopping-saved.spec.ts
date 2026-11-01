@@ -11,7 +11,6 @@ import { contextFromConfig } from '../../src/api/context.ts';
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
 const root = (page: Page) => page.locator('[data-shopping-saved]');
-const row = (page: Page, id: string) => root(page).locator(`.tp-shop__entry[data-upgrade="${id}"]`);
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
 async function open(page: Page, scenario: string, width: number) {
   await page.setViewportSize({ width, height: 900 });
@@ -143,17 +142,21 @@ async function weighted(page: Page) {
   await fill(root(page).getByRole('textbox', { name: 'Cash reserve', exact: true }), '750.5');
   await root(page).getByLabel('Purchase pattern', { exact: true }).selectOption('weighted_split');
   await root(page).getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
-  await fill(row(page, 'damage').getByLabel('Tap attempts this battle', { exact: true }), '');
-  await fill(row(page, 'health').getByLabel('Weight', { exact: true }), '3');
-  await fill(row(page, 'health').getByLabel('Until wave (exclusive)', { exact: true }), '20');
-  const up = row(page, 'health').getByRole('button', { name: /^Move up/u });
+  await fill(
+    root(page).getByRole('spinbutton', { name: 'Tap attempts this battle: Damage', exact: true }),
+    '',
+  );
+  await fill(root(page).getByRole('spinbutton', { name: 'Weight: Health', exact: true }), '3');
+  await root(page).locator('details:not(:has(details)):has(.tp-shop__waves) > summary').click();
+  await fill(
+    root(page).getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true }),
+    '20',
+  );
+  const up = root(page).getByRole('button', { name: /^Move up.*Health/u });
   await up.focus();
   await page.keyboard.press('Enter');
-  await expect(up).toBeFocused();
-  await expect(root(page).locator('.tp-shop__entry').first()).toHaveAttribute(
-    'data-upgrade',
-    'health',
-  );
+  await expect(root(page).getByRole('button', { name: /^Move up.*Health/u })).toBeFocused();
+  await expect(root(page).locator('.tp-queue__item .tp-queue__name').first()).toHaveText('Health');
 }
 for (const width of [1360, 1054, 390]) {
   test(`SQ1 create queue at ${width}: choices, one exact Save, axe and targets`, async ({

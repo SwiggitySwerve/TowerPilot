@@ -32,17 +32,17 @@ async function weighted(page: Page) {
   await form.getByLabel('Cash reserve', { exact: true }).fill('750.5');
   await form.getByLabel('Purchase pattern', { exact: true }).selectOption('weighted_split');
   await form.getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
-  const health = form.locator('li[data-upgrade="health"]');
-  await health.getByLabel('Weight', { exact: true }).fill('3');
-  await health.getByLabel('Until wave (exclusive)', { exact: true }).fill('20');
+  await form.getByRole('spinbutton', { name: 'Weight: Health', exact: true }).fill('3');
+  await form.locator('details:not(:has(details)):has(.tp-shop__waves) > summary').click();
   await form
-    .locator('li[data-upgrade="damage"]')
-    .getByLabel('Tap attempts this battle', { exact: true })
+    .getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true })
+    .fill('20');
+  await form
+    .getByRole('spinbutton', { name: 'Tap attempts this battle: Damage', exact: true })
     .fill('');
-  const up = health.getByRole('button', { name: /Move up/ });
-  await up.focus();
+  await form.getByRole('button', { name: /Move up.*Health/ }).focus();
   await page.keyboard.press('Enter');
-  await expect(up).toBeFocused();
+  await expect(form.getByRole('button', { name: /Move up.*Health/ })).toBeFocused();
   return form;
 }
 async function check(page: Page, width: number, state: string, box: Locator = library(page)) {

@@ -2,7 +2,8 @@ import type { CopyText } from '../copy/text.ts';
 import './items.css';
 
 /** The marks and handles of the item primitives, drawn in code (no image, no CSS text). */
-export type GlyphKind = 'check' | 'ring' | 'star' | 'question' | 'warning' | 'grip' | 'up' | 'down';
+export type GlyphKind =
+  'check' | 'ring' | 'star' | 'question' | 'warning' | 'grip' | 'up' | 'down' | 'ban';
 
 /** One glyph, hidden from assistive technology: whoever uses it names its meaning in text. */
 export function Glyph({ kind }: { readonly kind: GlyphKind }) {
@@ -71,6 +72,13 @@ export function Glyph({ kind }: { readonly kind: GlyphKind }) {
           <circle cx="8" cy="6" r="1" fill="currentColor" />
           <circle cx="4" cy="9.5" r="1" fill="currentColor" />
           <circle cx="8" cy="9.5" r="1" fill="currentColor" />
+        </svg>
+      );
+    case 'ban':
+      return (
+        <svg {...common}>
+          <circle cx="6" cy="6" r="4.2" fill="none" stroke="currentColor" strokeWidth="1.3" />
+          <path d="M3 9 L9 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
         </svg>
       );
     case 'up':

@@ -1,9 +1,10 @@
 import { copy } from '../../copy/catalogue.ts';
 import {
   draftChanges,
+  appendUpgrade,
   includeUpgrade,
   leaveOutUpgrade,
-  moveUpgrade,
+  moveUpgradeTo,
   setExcluded,
 } from '../../core/shoppingPlan.ts';
 import { selectShoppingLive } from '../../store/selectors/shoppingLive.ts';
@@ -44,17 +45,18 @@ export function LiveShopping() {
             onInclude={(id) => {
               apply(includeUpgrade(vm.base, vm.draft, id));
             }}
+            onAppend={(id) => {
+              apply(appendUpgrade(vm.base, vm.draft, id));
+            }}
             onLeaveOut={(id) => {
               apply(leaveOutUpgrade(vm.draft, id));
             }}
             onExclude={(id, excluded) => {
               apply(setExcluded(vm.draft, id, excluded));
             }}
-            onMove={(id, step) => {
-              const next = moveUpgrade(vm.base, vm.draft, id, step);
-              if (next === null) return null;
-              apply(next);
-              return vm.editor.entries.findIndex((entry) => entry.id === id) + 1 + step;
+            onMove={(id, to) => {
+              const next = moveUpgradeTo(vm.base, vm.draft, id, to);
+              if (next !== null) apply(next);
             }}
           />
           <p>{t.overrides.short}</p>

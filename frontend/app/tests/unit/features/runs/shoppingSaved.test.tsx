@@ -51,11 +51,14 @@ async function fill(
   await page.user.clear(input);
   await page.user.type(input, value);
 }
-function entry(id: string) {
-  const box = root().querySelector<HTMLElement>(`.tp-shop__entry[data-upgrade="${id}"]`);
-  if (box === null) throw new Error(`missing entry ${id}`);
-  return box;
-}
+/** A chip of the workshop page `grid` by its name (a never-buy upgrade's mark adds to the name). */
+const chip = (grid: string, name: string) =>
+  within(form().getByRole('list', { name: grid })).getByRole('button', {
+    name: new RegExp(`^${name}(Never buy)?$`, 'u'),
+  });
+const number = (name: string) => form().getByRole('spinbutton', { name });
+const queued = () =>
+  [...root().querySelectorAll('.tp-queue__item .tp-queue__name')].map((item) => item.textContent);
 const posts = (page: Awaited<ReturnType<typeof open>>) =>
   postBodies(page.fake, '/api/run-controls').map((body) => ({ body }));
 
@@ -266,38 +269,30 @@ it('SQ3 SQ5 SQ6 SQ7 saved changes preserve hidden values and send the full reord
   await fill(page, 'Cash reserve', '750.5');
   await page.user.selectOptions(form().getByLabelText('Purchase pattern'), 'weighted_split');
   await page.user.selectOptions(form().getByLabelText('Cadence'), 'while_affordable');
-  const cap = within(entry('damage')).getByRole('textbox', {
-    name: 'Tap attempts this battle',
-  });
-  await page.user.clear(cap);
-  await fill(page, 'Weight', '3', entry('health'));
-  await fill(page, 'Until wave (exclusive)', '20', entry('health'));
-  const up = within(entry('health')).getByRole('button', { name: /^Move up/u });
+  await page.user.clear(number('Tap attempts this battle: Damage'));
+  await page.user.clear(number('Weight: Health'));
+  await page.user.type(number('Weight: Health'), '3');
+  await page.user.type(number('Until wave (exclusive): Health'), '20');
+  const up = form().getByRole('button', { name: /^Move up.*Health/u });
   up.focus();
   await page.user.keyboard('{Enter}');
-  expect(up).toHaveFocus();
-  expect(
-    [...root().querySelectorAll('.tp-shop__entry')].map((box) => box.getAttribute('data-upgrade')),
-  ).toEqual(['health', 'damage']);
+  expect(form().getByRole('button', { name: /^Move up.*Health/u })).toHaveFocus();
+  expect(queued()).toEqual(['Health', 'Damage']);
   await page.user.click(saveButton());
   await page.advance(100);
   expect(posts(page).map((call) => call.body)).toEqual([saved.request.body]);
+  expect(document.querySelector('[data-outcome="saved"]')).not.toBeNull();
+  expect(posts(page)).toHaveLength(1);
   expect(selectShoppingSaved(page.data.store.getSnapshot()).discard).toBe(false);
 });
 
 it('SQ4 saved picker deselection preserves caps and order; selecting excluded upgrade removes its exclusion', async () => {
   const page = await open();
-  await page.user.click(
-    within(entry('damage')).getByRole('checkbox', { name: 'Included in queue' }),
-  );
+  await page.user.click(chip('Attack', 'Damage'));
   expect(selectShoppingSaved(page.data.store.getSnapshot()).editor.review.plan).toMatchObject({
     queue: [{ id: 'damage', enabled: false, tap_limit: 3 }, { id: 'health' }],
   });
-  const picker = root().querySelector<HTMLElement>(
-    '.tp-shop__pick[data-upgrade="defense_absolute"]',
-  );
-  if (picker === null) throw new Error('missing picker');
-  await page.user.click(within(picker).getByRole('checkbox', { name: 'Defense Absolute' }));
+  await page.user.click(chip('Defense', 'Defense Absolute'));
   const review = selectShoppingSaved(page.data.store.getSnapshot()).editor.review;
   expect(review.excluded).not.toContain('defense_absolute');
   expect(review.entries.at(-1)).toMatchObject({ id: 'defense_absolute', enabled: true });
