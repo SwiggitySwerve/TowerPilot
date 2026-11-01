@@ -190,7 +190,6 @@ export const runs = {
     prepare: entry('Prepare'),
     equipment: entry('Equipment:'),
     currentEquipment: entry('use current equipment'),
-    noEquipment: entry('not set'),
     space: made(' '),
     tier: (tier: number) => made(` · tier ${number(tier)}`),
     restartViaHome: entry(' · restarts via Home'),
@@ -198,7 +197,9 @@ export const runs = {
       coin: entry('Coin run'),
       shard: entry('Shard run'),
       tournament: entry('Tournament run'),
-      quest: entry('Quest run'),
+      /** The kinds the profile compiler knows (playerprofile _BUILTIN_KINDS); others read Other. */
+      uw_grant_quest: entry('UW grant quest'),
+      cycle_quest: entry('Cycle quest'),
     },
     otherKind: entry('Other run'),
   },

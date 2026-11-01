@@ -1,6 +1,7 @@
 import { copy } from '../../copy/catalogue.ts';
 import {
   draftChanges,
+  appendUpgrade,
   includeUpgrade,
   leaveOutUpgrade,
   moveUpgradeTo,
@@ -43,6 +44,9 @@ export function LiveShopping() {
             }}
             onInclude={(id) => {
               apply(includeUpgrade(vm.base, vm.draft, id));
+            }}
+            onAppend={(id) => {
+              apply(appendUpgrade(vm.base, vm.draft, id));
             }}
             onLeaveOut={(id) => {
               apply(leaveOutUpgrade(vm.draft, id));

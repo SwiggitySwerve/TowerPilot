@@ -25,6 +25,8 @@ const t = copy.shopping;
 export interface QueueEditorActions {
   readonly onEdit: (key: string, value: string | boolean) => void;
   readonly onInclude: (upgrade: string) => void;
+  /** Include at the end of the queue: a drop, which puts even a left-out upgrade last. */
+  readonly onAppend: (upgrade: string) => void;
   readonly onLeaveOut: (upgrade: string) => void;
   /** Move to zero-based place `to` of the whole queue (the place it holds after the move). */
   readonly onMove: (upgrade: string, to: number) => void;
@@ -426,7 +428,7 @@ export function QueueEditor(props: QueueEditorProps) {
               const to = vm.entries.findIndex((entry) => entry.id === target?.id);
               if (to >= 0) props.onMove(upgrade, to);
             }}
-            onAdd={props.onInclude}
+            onAdd={props.onAppend}
           />
           <WaveRanges {...parts} />
         </Tile>

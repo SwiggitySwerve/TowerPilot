@@ -818,7 +818,7 @@ describe('Runs page: review fixes (F6R-02 to F6R-07)', () => {
       const row = runRow('Farm');
       expect(row.querySelector('.tp-runs__readiness')).toHaveTextContent(line);
       const link = within(row).queryByRole('link', { name: 'Prepare' });
-      if (prepare) expect(link).toHaveAttribute('href', '#recognition');
+      if (prepare) expect(link).toHaveAttribute('href', '#recognition?run=bp_farm');
       else expect(link).toBeNull();
       expect(textOutsideCatalogue(document.body)).toEqual([]);
     },
