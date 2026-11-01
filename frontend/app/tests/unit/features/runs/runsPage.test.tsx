@@ -96,7 +96,8 @@ describe('Runs page: saved settings', () => {
     expect(runRows().map((row) => row.querySelector('strong')?.textContent)).toEqual(['Farm']);
     expect(within(runRow('Farm')).getByText('Editing')).toBeVisible();
     expect(within(runRow('Farm')).getByText('Coin run')).toBeVisible();
-    expect(within(runRow('Farm')).getByRole('button', { name: 'Edit Farm' })).toBeVisible();
+    // The run being edited is already open below its row, so the row offers no Edit.
+    expect(within(runRow('Farm')).queryByRole('button', { name: 'Edit Farm' })).toBeNull();
     expect(
       within(savedRegion()).getByText(
         'Day plans choose a run for each block; edit them on Schedule',

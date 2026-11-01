@@ -60,10 +60,6 @@ export const shopping = {
   ),
   unlimited: entry('∞'),
   times: entry('×'),
-  chipFields: entry(
-    'Selected upgrades show their tap limit (blank means unlimited) and, in Weighted split, their weight.',
-    'The tap limit counts taps sent, not levels bought. The weight is the confirmed single purchases per weighted turn; blank uses the server default.',
-  ),
   problemLine: (item: CopyText, field: CopyText, problem: CopyText) =>
     made(`${item} ${field}: ${problem}`),
   fieldProblems: entry('Fields to fix'),
@@ -87,8 +83,10 @@ export const shopping = {
         : `${String(count)} fields need a value before this queue can be sent.`,
     ),
   picker: entry('Shop pages'),
+  /** One line for the pages; how a chip's fields count lives in its help. */
   pickerHint: entry(
-    'Including an upgrade appends it to the queue; including an excluded upgrade removes its exclusion.',
+    'Selecting an upgrade adds it to the end of the queue and shows its tap limit.',
+    'Selecting an excluded upgrade removes its exclusion. The tap limit counts taps sent, not levels bought; blank means unlimited. In Weighted split a selected upgrade also shows its weight: the confirmed single purchases per weighted turn; blank uses the server default.',
   ),
   sections: {
     attack: entry('Attack'),
@@ -97,6 +95,10 @@ export const shopping = {
   },
   otherSection: entry('Other'),
   excluded: entry('Never buy'),
+  noneExcluded: entry('No upgrade is kept out.'),
+  excludeAdd: entry('Upgrade to keep out'),
+  excludeSend: entry('Keep out'),
+  excludePick: entry('Choose an upgrade'),
   excludedReason: entry('Excluded by default:'),
   orderProvisional: entry(
     'Shop order shown here is provisional until it is verified on this account. It does not show what the account owns.',

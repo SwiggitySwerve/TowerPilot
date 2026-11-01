@@ -6,6 +6,7 @@ import { dashboardPagesCase as recorded, type DashboardCase } from '../support/d
 import { parityCase, paritySourceBefore } from '../support/runEntryParity.ts';
 import { withRecordedFence, fencedRuntime } from '../support/profilePatchFenced.ts';
 import { axeIds, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import { entrySave } from './helpers/entry-save.ts';
 
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results/f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -161,9 +162,7 @@ for (const width of [1360, 1054, 390]) {
       await field(page, 'dissonant_tab')
         .getByRole('combobox')
         .selectOption(value ?? '');
-      await field(page, 'dissonant_tab')
-        .getByRole('button', { name: 'Save field', exact: true })
-        .click();
+      await entrySave(field(page, 'dissonant_tab')).click();
       await expect
         .poll(() => writes.length)
         .toBe(
@@ -173,9 +172,10 @@ for (const width of [1360, 1054, 390]) {
               ? 2
               : 3,
         );
-      await expect(
-        field(page, 'dissonant_tab').getByRole('button', { name: 'Save field', exact: true }),
-      ).toHaveAttribute('aria-disabled', 'true');
+      await expect(entrySave(field(page, 'dissonant_tab'))).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
       expect(writes.at(-1)).toEqual(withRecordedFence(entry, fencedRuntime).request.body);
     }
     await expect(field(page, 'dissonant_tab').getByRole('combobox')).toHaveValue('');
@@ -194,7 +194,7 @@ for (const width of [1360, 1054, 390]) {
       await field(page, key)
         .getByRole('textbox')
         .fill(String(own(entry.request.body, 'value')));
-      await field(page, key).getByRole('button', { name: 'Save field', exact: true }).click();
+      await entrySave(field(page, key)).click();
       await expect(field(page, key).locator('[data-outcome="saved"]')).toBeVisible();
       expect(writes[0]).toEqual(withRecordedFence(entry, fencedRuntime).request.body);
       // The refusal was recorded after the sequence of successful saves. Read that
@@ -207,7 +207,7 @@ for (const width of [1360, 1054, 390]) {
       await field(page, key)
         .getByRole('textbox')
         .fill(String(own(entry.request.body, 'value')));
-      await field(page, key).getByRole('button', { name: 'Save field', exact: true }).click();
+      await entrySave(field(page, key)).click();
       await expect(field(page, key).locator('[data-refusal]')).toHaveText(
         String(own(entry.body, 'error')),
       );

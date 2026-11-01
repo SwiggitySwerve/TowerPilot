@@ -71,7 +71,12 @@ export const runs = {
         'Changed for this battle',
         'These values differ from what the battle started with. Using the starting value again removes the change for this battle only.',
       ),
-      reset: entry("Use the battle's starting value"),
+      reset: entry('Use starting value'),
+      /** A switch's override is named by its routine and this, not the column word "On". */
+      onOff: entry('on/off'),
+      /** A switch's override with its side known: what the battle now does. */
+      turnedOn: entry('turned on'),
+      turnedOff: entry('turned off'),
       confirm: entry("Use the battle's starting value?"),
       effect: entry(
         'This battle goes back to the value it started with. That can differ from the saved settings below if they changed since the battle started. Nothing else changes.',
@@ -79,8 +84,7 @@ export const runs = {
       send: entry('Use starting value'),
       cancel: entry('Cancel'),
       /** F6-11 RL2: every override of this battle in one request. */
-      resetAll: (count: number) =>
-        made(`Use the battle's starting values for all ${String(count)}`),
+      resetAll: (count: number) => made(`Use starting values for all ${String(count)}`),
       confirmAll: entry("Use the battle's starting values for all of these?"),
       effectAll: entry(
         'This battle goes back to the values it started with for each setting listed. They can differ from the saved settings below if those changed since the battle started. Nothing else changes.',
@@ -98,7 +102,9 @@ export const runs = {
     /** F6-11 RL7 (spec F-062, F-063): what each routine reported in this battle. */
     details: {
       heading: entry('Battle details'),
-      title: (routine: string) => made(`${routine}: battle details`),
+      /** What the folded rows below hold, so the list of names reads as reports. */
+      intro: entry("Each routine's own report for this battle: attempts, timing and refusals."),
+      title: (routine: string) => made(routine),
       lastKnown: entry(
         'Last known values',
         'The battle report is not fresh, so these values may have changed since.',
@@ -162,6 +168,7 @@ export const runs = {
   },
   saved: {
     routines: entry('Saved routines'),
+    editor: entry('Routines of the run being edited'),
     title: entry('Saved settings'),
     scope: entry('Used by future battles'),
     picker: entry('Run'),

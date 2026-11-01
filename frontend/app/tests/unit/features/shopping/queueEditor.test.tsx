@@ -125,7 +125,7 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
     expect(reviewQueue(BASE, latest).entries.at(-1)?.fields.tap_limit.raw).toBe('4');
     // The teaching clause lives in the help, opened on demand and not in the page.
     expect(screen.queryByText(/Counts taps sent, not levels bought/u)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /About Selected upgrades show/u }));
+    fireEvent.click(screen.getByRole('button', { name: /About Selecting an upgrade adds/u }));
     expect(screen.getByRole('tooltip')).toHaveTextContent('The tap limit counts taps sent');
     fireEvent.click(chip('Attack', 'Damage'));
     expect(queued()).toEqual(['Health', 'Attack Speed']);
@@ -159,12 +159,20 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
       /Excluded by default: /u,
     );
     fireEvent.click(chip('Defense', 'Defense Absolute'));
-    expect(never.getByRole('button', { name: 'Defense Absolute' })).toHaveAttribute(
-      'aria-pressed',
-      'false',
-    );
+    // Let back in, it leaves the never-buy list; nothing else is kept out.
+    expect(screen.queryByRole('list', { name: 'Never buy', hidden: true })).toBeNull();
+    expect(screen.getByText('No upgrade is kept out.')).toBeVisible();
     expect(queued().at(-1)).toBe('Defense Absolute');
-    fireEvent.click(never.getByRole('button', { name: 'Defense Absolute' }));
+    // Choosing only picks; Keep out acts.
+    fireEvent.change(screen.getByLabelText('Upgrade to keep out'), {
+      target: { value: 'defense_absolute' },
+    });
+    expect(queued().at(-1)).toBe('Defense Absolute');
+    fireEvent.click(screen.getByRole('button', { name: 'Keep out' }));
+    expect(page('Never buy').getByRole('button', { name: 'Defense Absolute' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     expect(queued().at(-1)).not.toBe('Defense Absolute');
   });
 

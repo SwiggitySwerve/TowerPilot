@@ -203,7 +203,7 @@ describe('AC2 the Runs live editor from the action descriptors', () => {
       within(
         liveRegion().querySelector<HTMLElement>('[data-path="routines.ad_gems.interval_sec"]') ??
           liveRegion(),
-      ).getByRole('button', { name: /^Use the battle's starting value/u });
+      ).getByRole('button', { name: /^Use starting value/u });
     expect(reset()).not.toHaveAttribute('aria-disabled', 'true');
     page.view.unmount();
     // Test-local: the same battle with interval_sec described as not nullable.

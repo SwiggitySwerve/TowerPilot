@@ -211,6 +211,9 @@
 .tp-copy-line p {
   margin: 0;
 }
+.tp-copy-line p {
+  text-wrap: pretty;
+}
 /* Native diagnostic disclosures still used for reported server evidence. */
 .tp-copy-line__why {
   color: var(--tp-color-text-muted);
@@ -249,6 +252,10 @@
   font-weight: 700;
 }
 .tp-disclosure__preview {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--tp-space-2);
   margin-inline-start: 0.5rem;
   color: var(--tp-color-text-muted);
 }
@@ -368,6 +375,10 @@ fieldset.tp-tile > .tp-tile__end + * {
   font-size: var(--tp-font-size-13);
   font-weight: 700;
 }
+/* A section tile's title outranks the titles of the groups inside it. */
+h3.tp-tile__title {
+  font-size: var(--tp-font-size-15);
+}
 .tp-tile__title:focus {
   outline: none;
 }
@@ -382,6 +393,10 @@ fieldset.tp-tile > .tp-tile__end + * {
   margin-inline-start: auto;
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
+}
+/* A title's help icon alone belongs to the title, not the far edge. */
+.tp-tile__head > .tp-tile__end:has(> .tp-help__trigger:only-child) {
+  margin-inline-start: 0;
 }
 .tp-tile > .tp-copy-line {
   margin-block-end: var(--tp-space-2);
@@ -508,10 +523,11 @@ fieldset.tp-tile > .tp-tile__end + * {
   margin-inline-start: var(--tp-space-2);
 }
 
-/* CopyLine intro and note: the short line and its help icon on one muted line. */
+/* CopyLine intro and note: the short line and its help icon on one muted line (the icon stays
+   beside the sentence's last line rather than wrapping alone). */
 .tp-copy-line[data-variant] {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: baseline;
   gap: 0 var(--tp-space-2);
   color: var(--tp-color-text-muted);
@@ -724,9 +740,9 @@ fieldset.tp-tile > .tp-tile__end + * {
  */
 .tp-button[aria-disabled='true'],
 .tp-button:disabled {
-  border-color: color-mix(in srgb, var(--tp-color-border-active) 55%, transparent);
+  border-color: color-mix(in srgb, var(--tp-color-border-active) 40%, transparent);
   border-style: solid;
   background: transparent;
-  color: var(--tp-color-text-muted);
+  color: color-mix(in srgb, var(--tp-color-text-muted) 70%, transparent);
   cursor: not-allowed;
 }

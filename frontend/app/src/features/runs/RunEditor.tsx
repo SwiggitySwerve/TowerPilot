@@ -241,9 +241,22 @@ function RoutineRow({
   const edited = group.fields.some((f) => f.edited);
   return (
     <li className="tp-run-row" data-routine={group.routine} data-edited={edited}>
-      <strong id={nameId} className="tp-run-row__name">
-        <ActionName routine={group.routine} label={group.label} />
-      </strong>
+      <span className="tp-run-row__head">
+        <strong id={nameId} className="tp-run-row__name">
+          <ActionName routine={group.routine} label={group.label} />
+        </strong>
+        {/* A change is named, with its undo, in the list below the table (as a switch's is);
+            only a change still waiting to apply is marked in the row itself. */}
+        {mark === 'changed' ? (
+          <span className="tp-visually-hidden">{t.live.marks.changed.short}</span>
+        ) : mark === null ? null : (
+          <span className="tp-run-row__mark">
+            <span>{t.live.marks[mark].short}</span>
+            <Why why={t.live.marks[mark].why} />
+          </span>
+        )}
+        {edited ? <span className="tp-run-row__edited">{t.edited.short}</span> : null}
+      </span>
       {described ? (
         <span className="tp-run-fields">
           {group.cells.map((cell) =>
@@ -257,15 +270,6 @@ function RoutineRow({
       ) : (
         group.fields.map((field) => fieldCell(field, scope, nameId, false))
       )}
-      <span className="tp-run-row__mark">
-        {mark === null ? null : (
-          <>
-            <span>{t.live.marks[mark].short}</span>
-            <Why why={t.live.marks[mark].why} />
-          </>
-        )}
-        {edited ? <span className="tp-run-row__edited">{t.edited.short}</span> : null}
-      </span>
     </li>
   );
 }
@@ -345,9 +349,17 @@ function SwitchRow({
                   {t.notReported.short}
                 </span>
               ) : null}
-              {live && field.mark !== null && field.mark !== 'saved' ? (
-                <span className="tp-run-cell__note">{t.live.marks[field.mark].short}</span>
-              ) : null}
+              {/* A change is named, with its undo, in the list below the table; a change still
+                  waiting to apply has no undo there, so it is marked on the switch itself. */}
+              {!live || field.mark === null || field.mark === 'saved' ? null : field.mark ===
+                'changed' ? (
+                <span className="tp-visually-hidden">{t.live.marks.changed.short}</span>
+              ) : (
+                <span className="tp-run-row__mark">
+                  <span>{t.live.marks.waiting.short}</span>
+                  <Why why={t.live.marks.waiting.why} />
+                </span>
+              )}
             </label>
           )),
         )}
@@ -412,17 +424,26 @@ function OverrideName({
         readonly field: string;
         readonly routineLabel: ServerText<'name'> | null;
         readonly label: ServerText<'name'> | null;
+        readonly value?: boolean | number | null;
       }
     | { readonly kind: 'shopping_plan' };
 }) {
   if (!('routine' in item)) return <span>{t.live.overrides.shoppingPlan.short}</span>;
+  const o = t.live.overrides;
   return (
     <>
       <span>
         <ActionName routine={item.routine} label={item.routineLabel} />
       </span>
       <span>
-        <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
+        {/* A switch's override says its side; the routine's name already names the switch. */}
+        {item.field === 'enabled' && typeof item.value === 'boolean' ? (
+          (item.value ? o.turnedOn : o.turnedOff).short
+        ) : item.field === 'enabled' && item.label === null ? (
+          o.onOff.short
+        ) : (
+          <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
+        )}
       </span>
     </>
   );
@@ -487,13 +508,7 @@ function LiveResets({
       </ul>
       {resetAll === null ? null : (
         <div className="tp-run-reset tp-run-reset--all" data-reset-all="true">
-          <ul className="tp-run-resets__confirm-list" data-reset-all-items="true">
-            {resetAll.items.map((item) => (
-              <li key={item.path} className="tp-run-reset__name">
-                <OverrideName item={item} />
-              </li>
-            ))}
-          </ul>
+          {/* The undo-all names its items in its confirmation (one may have no row above). */}
           {resetAll.reset.enabled ? (
             <Button
               tier="quiet"

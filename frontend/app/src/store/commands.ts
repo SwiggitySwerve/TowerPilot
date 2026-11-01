@@ -199,7 +199,21 @@ export interface DashboardCommands {
   readonly saveSettings: (command: SettingsSaveCommand) => Promise<void>;
   /** C4 to C6: one profile patch, sent once after a click-time config read still names its context. */
   readonly patchProfile: (command: ProfilePatchCommand) => Promise<void>;
-  readonly patchRunEntry: (command: RunEntryCommand) => Promise<void>;
+  /**
+   * `draftUnchanged`: a later step of a group Save, whose value is fixed by the group's click,
+   * sends only while the field's draft is still that value (a Discard or newer edit stops it).
+   */
+  readonly patchRunEntry: (
+    command: RunEntryCommand,
+    options?: { readonly draftUnchanged?: boolean },
+  ) => Promise<void>;
+  /**
+   * One Save for a group of entry fields: each field is still its own profile patch, sent
+   * one after another; each next patch expects the revision the previous one answered, so
+   * the profile fence still judges it against exactly what this page wrote. The first
+   * refusal, unknown outcome or unsent patch stops the rest (their drafts stay).
+   */
+  readonly saveRunEntryGroup: (commands: readonly RunEntryCommand[]) => Promise<void>;
   readonly checkRunEntry: () => void;
   /** Read the settings and the profile source again (a GET each, never a write). */
   readonly checkCollection: () => void;

@@ -2,3 +2,10 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+/* The first problem, closed: the field's name, then what it needs. */
+.tp-run-defaults__problem {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 var(--tp-space-1);
+  color: var(--tp-color-text-muted);
+}

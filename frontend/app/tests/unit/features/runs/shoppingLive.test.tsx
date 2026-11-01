@@ -197,7 +197,7 @@ it('SQ7 SQ12 drafts stay with battle generation, stale reports and unsupported l
   );
   const h = renderRegion(legacy, <LiveShopping />);
   expect(h.view.queryByRole('textbox')).toBeNull();
-  expect(h.view.getByText(/Live queue editing needs/)).toBeVisible();
+  expect(h.view.getByText(/automation can't take queue edits/)).toBeVisible();
   expect(h.commands.saveLive).not.toHaveBeenCalled();
 });
 it('SQ7 live queue is axe clean and uses only catalogue or server text', async () => {

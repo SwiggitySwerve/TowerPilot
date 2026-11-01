@@ -6,6 +6,8 @@ import { setupPermit } from '../core/guards.ts';
 import { sameJson } from '../core/json.ts';
 import { handoffTarget } from '../core/needs.ts';
 import { finite, own, ownPath, text } from '../core/read.ts';
+import { entryDraftMarker, entryDraftSnapshot } from '../core/runEntry.ts';
+import { profilePatchAnswer } from '../core/profilePatch.ts';
 import { startGate } from '../core/readiness.ts';
 import { savedSaveAnswer } from '../core/runControls.ts';
 import { runAddSource, runIdCheck } from '../core/runAdd.ts';
@@ -37,6 +39,7 @@ import { clickGet, pauseClick, resolvePauseContext, sendTurnOn } from '../api/in
 import { sendInputOff, sendInputOn } from '../api/intents/input.ts';
 import { sendKill } from '../api/intents/kill.ts';
 import { createIntentMachine, type IntentMachine } from '../api/intents/machine.ts';
+import type { IntentRecord } from '../api/intents/types.ts';
 import { draftSettlement } from '../api/intents/draftSettlement.ts';
 import { sendReconnect } from '../api/intents/reconnect.ts';
 import { sendRunNow } from '../api/intents/routineAction.ts';
@@ -1363,7 +1366,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       activePoller.read('profileFiles');
       activePoller.read('vocab');
     },
-    patchRunEntry: async (command) => {
+    patchRunEntry: async (command, step) => {
       if (!fenced(command)) return;
       // Reuse the form's current source authority without substituting newer
       // draft text for the submission already reserved by this command.
@@ -1430,6 +1433,13 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
           notice('command_not_sent', 'target_unconfirmed');
           return;
         }
+        // Checked again after the click-time read: the person may have discarded or edited it.
+        if (
+          step?.draftUnchanged === true &&
+          command.draft !== null &&
+          !sameJson(store.getSnapshot().runDrafts[command.draft.scope] ?? {}, command.draft.values)
+        )
+          return;
         report(
           sendRunEntryPatch(
             machine,
@@ -1448,6 +1458,64 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         );
       } finally {
         collectionChecks.delete(reservation);
+      }
+    },
+    saveRunEntryGroup: async (group) => {
+      let revision: string | null = null;
+      for (const command of group) {
+        let next = command;
+        if (revision !== null) {
+          // Re-base this field's draft on the revision the previous patch of this group
+          // answered: that revision is the read base plus only this page's own write.
+          const draft = command.draft;
+          if (draft === null) return;
+          const values = draft.values;
+          // A Discard or a newer edit of this field since the click wins: the group stops
+          // rather than send, or re-base, the value the person has since changed.
+          if (!sameJson(store.getSnapshot().runDrafts[draft.scope] ?? {}, values)) return;
+          const snapshot = entryDraftSnapshot(values['base_revision']);
+          if (snapshot === null || snapshot.raw === undefined) return;
+          const marker = entryDraftMarker(revision, snapshot.raw, snapshot.remove ?? false);
+          store.dispatch({
+            type: 'draft_edit',
+            scope: draft.scope,
+            path: 'base_revision',
+            value: marker,
+          });
+          next = {
+            ...command,
+            revision,
+            draft: { scope: draft.scope, values: { ...values, base_revision: marker } },
+          };
+        }
+        const before = Math.max(0, ...machine.snapshot().map((record) => record.sentSeq));
+        await commands.patchRunEntry(next, { draftUnchanged: revision !== null });
+        const record = await new Promise<IntentRecord | null>((resolve) => {
+          const sent = () =>
+            machine
+              .snapshot()
+              .find((item) => item.target === next.target && item.sentSeq > before) ?? null;
+          const first = sent();
+          if (first === null) {
+            resolve(null);
+            return;
+          }
+          const done = () => {
+            const current = sent();
+            if (current === null || current.phase === 'sending') return false;
+            stop();
+            resolve(current);
+            return true;
+          };
+          const stop = machine.subscribe(() => {
+            done();
+          });
+          done();
+        });
+        if (record?.phase !== 'confirmed' || record.answer === null) return;
+        const answer = profilePatchAnswer(record.answer);
+        if (answer.kind !== 'done' || answer.revision === null) return;
+        revision = answer.revision;
       }
     },
     patchProfile: async (command) => {

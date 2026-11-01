@@ -16,6 +16,8 @@ export const runtimeConfig = {
     machine: entry('This computer · every emulator · next time automation starts.'),
   },
   fallback: entry('Saved defaults / Machine fallback'),
+  /** Between a field's name and what it needs, in the closed summary: "Fallback preset: …". */
+  needs: entry(':'),
   instancePreset: entry("This emulator's saved default preset: "),
   fallbackNotice: entry(
     "An emulator's own default preset takes precedence over this machine fallback. Saving never starts a run, changes the run picker, or rewrites a blueprint.",

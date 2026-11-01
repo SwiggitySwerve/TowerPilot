@@ -147,7 +147,12 @@ async function weighted(page: Page) {
     '',
   );
   await fill(root(page).getByRole('spinbutton', { name: 'Weight: Health', exact: true }), '3');
-  await root(page).locator('details:not(:has(details)):has(.tp-shop__waves) > summary').click();
+  // Wave ranges open by themselves once a queue has entries; make sure they are open.
+  await root(page)
+    .locator('details:not(:has(details)):has(.tp-shop__waves)')
+    .evaluate((element) => {
+      if (element instanceof HTMLDetailsElement) element.open = true;
+    });
   await fill(
     root(page).getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true }),
     '20',

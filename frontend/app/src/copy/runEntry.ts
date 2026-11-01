@@ -2,7 +2,17 @@ import { entry } from './entry.ts';
 
 export const runEntry = {
   title: entry('Entry and equipment'),
-  scope: entry('Save one field at a time.'),
+  scope: entry(
+    'Each group saves its changed fields together.',
+    'Save sends each changed field of the group as its own profile change, one after another; each next one is checked against the profile the previous one saved. The first one refused or not answered stops the rest, and their drafts stay.',
+  ),
+  saveGroup: {
+    identity: entry('Save identity'),
+    behavior: entry('Save entry behavior'),
+    policies: entry('Save policies'),
+  },
+  discardGroup: entry('Discard changes'),
+  fixFields: entry('Fix the marked fields to save.'),
   unavailable: entry('Read this profile and its field vocabulary to edit entry settings.'),
   readFailed: entry('The last read is shown read-only. Your draft and save result are kept.'),
   check: entry('Read entry settings'),
@@ -11,7 +21,7 @@ export const runEntry = {
   save: entry('Save field'),
   clearLabel: entry('Clear label'),
   questDefault: entry('Use the quest default'),
-  coin: entry('Coin run (remove the disabled tab)'),
+  coin: entry('None (coin run)'),
   statistics: entry('Statistics are always on for every run.'),
   chainLightning: entry('This policy needs Chain Lightning, which the player does not own.'),
   questValue: entry('Quoted text stays text; the saved profile checks the value.'),
@@ -55,7 +65,7 @@ export const runEntry = {
     choice: entry('Choose one of the available values.'),
     list: entry('Use nonblank perk fragments, one per line.'),
     text: entry('Enter a nonblank label.'),
-    unchanged: entry('No change to save.'),
+    unchanged: entry('No changes to save'),
     unavailable: entry('A current profile and vocabulary read is required.'),
     pending: entry('Wait for the save and its readback, or resolve its Unknown outcome.'),
     revision: entry(

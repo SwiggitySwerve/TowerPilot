@@ -38,5 +38,5 @@ export const shoppingSaved = {
   invalid: entry(
     'Enter a number for cash reserve and choose a purchase pattern and cadence. Correct any fields marked invalid before saving.',
   ),
-  unchanged: entry('The queue has no unsaved changes.'),
+  unchanged: entry('No changes to save'),
 };

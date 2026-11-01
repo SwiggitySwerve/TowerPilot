@@ -4,6 +4,8 @@ import { entry, made } from './entry.ts';
 export const shoppingLibrary = {
   title: entry('Shared shopping policies'),
   manage: entry('Manage policies'),
+  /** Closed, the policies list names where its first problem is: "in main_list". */
+  problemIn: entry('in'),
   more: entry('Show more policies'),
   profile: entry('Active profile'),
   scope: entry(

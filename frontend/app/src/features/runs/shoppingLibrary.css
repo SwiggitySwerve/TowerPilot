@@ -89,3 +89,9 @@
     width: 100%;
   }
 }
+/* Closed, the policy that holds the first problem. */
+.tp-library__where {
+  display: inline-flex;
+  gap: var(--tp-space-1);
+  color: var(--tp-color-text-muted);
+}

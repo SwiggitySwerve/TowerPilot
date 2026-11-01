@@ -132,7 +132,10 @@ async function edit(page: Page) {
   await editor.getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
   await editor.getByRole('button', { name: /Move up.*Health/ }).click();
   await editor.getByRole('spinbutton', { name: 'Weight: Health', exact: true }).fill('3');
-  await editor.locator('details:not(:has(details)):has(.tp-shop__waves) > summary').click();
+  // Wave ranges open by themselves once a queue has entries; make sure they are open.
+  await editor.locator('details:not(:has(details)):has(.tp-shop__waves)').evaluate((element) => {
+    if (element instanceof HTMLDetailsElement) element.open = true;
+  });
   await editor
     .getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true })
     .fill('20');
@@ -384,7 +387,7 @@ for (const width of [1360, 1054, 390]) {
     await expect(save).toHaveAttribute('aria-disabled', 'true');
     await save.focus();
     await page.keyboard.press('Enter');
-    await page.getByRole('link', { name: 'Try once in Dashboard This battle' }).click();
+    await page.getByRole('link', { name: 'Try an upgrade once on the Dashboard' }).click();
     const action = page.getByRole('button', { name: 'Try once Shopping', exact: true });
     await expect(action).toHaveAttribute('aria-disabled', 'true');
     await action.focus();

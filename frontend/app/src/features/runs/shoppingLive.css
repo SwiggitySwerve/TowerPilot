@@ -3,11 +3,16 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.tp-shopping-live > a {
+.tp-shopping-live__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-3);
+}
+.tp-shopping-live__line > a {
   display: inline-flex;
   align-items: center;
   min-height: 24px;
-  margin: var(--tp-space-2);
 }
 .tp-shopping-try > div {
   display: flex;
