@@ -86,6 +86,23 @@ def test_non_python_and_non_runner_processes_are_ignored(monkeypatch):
     assert list(runners.other_runners()) == []
 
 
+def test_another_scan_rebinding_info_mid_walk_cannot_break_the_runner_walk(monkeypatch):
+    """psutil reuses one Process per pid and rebinds `.info` for every scan; the
+    dashboard's emulator listing (attrs ["name"]) did it while the runner walk
+    was inside the lease check, and the walk read a dict with no "pid"."""
+    from runtime import device_lease, runners
+    shard = ["pythonw.exe", "flows/shard.py", "--instance", "main"]
+    procs = [_Proc(LAUNCHER, CAL), _Proc(ME, CAL), _Proc(7777, shard, "pythonw.exe")]
+    _fake_psutil(monkeypatch, procs)
+
+    def concurrent_listing(pid, target=None):
+        for p in procs:
+            p.info = {"name": p.info.get("name")}
+        return False
+    monkeypatch.setattr(device_lease, "owns_different_device", concurrent_listing)
+    assert list(runners.other_runners()) == [(7777, "shard.py", shard)]
+
+
 # --------------------------------------------------- real launcher regression
 def test_real_process_does_not_see_its_own_launcher(tmp_path):
     """A script literally named calibrate.py run with sys.executable: on a

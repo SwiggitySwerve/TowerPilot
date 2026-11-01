@@ -129,14 +129,15 @@ class Instance:
         needs no pid file to go stale."""
         out = []
         mine = self.proc.pid if self.proc is not None else None
-        for p in psutil.process_iter(["pid", "name", "cmdline"]):
-            cmd = [str(c) for c in (p.info.get("cmdline") or [])]
-            if len(cmd) < 4 or p.info["pid"] == mine:
+        from runtime.runners import process_rows
+        for p, info in process_rows(["pid", "name", "cmdline"]):
+            cmd = [str(c) for c in (info.get("cmdline") or [])]
+            if len(cmd) < 4 or info["pid"] == mine:
                 continue
             # STRICT token matching, never substring-on-the-whole-line: a
             # shell or editor whose command line merely mentions
             # "orchestrator.py --instance main" must never be terminated by us.
-            if not (p.info.get("name") or "").lower().startswith("python"):
+            if not (info.get("name") or "").lower().startswith("python"):
                 continue
             if Path(cmd[1]).name not in known_runners():
                 continue
