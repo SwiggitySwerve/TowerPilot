@@ -349,10 +349,17 @@ function SwitchRow({
                   {t.notReported.short}
                 </span>
               ) : null}
-              {/* The switch's change is named, with its undo, in the list below the table. */}
-              {live && field.mark !== null && field.mark !== 'saved' ? (
-                <span className="tp-visually-hidden">{t.live.marks[field.mark].short}</span>
-              ) : null}
+              {/* A change is named, with its undo, in the list below the table; a change still
+                  waiting to apply has no undo there, so it is marked on the switch itself. */}
+              {!live || field.mark === null || field.mark === 'saved' ? null : field.mark ===
+                'changed' ? (
+                <span className="tp-visually-hidden">{t.live.marks.changed.short}</span>
+              ) : (
+                <span className="tp-run-row__mark">
+                  <span>{t.live.marks.waiting.short}</span>
+                  <Why why={t.live.marks.waiting.why} />
+                </span>
+              )}
             </label>
           )),
         )}
@@ -429,8 +436,11 @@ function OverrideName({
         <ActionName routine={item.routine} label={item.routineLabel} />
       </span>
       <span>
-        {item.field === 'enabled' && item.label === null ? (
-          (item.value === true ? o.turnedOn : item.value === false ? o.turnedOff : o.onOff).short
+        {/* A switch's override says its side; the routine's name already names the switch. */}
+        {item.field === 'enabled' && typeof item.value === 'boolean' ? (
+          (item.value ? o.turnedOn : o.turnedOff).short
+        ) : item.field === 'enabled' && item.label === null ? (
+          o.onOff.short
         ) : (
           <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
         )}

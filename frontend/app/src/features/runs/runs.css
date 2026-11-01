@@ -467,3 +467,6 @@
   display: inline-flex;
   align-items: center;
 }
+.tp-run-switch .tp-run-row__mark {
+  font-weight: 400;
+}

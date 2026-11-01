@@ -148,6 +148,30 @@ describe('F6-11 RL1 reset one live override', () => {
     window.location.hash = '';
   });
 
+  it('RL1 a switch override reads by its side; a switch still waiting to apply says so on the switch', async () => {
+    const read = live('read_after_several_changes_overrides_and_applied_values');
+    const battle = (read.body as { battle: Record<string, unknown> }).battle;
+    const applied = battle['applied_overrides'] as {
+      routines: Record<string, { enabled?: unknown }>;
+    };
+    const rewards = applied.routines['rewards']?.enabled;
+    const first = await openLive(() => read);
+    const row = liveRegion().querySelector<HTMLElement>('[data-path="routines.rewards.enabled"]');
+    expect(row).toHaveTextContent(rewards === true ? /Rewardsturned on/u : /Rewardsturned off/u);
+    expect(row).not.toHaveTextContent(/on\/off/u);
+    first.view.unmount();
+    // The same override requested the other way and not yet applied: waiting, with no reset.
+    const waiting = structuredClone(read);
+    const next = (waiting.body as { battle: Record<string, unknown> }).battle;
+    const overrides = next['overrides'] as { routines: Record<string, Record<string, unknown>> };
+    overrides.routines['rewards'] = { ...overrides.routines['rewards'], enabled: rewards !== true };
+    await openLive(() => waiting);
+    const toggle = within(liveRegion()).getByRole('checkbox', { name: /Rewards/u });
+    const label = toggle.closest('label');
+    expect(label?.querySelector('.tp-run-row__mark')).toHaveTextContent('Waiting to apply');
+    expect(label?.querySelector('.tp-run-row__mark')).toBeVisible();
+  });
+
   it('RL1 an override still waiting to apply offers no reset yet', async () => {
     await openLive(() => live('read_after_the_change_lists_the_command_and_its_key'));
     expect(resetRows()).toEqual([]);
