@@ -95,3 +95,25 @@
   gap: var(--tp-space-1);
   color: var(--tp-color-text-muted);
 }
+
+/* A field's hint reads as the muted guidance it is elsewhere on the page; a problem as one. */
+.tp-library__hint {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-library__problem {
+  color: var(--tp-color-bad);
+  font-size: var(--tp-font-size-13);
+}
+
+/* The policies are one list: each a row parted by a hairline, not a filled card inside the
+   section's panel; the queue editor's own groups inside a row keep their fills. */
+.tp-library .tp-library__policy {
+  padding: var(--tp-space-3) 0;
+  border-block-start: 1px solid var(--tp-color-border);
+  border-radius: 0;
+  background: none;
+}
+.tp-library__summary {
+  color: var(--tp-color-text-muted);
+}

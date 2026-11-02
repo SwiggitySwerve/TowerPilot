@@ -274,6 +274,8 @@ export interface SavedSectionVM {
   /** The shown run's read: not read yet, failed or refused, or answered. */
   readonly read: 'not_read' | 'unavailable' | 'ready';
   readonly readError: ServerText<'message'> | null;
+  /** Why an unavailable read failed: no answer, an expired read, or an answer refusing it. */
+  readonly readFailure: 'network' | 'expired' | 'refused' | null;
   readonly readAgeSec: number | null;
   /** The driver's own scope notice (`notice`), when the read sends one. */
   readonly notice: ServerText<'message'> | null;
@@ -707,13 +709,28 @@ function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): S
     outcome: editorOutcome(state, lines, records),
   };
   if (run === null || read === null || !base.scopeReady)
-    return { ...base, read: 'not_read', readError: null, notice: null, editor: null };
+    return {
+      ...base,
+      read: 'not_read',
+      readError: null,
+      readFailure: null,
+      notice: null,
+      editor: null,
+    };
   const body = read.outcome.kind === 'answered' ? read.outcome.body : undefined;
   if (!answered(read)) {
     return {
       ...base,
       read: 'unavailable',
       readError: fromServer('message', own(body, 'error')),
+      readFailure:
+        read.outcome.kind !== 'failed'
+          ? 'refused'
+          : read.outcome.reason === 'network'
+            ? 'network'
+            : read.outcome.reason === 'read_expired'
+              ? 'expired'
+              : 'refused',
       notice: null,
       editor: null,
     };
@@ -737,6 +754,7 @@ function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): S
     ...base,
     read: 'ready',
     readError: null,
+    readFailure: null,
     notice: fromServer('message', own(body, 'notice')),
     editor: {
       scope,

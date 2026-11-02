@@ -43,7 +43,7 @@ export const settings = {
     below_min: entry('Below the lowest allowed value'),
     above_max: entry('Above the highest allowed value'),
     reversed: entry('The first value must not be larger than the second'),
-    unknown_option: entry('Choose one of the listed options'),
+    unknown_option: entry("This value isn't on the list. Choose one of the listed options"),
     unknown_type: entry('This page cannot edit this kind of value'),
   },
   readOnly: {
@@ -72,7 +72,7 @@ export const settings = {
       'Its values are not shown or used here. Your unsaved edits for this emulator, account and profile are kept.',
     ),
     invalid_value: entry('Fix the marked values first'),
-    no_changes: entry('No change to save'),
+    no_changes: entry('No unsaved changes'),
     save_pending: entry('Waiting until the last save is read back'),
     revision_changed: entry(
       'The settings revision changed or is missing; review the saved values and reconcile your draft',

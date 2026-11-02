@@ -183,7 +183,7 @@ export const profiles = {
     no_profile: entry('Choose or create an account first'),
     starter: entry('The shipped starter profile stays generic; create your own account first'),
     invalid_value: entry('Fix the value above'),
-    no_changes: entry('No change to save'),
+    no_changes: entry('No unsaved changes'),
     choose_profile: entry('Choose a profile'),
     draft: entry('A scan draft is not runnable; save it as a profile first'),
     not_checked: entry('Checking the profile'),

@@ -36,8 +36,9 @@ async function iconBoxes(page: Page) {
 }
 
 for (const scenario of [
-  { name: 'fine pointer', hasTouch: false, side: 24 },
-  { name: 'touch', hasTouch: true, side: 44 },
+  // The glyph grows with its target, so a touch reader sees what it can press.
+  { name: 'fine pointer', hasTouch: false, side: 24, glyph: 16 },
+  { name: 'touch', hasTouch: true, side: 44, glyph: 20 },
 ]) {
   test.describe(scenario.name, () => {
     test.use({ viewport: { width: 1280, height: 800 }, hasTouch: scenario.hasTouch });
@@ -61,14 +62,14 @@ for (const scenario of [
       expect(first.right <= second.left || first.bottom <= second.top).toBe(true);
     });
 
-    test(`the icon reserves its ${String(scenario.side)}px hit box with a 14px glyph`, async ({
+    test(`the icon reserves its ${String(scenario.side)}px hit box with a ${String(scenario.glyph)}px glyph`, async ({
       page,
     }) => {
       await page_(page);
       const boxes = await iconBoxes(page);
       expect(boxes.width).toBe(scenario.side);
       expect(boxes.height).toBe(scenario.side);
-      expect(boxes.glyph).toEqual([14, 14]);
+      expect(boxes.glyph).toEqual([scenario.glyph, scenario.glyph]);
       expect(boxes.footprintHeight).toBe(scenario.side);
       // The full target plus the 4px gap, without overlap with neighbouring controls.
       expect(boxes.footprintWidth).toBe(scenario.side + 4);

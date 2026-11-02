@@ -162,7 +162,8 @@ function SavedSection() {
         <Tile titleId="runs-saved-routines" title={t.saved.routines.short} intro={t.saved.scope}>
           <RunsList />
           <ActiveOnly>
-            <AddRun />
+            {/* With no runs yet, adding one is the only thing to do here. */}
+            <AddRun openFirst={saved.scopeReady && saved.runs.length === 0} />
           </ActiveOnly>
           {saved.run !== null && !saved.runListed ? (
             <p className="tp-runs__note" data-run-unlisted="true">
@@ -183,14 +184,16 @@ function SavedSection() {
               )}
               <Button tier="quiet" label={t.saved.checkRuns.short} onClick={commands.checkRuns} />
             </div>
-          ) : saved.read === 'not_read' ? (
+          ) : saved.read === 'not_read' && saved.runs.length > 0 ? (
             <p>{t.saved.reading.short}</p>
           ) : null}
           {saved.read === 'unavailable' ? (
             <p className="tp-runs__note">
               <span>{t.saved.unavailable.short}</span>
-              {saved.readError === null ? null : (
+              {saved.readError !== null ? (
                 <ServerValue kind="message" value={saved.readError} />
+              ) : saved.readFailure === null ? null : (
+                <span>{t.saved.failures[saved.readFailure].short}</span>
               )}
               {/* SR-8: reading the run again stays possible while its read fails. */}
               <Button

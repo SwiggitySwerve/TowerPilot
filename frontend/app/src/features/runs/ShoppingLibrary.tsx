@@ -151,8 +151,8 @@ function Policy({
   };
   return (
     <div data-library-policy={policy.id}>
+      {/* A section with its own heading, so the queue editor's headings inside it stay in order. */}
       <Tile
-        as="fieldset"
         className="tp-library__policy"
         titleId={`${own}:title`}
         title={policy.name === null ? null : <ServerValue kind="name" value={policy.name} />}
@@ -182,9 +182,27 @@ function Policy({
         >
           {t.binding.short}
         </a>
+        {/* A limit of the policy's kind is a fact about it, not background: shown closed too. */}
+        {policy.legacy === null ? null : (
+          <p className="tp-library__warning">{t.legacyWarning.short}</p>
+        )}
+        {/* A problem opens the editor once, so the fields to fix are in view. */}
         <Disclosure
           label={t.edit.short}
-          preview={<ValidationSummary problems={policyProblems(policy)} />}
+          initiallyOpen={policyProblems(policy) > 0}
+          preview={
+            <>
+              {policy.legacy === null ? null : (
+                <span className="tp-library__summary">
+                  {t.summary(
+                    policy.legacy.kind === 'list' ? null : policy.legacy.enabled,
+                    policy.legacy.lines.length,
+                  )}
+                </span>
+              )}
+              <ValidationSummary problems={policyProblems(policy)} />
+            </>
+          }
         >
           {!policy.contextReady ? (
             <p role="status">{copy.runs.reasons.context_unknown.short}</p>
@@ -320,6 +338,7 @@ export function ShoppingLibrary() {
           <CopyLine entry={t.scope} variant="intro" />
           <Disclosure
             label={t.manage.short}
+            initiallyOpen={problems > 0}
             preview={
               <>
                 <ValidationSummary problems={problems} />

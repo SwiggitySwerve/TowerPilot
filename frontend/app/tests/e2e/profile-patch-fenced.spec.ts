@@ -264,7 +264,7 @@ async function savedReadback(page: Page, name: string) {
     } else {
       await expect(row.getByRole('textbox')).toHaveValue('Offline farm');
       // The group's one Save says so once the saved value is read back.
-      await expect(entrySave(row)).toHaveAccessibleDescription('No changes to save');
+      await expect(entrySave(row)).toHaveAccessibleDescription('No unsaved changes');
     }
     await expect(row.locator('[data-outcome="saved"]')).toBeVisible();
   }

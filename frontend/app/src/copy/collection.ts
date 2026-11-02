@@ -134,7 +134,7 @@ export const collection = {
     read_only: entry('The active profile cannot be edited here'),
     save_pending: entry('Waiting until the last save is read back'),
     enter_label: entry('Enter a name'),
-    no_changes: entry('No change to save'),
+    no_changes: entry('No unsaved changes'),
     policy_in_use: entry('Used by a run; give those runs another policy in Runs first'),
     choose_source: entry('Choose a policy to copy'),
     no_policy_to_copy: entry('No saved policy to copy; create one from a template'),

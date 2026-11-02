@@ -494,7 +494,7 @@ for (const first of ['schedule', 'runs'] as const) {
     if (first === 'schedule') {
       await expect(page.getByText('No unsaved changes', { exact: true })).toBeVisible();
       await expect(saved.getByText(/Not saved/)).toBeVisible();
-      await saved.getByRole('button', { name: 'Check saved values' }).click();
+      await saved.getByRole('button', { name: 'Read saved values again' }).click();
       await expect(runSave).toBeEnabled();
       await expect(adGems).not.toBeChecked();
       expect(race.writes).toHaveLength(2);

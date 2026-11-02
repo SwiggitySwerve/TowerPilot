@@ -5,7 +5,7 @@ import type { QueueDraft } from '../../core/shoppingPlan.ts';
 import type { ShoppingLibraryPolicyVM } from '../../store/selectors/shoppingLibrary.ts';
 import { Button } from '../../ui/Button.tsx';
 import { useAnnounce } from '../../ui/LiveRegion.tsx';
-import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
+import { KnownOption, ServerValue } from '../../ui/ServerValue.tsx';
 
 const t = copy.shoppingLibrary;
 
@@ -38,7 +38,6 @@ export function LegacyEditor({
   };
   return (
     <div className="tp-library__legacy">
-      <p className="tp-library__warning">{t.legacyWarning.short}</p>
       {model.kind === 'list' ? (
         <p>{t.bare.short}</p>
       ) : (
@@ -94,7 +93,7 @@ export function LegacyEditor({
               >
                 <option value="">{t.choose.short}</option>
                 {line.tabs.map((item) => (
-                  <ServerOption key={item.value} value={item.value} label={item.label} />
+                  <KnownOption key={item.value} item={item} known={copy.shopping.sections} />
                 ))}
               </select>
             </label>
@@ -109,7 +108,7 @@ export function LegacyEditor({
               >
                 <option value="">{t.choose.short}</option>
                 {line.modes.map((item) => (
-                  <ServerOption key={item.value} value={item.value} label={item.label} />
+                  <KnownOption key={item.value} item={item} known={t.modes} />
                 ))}
               </select>
             </label>
@@ -128,7 +127,12 @@ export function LegacyEditor({
                     edit(`${line.key}:clicks`, event.currentTarget.value);
                   }}
                 />
-                <span id={`${own}:${line.key}:hint`}>
+                <span
+                  id={`${own}:${line.key}:hint`}
+                  className={
+                    line.clicksProblem === null ? 'tp-library__hint' : 'tp-library__problem'
+                  }
+                >
                   {line.clicksProblem === 'empty'
                     ? t.clicksEmpty.short
                     : line.clicksProblem === 'not_a_number'

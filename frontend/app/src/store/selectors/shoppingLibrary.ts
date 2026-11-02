@@ -199,7 +199,16 @@ export function selectShoppingLibrary(state: DashboardState) {
                 last: index === legacy.lines.length - 1,
                 tabs: choices(vocabulary?.tabs ?? [], line.tab),
                 modes: choices(vocabulary?.modes ?? [], line.mode),
-                statChoices: options([...new Set([...(vocabulary?.stats ?? []), ...line.stats])]),
+                // A stat reads as its shop label when the catalogue names it.
+                statChoices: [...new Set([...(vocabulary?.stats ?? []), ...line.stats])].flatMap(
+                  (value) => {
+                    const label = fromServer(
+                      'name',
+                      catalog.find((item) => item.id === value)?.label ?? value,
+                    );
+                    return label === null ? [] : [{ value, label }];
+                  },
+                ),
               })),
             },
     };

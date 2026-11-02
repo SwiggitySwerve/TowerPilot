@@ -51,7 +51,7 @@ test('SQ5 saved queue edits wait for the confirmed context when startup config r
   release();
   const reserve = root(page).getByRole('textbox', { name: 'Cash reserve', exact: true });
   await reserve.fill('12345');
-  await page.getByRole('button', { name: 'Check saved values', exact: true }).click();
+  await page.getByRole('button', { name: 'Read saved values again', exact: true }).click();
   await expect(reserve).toHaveValue('12345');
   await expect(root(page).getByRole('button', { name: 'Save queue', exact: true })).toBeEnabled();
 });
@@ -81,7 +81,7 @@ test('SQ5 saved queue edits wait for the run catalogue to confirm the draft scop
   release();
   const reserve = root(page).getByRole('textbox', { name: 'Cash reserve', exact: true });
   await reserve.fill('12345');
-  await page.getByRole('button', { name: 'Check saved values', exact: true }).click();
+  await page.getByRole('button', { name: 'Read saved values again', exact: true }).click();
   await expect(reserve).toHaveValue('12345');
   await expect(root(page).getByRole('button', { name: 'Save queue', exact: true })).toBeEnabled();
 });
@@ -258,7 +258,7 @@ for (const width of [1360, 1054, 390]) {
     ]);
     await check(page, width, 'unknown');
     await page.request.get('/__fake/set?scenario=shopping_saved_unknown_read');
-    await page.getByRole('button', { name: 'Check saved values', exact: true }).click();
+    await page.getByRole('button', { name: 'Read saved values again', exact: true }).click();
     await expect(page.locator('[data-region="runsSaved"] [data-outcome="applied"]')).toBeVisible();
     expect(await posts(page)).toHaveLength(1);
     await check(page, width, 'settled');
@@ -291,7 +291,7 @@ for (const width of [1360, 1054, 390]) {
         await expect(page.locator('[data-outcome="saved"]')).toHaveCount(0);
         source = bounds('read_after_the_refusals_nothing_changed');
       } else source = bounds('read_after_the_boundary_values_were_saved');
-      await page.getByRole('button', { name: 'Check saved values', exact: true }).click();
+      await page.getByRole('button', { name: 'Read saved values again', exact: true }).click();
       if (answer.status === 400) {
         await expect(page.locator('[data-outcome="not_saved"]')).toBeVisible();
         await expectBoundsDraft(root(page), name);

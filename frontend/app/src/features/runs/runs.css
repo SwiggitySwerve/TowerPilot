@@ -22,6 +22,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--tp-space-1) var(--tp-space-3);
+  color: var(--tp-color-text-strong);
+  font-weight: 600;
 }
 
 .tp-runs__picker-label {
@@ -79,7 +81,7 @@
 .tp-run-columns {
   display: grid;
   grid-template-columns:
-    minmax(7rem, 12rem) minmax(3rem, 4rem) repeat(3, minmax(9rem, 14rem))
+    minmax(7rem, 12rem) minmax(3rem, 4rem) repeat(3, minmax(9rem, 11rem))
     minmax(8rem, 1fr);
   align-items: start;
   gap: var(--tp-space-2);
@@ -469,4 +471,34 @@
 }
 .tp-run-switch .tp-run-row__mark {
   font-weight: 400;
+}
+
+/* A routine's overrides, each with its undo, in the row's last column: beside what they change. */
+.tp-run-row__resets {
+  grid-column: 6;
+  grid-row: 1;
+  align-self: center;
+}
+/* A switch and its override's undo share one cell, so the undo sits beside what it changes. */
+.tp-run-switch-cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-3);
+  min-width: 0;
+}
+.tp-run-switch-cell > .tp-run-row__resets {
+  flex-direction: row;
+}
+.tp-run-row__resets .tp-run-reset__name {
+  font-weight: 400;
+}
+.tp-run-row__resets .tp-button {
+  white-space: nowrap;
+}
+@container (max-width: 700px) {
+  .tp-run-row__resets {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
 }

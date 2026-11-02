@@ -81,6 +81,15 @@
   font-size: var(--tp-font-size-13);
   font-weight: 600;
 }
+/* Statistics: a read-only fact in its group's grid, its name styled as the field names beside it. */
+.tp-run-entry__fact {
+  min-width: 0;
+}
+.tp-run-entry__fact .tp-facts[data-layout] dt {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  font-weight: 600;
+}
 .tp-run-entry__head {
   display: flex;
   flex-wrap: wrap;

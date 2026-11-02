@@ -207,7 +207,7 @@ describe('Runs page: saved settings', () => {
     expect(within(savedRegion()).getByText('Saved')).toBeVisible();
     expect(savedInput(/^Ad gems Every$/u)).toHaveValue('30');
     expect(saveButton(savedRegion(), 'Save run settings')).toHaveAccessibleDescription(
-      'No changes to save',
+      'No unsaved changes',
     );
     expect(within(savedRegion()).queryByRole('button', { name: 'Discard' })).toBeNull();
   });
@@ -216,7 +216,7 @@ describe('Runs page: saved settings', () => {
     [409, 'Saved run changed; refresh before editing again'],
     [400, 'Invalid value: routines.ad_gems.interval_sec'],
   ])(
-    'RUN-06 a %i keeps the draft, says why and Check saved values reads the run (a GET)',
+    'RUN-06 a %i keeps the draft, says why and Read saved values again reads the run (a GET)',
     async (status, error) => {
       const page = await openRuns('#runs');
       await page.user.clear(savedInput(/^Ad gems Every$/u));
@@ -257,7 +257,7 @@ describe('Runs page: saved settings', () => {
       expect(
         within(savedRegion()).queryByRole('button', { name: 'Send same request again' }),
       ).toBeNull();
-      // SR-8: the unknown line stays (no Dismiss); the editor's Check saved values is the way out.
+      // SR-8: the unknown line stays (no Dismiss); the editor's Read saved values again is the way out.
       expect(within(savedRegion()).queryByRole('button', { name: 'Dismiss' })).toBeNull();
       expect(saveButton(savedRegion(), 'Save run settings')).toHaveAttribute(
         'aria-disabled',
@@ -270,7 +270,7 @@ describe('Runs page: saved settings', () => {
         body: savedWith(reread),
       }));
       await page.user.click(
-        within(savedRegion()).getByRole('button', { name: 'Check saved values' }),
+        within(savedRegion()).getByRole('button', { name: 'Read saved values again' }),
       );
       await page.advance(1_000);
       const accept = () =>

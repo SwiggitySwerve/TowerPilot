@@ -19,7 +19,9 @@ export const topBar = {
   reconnectReasons: {
     process_listed: entry('Unavailable while automation runs'),
     sending: entry('Reconnect is sending; wait for its reply'),
-    process_list_unavailable: entry('Reconnect needs a readable process list'),
+    process_list_unavailable: entry(
+      'Reconnect waits until the dashboard can tell whether automation is running',
+    ),
   },
   connection: {
     connected: entry('Connected'),

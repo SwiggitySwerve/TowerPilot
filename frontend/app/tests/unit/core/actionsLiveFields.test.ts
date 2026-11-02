@@ -229,7 +229,7 @@ describe('AC2 live fields from the action descriptors (core/runControls liveCont
 
   it('AC2 every code that can close a live change has its visible reason in the Runs copy', () => {
     // Every reading kind and reason of core/actions ActionsReading (the gate reason is a code
-    // string; RunEditor would otherwise fall back to "No changes to save").
+    // string; RunEditor would otherwise fall back to "No unsaved changes").
     const readings: ActionsReading[] = [
       { kind: 'current' },
       { kind: 'absent' },

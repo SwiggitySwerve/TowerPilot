@@ -471,7 +471,7 @@ for (const width of [1360, 1054, 390]) {
     await expect(
       tournament(page).getByRole('button', { name: 'Save', exact: true }),
     ).toBeDisabled();
-    await expect(tournament(page).getByText('No change to save', { exact: true })).toBeVisible();
+    await expect(tournament(page).getByText('No unsaved changes', { exact: true })).toBeVisible();
     expect(await posts(page)).toHaveLength(1);
     await accessibility(page, width);
     await screenshot(page, width, 'lists-empty');

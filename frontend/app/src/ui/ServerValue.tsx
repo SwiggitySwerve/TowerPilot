@@ -1,5 +1,5 @@
 import type { ServerText, ServerTextKind } from '../copy/server.ts';
-import type { CopyText } from '../copy/text.ts';
+import type { CopyEntry, CopyText } from '../copy/text.ts';
 import './ui.css';
 import './ServerValue.css';
 
@@ -51,5 +51,21 @@ export function ServerValue<K extends ServerTextKind>({
         {value}
       </bdi>
     </span>
+  );
+}
+
+/** A choice the catalogue names reads as its copy; any other shows as the server sent it. */
+export function KnownOption({
+  item,
+  known,
+}: {
+  readonly item: { readonly value: string; readonly label: ServerText<'name'> };
+  readonly known: Readonly<Record<string, CopyEntry>>;
+}) {
+  const entry = Object.hasOwn(known, item.value) ? known[item.value] : undefined;
+  return entry === undefined ? (
+    <ServerOption value={item.value} label={item.label} />
+  ) : (
+    <option value={item.value}>{entry.short}</option>
   );
 }

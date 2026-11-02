@@ -3,7 +3,7 @@ import path from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { entries, ownPath } from '../../src/core/read.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
-import { axeViolations, bodiesTo, posts, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import { axeViolations, bodiesTo, posts, reveal, WCAG_AA_TAGS } from './helpers/helpers.ts';
 
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -19,12 +19,12 @@ async function open(page: Page, scenario: string, width: number) {
   await expect
     .poll(() => page.evaluate(() => sessionStorage.getItem('tp.context.v1')))
     .not.toBeNull();
-  await library(page).getByText('Manage policies', { exact: true }).click();
+  await reveal(library(page).getByText('Manage policies', { exact: true }));
   await expect(policy(page, 'main_list')).toBeVisible();
 }
 async function edit(page: Page, id = 'main_list') {
   const form = policy(page, id);
-  await form.getByText('Edit shared policy', { exact: true }).click();
+  await reveal(form.getByText('Edit shared policy', { exact: true }));
   return form;
 }
 async function weighted(page: Page) {
@@ -201,7 +201,7 @@ for (const width of [1360, 1054, 390]) {
     await form.getByRole('button', { name: 'Save shared policy' }).click();
     await expect(form.locator('[data-outcome="unknown"]')).toBeVisible();
     await page.reload();
-    await library(page).getByText('Manage policies', { exact: true }).click();
+    await reveal(library(page).getByText('Manage policies', { exact: true }));
     const restored = await edit(page);
     await expect(restored.getByLabel('Cash reserve', { exact: true })).toHaveValue('750.5');
     await expect(restored.locator('[data-outcome="unknown"]')).toBeVisible();

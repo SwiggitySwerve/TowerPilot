@@ -7,7 +7,7 @@ import { HelpTip } from '../../ui/HelpTip.tsx';
 import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
 import { Fact, Facts } from '../../ui/Facts.tsx';
 import { Tile } from '../../ui/Tile.tsx';
-import { ServerOption } from '../../ui/ServerValue.tsx';
+import { KnownOption, ServerOption } from '../../ui/ServerValue.tsx';
 import { EditingTargetLine } from '../profiles/EditingTargetLine.tsx';
 import { pageHref } from '../../ui/routes.ts';
 import { useDashboard, useView } from '../dashboard/context.ts';
@@ -15,6 +15,8 @@ import { SaveOutcome } from '../settings/SaveOutcome.tsx';
 import './run-entry.css';
 
 const t = copy.runEntry;
+/** `as_is` is the loadout word for the equipment already on (profiles/SCHEMA.md). */
+const loadoutWords = { as_is: copy.runsAdd.asIs };
 type FieldVM = ReturnType<typeof selectRunEntry>['fields'][number];
 
 /** Display groups follow the field owner's order; they do not change save targets. */
@@ -102,14 +104,21 @@ function EntryField({ field }: { readonly field: FieldVM }) {
                 <option value="">{(field.key === 'dissonant_tab' ? t.coin : t.none).short}</option>
               ) : null}
               {field.unlisted === null ? null : (
-                <ServerOption
-                  value={typeof field.raw === 'string' ? field.raw : ''}
-                  label={field.unlisted}
+                <KnownOption
+                  item={{
+                    value: typeof field.raw === 'string' ? field.raw : '',
+                    label: field.unlisted,
+                  }}
+                  known={field.key === 'loadout' ? loadoutWords : {}}
                 />
               )}
               {field.choices.map((choice) =>
                 choice.label === null ? null : (
-                  <ServerOption key={choice.value} value={choice.value} label={choice.label} />
+                  <KnownOption
+                    key={choice.value}
+                    item={{ value: choice.value, label: choice.label }}
+                    known={field.key === 'loadout' ? loadoutWords : {}}
+                  />
                 ),
               )}
             </select>
@@ -344,11 +353,6 @@ export function RunEntry() {
         {/* Whose entry this is, which run, and how to read it again: one context line. */}
         <div className="tp-run-entry__head">
           <EditingTargetLine />
-          <div data-entry-statistics="true">
-            <Facts layout="inline">
-              <Fact label={copy.runs.statistics.short} value={copy.runs.alwaysOn.short} />
-            </Facts>
-          </div>
           <div className="tp-control-row">
             <label className="tp-runs__picker-label">
               <span>{t.picker.short}</span>
@@ -404,6 +408,14 @@ export function RunEntry() {
                       <EntryField key={cell.head.scope} field={cell.head} />
                     ),
                   )}
+                  {section === 'behavior' ? (
+                    // Statistics is part of how a run enters, but has nothing to change.
+                    <div className="tp-run-entry__fact" data-entry-statistics="true">
+                      <Facts layout="cells">
+                        <Fact label={copy.runs.statistics.short} value={copy.runs.alwaysOn.short} />
+                      </Facts>
+                    </div>
+                  ) : null}
                 </div>
                 <GroupBar section={section} fields={fields} />
               </Tile>
