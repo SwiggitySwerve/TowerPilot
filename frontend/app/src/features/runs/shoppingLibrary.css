@@ -38,12 +38,6 @@
   flex: 1 1 12rem;
   min-width: 0;
 }
-/* A field's name reads as every field name on the page does (the queue editor's included). */
-.tp-library__fields > label > span:first-child {
-  color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-13);
-  font-weight: 600;
-}
 .tp-library label {
   display: grid;
   gap: 0.35rem;
@@ -84,7 +78,6 @@
   padding-inline: var(--tp-space-1);
 }
 .tp-library__warning {
-  margin-block: var(--tp-space-2) 0;
   font-weight: 600;
 }
 @media (max-width: 600px) {
@@ -122,15 +115,5 @@
   background: none;
 }
 .tp-library__summary {
-  color: var(--tp-color-text-muted);
-}
-
-/* A legacy policy's directives, one line each in order, readable with its editor closed. */
-.tp-library__directives {
-  margin: var(--tp-space-1) 0 var(--tp-space-2);
-  padding-inline-start: var(--tp-space-6);
-  line-height: 1.5;
-}
-.tp-library__directives > li[data-enabled='false'] {
   color: var(--tp-color-text-muted);
 }

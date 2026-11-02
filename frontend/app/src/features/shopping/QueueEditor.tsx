@@ -522,13 +522,7 @@ export function QueueEditor(props: QueueEditorProps) {
           titleId={`${idBase}:picker`}
           title={t.picker.short}
           level={4}
-          intro={
-            vm.picker.length === 0
-              ? t.pickerEmpty
-              : vm.mode.value === 'weighted_split'
-                ? t.pickerHintWeighted
-                : t.pickerHint
-          }
+          intro={vm.mode.value === 'weighted_split' ? t.pickerHintWeighted : t.pickerHint}
         >
           {vm.orderProvisional ? <p className="tp-shop__hint">{t.orderProvisional.short}</p> : null}
           {vm.picker.map((section) => (

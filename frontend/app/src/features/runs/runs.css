@@ -382,14 +382,6 @@
     flex-basis: 100%;
     width: 100%;
   }
-  /* The undo-all keeps its help beside it, not on a row of its own. */
-  .tp-run-reset--all:has(> .tp-help__trigger) {
-    flex-wrap: nowrap;
-  }
-  .tp-run-reset--all > .tp-button {
-    flex: 1 1 auto;
-    width: auto;
-  }
 }
 
 /* F6-11 RL7: battle details per routine, read-only. */

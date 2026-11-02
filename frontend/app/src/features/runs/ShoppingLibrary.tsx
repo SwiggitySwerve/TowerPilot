@@ -1,4 +1,4 @@
-import { Fragment, useId, useLayoutEffect, useState } from 'react';
+import { useId, useLayoutEffect, useState } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry } from '../../copy/text.ts';
 import { pinLibrary } from '../../core/shoppingLibrary.ts';
@@ -78,56 +78,6 @@ function Action({
         />
       )}
     </ActionRow>
-  );
-}
-
-/**
- * A legacy policy's directives in order, each its stats and mode, so what it buys reads without
- * opening its editor (copying or binding it should not need the editor open).
- */
-function LegacyDirectives({
-  legacy,
-}: {
-  readonly legacy: NonNullable<ShoppingLibraryPolicyVM['legacy']>;
-}) {
-  const modes: Readonly<Record<string, CopyEntry>> = t.modes;
-  if (legacy.lines.length === 0) return null;
-  return (
-    <ol className="tp-library__directives" aria-label={t.directives.short}>
-      {legacy.lines.map((line) => {
-        const mode = line.modes.find((choice) => choice.value === line.mode)?.label ?? null;
-        return (
-          <li key={line.key} data-enabled={line.enabled}>
-            {line.stats.map((stat, index) => {
-              const label = line.statChoices.find((choice) => choice.value === stat)?.label;
-              return (
-                <Fragment key={stat}>
-                  {index === 0 ? null : t.listSep}
-                  {label === undefined ? null : <ServerValue kind="name" value={label} />}
-                </Fragment>
-              );
-            })}
-            {line.mode === '' ? null : (
-              <>
-                {t.modeSep}
-                {Object.hasOwn(modes, line.mode) ? (
-                  modes[line.mode]?.short
-                ) : mode === null ? null : (
-                  <ServerValue kind="name" value={mode} />
-                )}
-                {line.mode === 'clicks' && line.clicks !== '' ? t.clicksCount(line.clicks) : null}
-              </>
-            )}
-            {line.enabled ? null : (
-              <span className="tp-library__off">
-                {t.modeSep}
-                {t.lineOff.short}
-              </span>
-            )}
-          </li>
-        );
-      })}
-    </ol>
   );
 }
 
@@ -234,10 +184,7 @@ function Policy({
         </a>
         {/* A limit of the policy's kind is a fact about it, not background: shown closed too. */}
         {policy.legacy === null ? null : (
-          <>
-            <p className="tp-library__warning">{t.legacyWarning.short}</p>
-            <LegacyDirectives legacy={policy.legacy} />
-          </>
+          <p className="tp-library__warning">{t.legacyWarning.short}</p>
         )}
         {/* A problem opens the editor once, so the fields to fix are in view. */}
         <Disclosure

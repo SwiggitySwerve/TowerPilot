@@ -213,7 +213,7 @@ describe('SQ9 shared shopping policies', () => {
         });
       },
     });
-    await page.user.click(within(root()).getByRole('button', { name: 'Create a shopping policy' }));
+    await page.user.click(within(root()).getByRole('button', { name: 'Create a shared queue' }));
     await page.user.type(create().getByLabelText('New policy ID'), 'new_queue');
     expect(create().getByRole('button', { name: 'Save shared policy' })).toHaveAttribute(
       'aria-disabled',

@@ -95,7 +95,7 @@ for (const width of [1360, 1054, 390]) {
     page,
   }) => {
     await open(page, 'create', width);
-    await library(page).getByRole('button', { name: 'Create a shopping policy' }).click();
+    await library(page).getByRole('button', { name: 'Create a shared queue' }).click();
     const form = library(page).locator('[data-library-create]');
     await form.getByLabel('New policy ID').fill('new_queue');
     await expect(form.getByRole('button', { name: 'Save shared policy' })).toHaveAttribute(

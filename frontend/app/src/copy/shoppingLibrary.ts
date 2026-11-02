@@ -20,7 +20,7 @@ export const shoppingLibrary = {
   ),
   empty: entry('No shared shopping policies in this profile.'),
   check: entry('Check shared policies'),
-  create: entry('Create a shopping policy'),
+  create: entry('Create a shared queue'),
   createTitle: entry('New shared shopping queue'),
   copyTitle: entry('Copy shared shopping policy'),
   copy: entry('Copy policy'),
@@ -70,12 +70,6 @@ export const shoppingLibrary = {
   first: entry('Already first.'),
   last: entry('Already last.'),
   line: (position: number) => made(`Directive ${position}`),
-  /** A legacy policy's directives, in order, shown outside its editor. */
-  directives: entry('Directives'),
-  listSep: made(', '),
-  modeSep: made(' · '),
-  clicksCount: (raw: string) => made(` (${raw})`),
-  lineOff: entry('turned off'),
   /** A closed legacy policy's one line: its master switch (a bare list has none) and size. */
   summary: (enabled: boolean | null, directives: number) =>
     made(
