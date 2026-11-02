@@ -182,9 +182,9 @@ async function completedRead(page: Page, name: string) {
     await page.waitForLoadState('networkidle');
     if (surface === 'Collection') {
       await expect(page.getByText('Reading the saved settings', { exact: true })).toHaveCount(0);
-      await expect(
-        page.getByText("This run's saved settings couldn't be read.", { exact: true }),
-      ).toHaveCount(0);
+      await expect(page.getByText("The saved settings can't be read", { exact: true })).toHaveCount(
+        0,
+      );
       await expect(
         page.getByText('The last settings read was for another emulator, account or profile', {
           exact: true,
