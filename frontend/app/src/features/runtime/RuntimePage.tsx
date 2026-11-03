@@ -144,7 +144,7 @@ function SettingsSection() {
         <SectionPanel key={group} idPrefix="runtime-group" section={group} current={shownGroup}>
           <section data-runtime-group={group}>
             <Tile
-              titleId={`runtime-group-${group}`}
+              titleId={`runtime-group-${group}-title`}
               title={
                 group === 'overrides' ? (
                   <>

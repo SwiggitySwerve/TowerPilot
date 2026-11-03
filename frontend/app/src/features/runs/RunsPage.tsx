@@ -240,12 +240,12 @@ function SavedSection({
         {/* The edited run's settings, one section at a time; its outcome and the defaults stay in view. */}
         <SectionTabs
           label={t.saved.sections.short}
-          idPrefix="runs-saved"
+          idPrefix="runs-run"
           sections={SAVED_TABS}
           current={section}
           onSelect={onSection}
         />
-        <SectionPanel idPrefix="runs-saved" section="routines" current={section}>
+        <SectionPanel idPrefix="runs-run" section="routines" current={section}>
           <ActiveOnly>
             {saved.editor === null ? null : (
               <Tile titleId="runs-saved-editor" title={t.saved.editor.short}>
@@ -261,12 +261,12 @@ function SavedSection({
             )}
           </ActiveOnly>
         </SectionPanel>
-        <SectionPanel idPrefix="runs-saved" section="queue" current={section}>
+        <SectionPanel idPrefix="runs-run" section="queue" current={section}>
           <ActiveOnly>
             <SavedShopping />
           </ActiveOnly>
         </SectionPanel>
-        <SectionPanel idPrefix="runs-saved" section="entry" current={section}>
+        <SectionPanel idPrefix="runs-run" section="entry" current={section}>
           <RunEntry />
         </SectionPanel>
         {line === null ? null : <RunOutcome outcome={line} />}
@@ -344,6 +344,26 @@ export function RunsPage({
     current = { route, page: opened.page ?? shown.page, saved: opened.saved ?? shown.saved };
     setShown(current);
   }
+  // A link to the address already open fires no hashchange: it shows the sections it names again.
+  const [reopened, setReopened] = useState(0);
+  useEffect(() => {
+    const reopen = (event: MouseEvent) => {
+      const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+      if (link === null || route === '' || link.getAttribute('href') !== window.location.hash)
+        return;
+      const opened = sectionsOf(target);
+      setShown((now) => ({
+        route: now.route,
+        page: opened.page ?? now.page,
+        saved: opened.saved ?? now.saved,
+      }));
+      setReopened((count) => count + 1);
+    };
+    document.addEventListener('click', reopen);
+    return () => {
+      document.removeEventListener('click', reopen);
+    };
+  }, [route, target]);
   useEffect(() => {
     commands.openRuns(true, run);
   }, [commands, run]);
@@ -357,7 +377,7 @@ export function RunsPage({
     if (focus === null) return;
     const heading = { live: 'runsLive', saved: 'runsSaved', library: 'shoppingLibrary' }[focus];
     document.getElementById(`${heading}-title`)?.focus();
-  }, [focus, run, route]);
+  }, [focus, run, route, reopened]);
   return (
     <>
       <header className="tp-topbar">

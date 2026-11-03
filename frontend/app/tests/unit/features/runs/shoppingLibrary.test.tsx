@@ -62,8 +62,12 @@ function create() {
   if (element === null) throw new Error('missing create form');
   return within(element);
 }
-async function open(source: () => DashboardCase = () => INITIAL, options: PageOptions = {}) {
-  window.location.hash = '#runs/library';
+async function open(
+  source: () => DashboardCase = () => INITIAL,
+  options: PageOptions = {},
+  hash = '#runs/library',
+) {
+  window.location.hash = hash;
   const page = await renderPage({
     ...options,
     config: options.config ?? (() => CONFIG),
@@ -176,6 +180,22 @@ describe('SQ9 shared shopping policies', () => {
     );
     expect(message).not.toBeVisible();
     expect(page.fake.writes()).toEqual([]);
+  });
+
+  it('a usage link to the address already open shows its run entry section again', async () => {
+    const page = await open(() => INITIAL, {}, '#runs/saved/farm/entry');
+    const entry = document.getElementById('runs-run-entry');
+    expect(entry).not.toHaveAttribute('hidden');
+    await showSection('runs-page', 'library');
+    const link = within(policy('main_list')).getByRole('link', { name: 'farm' });
+    // The same address: following it fires no hashchange, yet it opens what it names.
+    expect(link).toHaveAttribute('href', window.location.hash);
+    await page.user.click(link);
+    expect(
+      document.querySelector('[data-sections="runs-page"] [data-section="saved"]'),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(entry).not.toHaveAttribute('hidden');
+    expect(document.getElementById('runsSaved-title')).toHaveFocus();
   });
 
   it('SQ9 shows all policy usages, names affected runs, forbids used deletion and passes catalogue/axe', async () => {

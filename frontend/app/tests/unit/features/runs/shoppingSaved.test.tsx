@@ -685,7 +685,7 @@ it('SQ3 SQ7 staged conversion preserves an interval subsequently saved through r
   await fill(page, 'Cash reserve', '0');
   await page.user.click(form().getByRole('button', { name: 'Use reviewed queue' }));
   await fill(page, 'Cash reserve', '0');
-  await showSection('runs-saved', 'routines');
+  await showSection('runs-run', 'routines');
   const interval = within(document.body).getByRole('textbox', { name: 'Shopping Every' });
   await page.user.clear(interval);
   await page.user.type(interval, '60');
@@ -695,7 +695,7 @@ it('SQ3 SQ7 staged conversion preserves an interval subsequently saved through r
   expect(selectShoppingSaved(page.data.store.getSnapshot()).editor.review.plan).toMatchObject({
     interval_sec: 60,
   });
-  await showSection('runs-saved', 'queue');
+  await showSection('runs-run', 'queue');
   await page.user.click(saveButton());
   expect(ownPath(posts(page)[1]?.body, 'changes', 'shopping_plan')).toEqual({
     ...Object.fromEntries(entries(own(converted, 'plan'))),
