@@ -186,6 +186,11 @@ describe('SQ9 shared shopping policies', () => {
     const page = await open(() => INITIAL, {}, '#runs/saved/farm/entry');
     const entry = document.getElementById('runs-run-entry');
     expect(entry).not.toHaveAttribute('hidden');
+    // Another run is picked for editing after the address opened.
+    act(() => {
+      page.data.commands.openRuns(true, 'other');
+    });
+    expect(page.data.store.getSnapshot().runsRun).toBe('other');
     await showSection('runs-page', 'library');
     const link = within(policy('main_list')).getByRole('link', { name: 'farm' });
     // The same address: following it fires no hashchange, yet it opens what it names.
@@ -195,6 +200,7 @@ describe('SQ9 shared shopping policies', () => {
       document.querySelector('[data-sections="runs-page"] [data-section="saved"]'),
     ).toHaveAttribute('aria-pressed', 'true');
     expect(entry).not.toHaveAttribute('hidden');
+    expect(page.data.store.getSnapshot().runsRun).toBe('farm');
     expect(document.getElementById('runsSaved-title')).toHaveFocus();
   });
 

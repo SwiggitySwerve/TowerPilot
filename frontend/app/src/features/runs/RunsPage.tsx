@@ -351,6 +351,8 @@ export function RunsPage({
       const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
       if (link === null || route === '' || link.getAttribute('href') !== window.location.hash)
         return;
+      // The run it names is edited again too, though another was picked since.
+      if (target?.kind === 'saved') commands.openRuns(true, target.run);
       const opened = sectionsOf(target);
       setShown((now) => ({
         route: now.route,
@@ -363,7 +365,7 @@ export function RunsPage({
     return () => {
       document.removeEventListener('click', reopen);
     };
-  }, [route, target]);
+  }, [commands, route, target]);
   useEffect(() => {
     commands.openRuns(true, run);
   }, [commands, run]);
