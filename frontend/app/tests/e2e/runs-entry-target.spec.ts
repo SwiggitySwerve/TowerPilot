@@ -43,7 +43,7 @@ for (const width of [1360, 1054, 390])
       const body = record(write.request.body),
         path = body['path'] as string[];
       const key = path.slice(2).join('.');
-      await openMore(page, width, `#runs/saved/${path[1]}`, 'profile_target_runs_saved');
+      await openMore(page, width, `#runs/saved/${path[1]}/entry`, 'profile_target_runs_saved');
       const row = moreEntry(page, key);
       await expect(row).toBeVisible();
       if (body['op'] === 'delete' && (key === 'label' || key === 'rides')) {
@@ -97,7 +97,7 @@ for (const width of [1360, 1054, 390])
         path = body['path'] as string[];
       const world = await moreWorld(page, moreSourceBefore(answer));
       world.answer(answer);
-      await openMore(page, width, `#runs/saved/${path[1]}`, 'profile_target_runs_saved');
+      await openMore(page, width, `#runs/saved/${path[1]}/entry`, 'profile_target_runs_saved');
       const row = moreEntry(page, path.slice(2).join('.'));
       const value = body['value'],
         raw = Array.isArray(value)
@@ -137,7 +137,7 @@ for (const width of [1360, 1054, 390])
         value = body['value'];
       const world = await moreWorld(page, moreSourceBefore(entry));
       world.answer(entry);
-      await openMore(page, width, `#runs/saved/${path[1]}`, 'profile_target_runs_saved');
+      await openMore(page, width, `#runs/saved/${path[1]}/entry`, 'profile_target_runs_saved');
       const row = moreEntry(page, path.slice(2).join('.'));
       await expect(row).toBeVisible();
       if (body['op'] === 'delete' && path.at(-1) === 'perk_bans')
@@ -194,7 +194,7 @@ async function open(page: Page, scenario: string, width: number, ready = true) {
   );
   expect(await posts(page)).toEqual([]);
   await page.evaluate(() => {
-    window.location.hash = '#runs/saved/farm';
+    window.location.hash = '#runs/saved/farm/entry';
   });
   if (!ready) return;
   await expect(field(page, 'label').getByLabel('Run label', { exact: true })).toHaveValue(
@@ -279,7 +279,7 @@ for (const width of [1360, 1054, 390]) {
       .focus();
     await page.keyboard.press('Enter');
     await page.evaluate(() => {
-      window.location.hash = '#runs/saved/farm';
+      window.location.hash = '#runs/saved/farm/entry';
     });
     await expect(editor(page).locator('[data-editing-target="mine"]')).toContainText(
       'Editing the active profile:mine',

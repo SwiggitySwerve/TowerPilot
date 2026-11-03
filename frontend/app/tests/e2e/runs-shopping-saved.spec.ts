@@ -16,7 +16,7 @@ async function open(page: Page, scenario: string, width: number) {
   await page.setViewportSize({ width, height: 900 });
   await page.goto(`/__fake/use?scenario=shopping_saved_${scenario}`);
   await page.evaluate(() => {
-    window.location.hash = '#runs/saved/farm';
+    window.location.hash = '#runs/saved/farm/queue';
   });
   await expect
     .poll(() => page.evaluate(() => sessionStorage.getItem('tp.context.v1')))
@@ -40,7 +40,7 @@ test('SQ5 saved queue edits wait for the confirmed context when startup config r
   });
   await page.goto('/__fake/use?scenario=shopping_saved_refused');
   await page.evaluate(() => {
-    location.hash = '#runs/saved/farm';
+    location.hash = '#runs/saved/farm/queue';
   });
   await expect(root(page)).toBeVisible();
   await expect(root(page)).toContainText(
@@ -69,7 +69,7 @@ test('SQ5 saved queue edits wait for the run catalogue to confirm the draft scop
   });
   await page.goto('/__fake/use?scenario=shopping_saved_refused');
   await page.evaluate(() => {
-    location.hash = '#runs/saved/farm';
+    location.hash = '#runs/saved/farm/queue';
   });
   await expect(root(page)).toBeVisible();
   await expect
@@ -96,7 +96,7 @@ test('SQ5 failed startup run catalogue has a visible retry that restores saved e
   });
   await page.goto('/__fake/use?scenario=shopping_saved_refused');
   await page.evaluate(() => {
-    location.hash = '#runs/saved/farm';
+    location.hash = '#runs/saved/farm/queue';
   });
   await expect(root(page)).toContainText(
     'The run list could not be read. Check it again before editing saved settings.',
@@ -238,7 +238,7 @@ for (const width of [1360, 1054, 390]) {
     await check(page, width, 'saved');
     // A run-specific GET uses the recorded untouched other run, independent of farm's write.
     await page.evaluate(() => {
-      window.location.hash = '#runs/saved/other';
+      window.location.hash = '#runs/saved/other/queue';
     });
     await expect(root(page).getByLabel('Cash reserve', { exact: true })).toHaveValue('500');
     expect(await posts(page)).toHaveLength(1);

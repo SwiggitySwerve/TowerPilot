@@ -25,7 +25,7 @@ for (const width of [1360, 1054, 390]) {
     });
     // Leaving/reopening Profiles starts a fresh list read without changing its selection.
     await page.evaluate(() => {
-      location.hash = '#runs/saved/farm';
+      location.hash = '#runs/saved/farm/entry';
     });
     await expect(page.locator('[data-run-entry]')).toBeVisible();
     await page.evaluate(() => {

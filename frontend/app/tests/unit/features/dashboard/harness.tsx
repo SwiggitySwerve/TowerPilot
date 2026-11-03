@@ -324,3 +324,20 @@ export function renderRegion(
     },
   };
 }
+
+/**
+ * Show one section of a sectioned page (SectionTabs): the button keyed `key` in the row
+ * `row` (`runs-page`: live, saved, library; `runs-run`: routines, queue, entry;
+ * `runtime-page`; `runtime-group`). A shown section stays shown.
+ */
+export async function showSection(row: string, key: string): Promise<void> {
+  const button = document.querySelector<HTMLButtonElement>(
+    `[data-sections="${row}"] [data-section="${key}"]`,
+  );
+  if (button === null) throw new Error(`No section ${key} in ${row}`);
+  if (button.getAttribute('aria-pressed') === 'true') return;
+  await act(async () => {
+    button.click();
+    await Promise.resolve();
+  });
+}

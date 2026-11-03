@@ -12,7 +12,12 @@ import {
   type DashboardCase,
 } from '../../../support/dashboardFixture.ts';
 import { postBodies } from '../../../support/dataLayer.ts';
-import { renderPage, type PageHarness, type PageOptions } from '../dashboard/harness.tsx';
+import {
+  renderPage,
+  showSection,
+  type PageHarness,
+  type PageOptions,
+} from '../dashboard/harness.tsx';
 
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
 const CONFIG = dashboardPagesCase(
@@ -57,8 +62,12 @@ function create() {
   if (element === null) throw new Error('missing create form');
   return within(element);
 }
-async function open(source: () => DashboardCase = () => INITIAL, options: PageOptions = {}) {
-  window.location.hash = '#runs/saved/farm';
+async function open(
+  source: () => DashboardCase = () => INITIAL,
+  options: PageOptions = {},
+  hash = '#runs/library',
+) {
+  window.location.hash = hash;
   const page = await renderPage({
     ...options,
     config: options.config ?? (() => CONFIG),
@@ -151,6 +160,8 @@ describe('SQ9 shared shopping policies', () => {
         );
       },
     });
+    // The saved defaults sit under Saved settings.
+    await showSection('runs-page', 'saved');
     const defaults = document.querySelector<HTMLElement>('[data-run-defaults]');
     if (defaults === null) throw new Error('missing saved defaults');
     const summary = defaults.querySelector('summary');
@@ -171,11 +182,39 @@ describe('SQ9 shared shopping policies', () => {
     expect(page.fake.writes()).toEqual([]);
   });
 
+  it('a usage link to the address already open shows its run entry section again', async () => {
+    const page = await open(() => INITIAL, {}, '#runs/saved/farm/entry');
+    const entry = document.getElementById('runs-run-entry');
+    expect(entry).not.toHaveAttribute('hidden');
+    // Another run is picked for editing after the address opened.
+    act(() => {
+      page.data.commands.openRuns(true, 'other');
+    });
+    expect(page.data.store.getSnapshot().runsRun).toBe('other');
+    await showSection('runs-page', 'library');
+    const link = within(policy('main_list')).getByRole('link', { name: 'farm' });
+    // The same address: following it fires no hashchange, yet it opens what it names.
+    expect(link).toHaveAttribute('href', window.location.hash);
+    await page.user.click(link);
+    expect(
+      document.querySelector('[data-sections="runs-page"] [data-section="saved"]'),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(entry).not.toHaveAttribute('hidden');
+    expect(page.data.store.getSnapshot().runsRun).toBe('farm');
+    expect(document.getElementById('runsSaved-title')).toHaveFocus();
+  });
+
   it('SQ9 shows all policy usages, names affected runs, forbids used deletion and passes catalogue/axe', async () => {
     const page = await open();
     const main = within(policy('main_list'));
-    expect(main.getByRole('link', { name: 'farm' })).toHaveAttribute('href', '#runs/saved/farm');
-    expect(main.getByRole('link', { name: 'other' })).toHaveAttribute('href', '#runs/saved/other');
+    expect(main.getByRole('link', { name: 'farm' })).toHaveAttribute(
+      'href',
+      '#runs/saved/farm/entry',
+    );
+    expect(main.getByRole('link', { name: 'other' })).toHaveAttribute(
+      'href',
+      '#runs/saved/other/entry',
+    );
     expect(main.getByRole('button', { name: 'Delete policy' })).toHaveAttribute(
       'aria-disabled',
       'true',

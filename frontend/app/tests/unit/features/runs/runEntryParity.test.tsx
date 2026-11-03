@@ -35,7 +35,7 @@ const config = recorded('run_templates_add_fenced.read_config_the_page_context_c
 async function open(entry: DashboardCase, lost = false) {
   const path = stringList(own(entry.request.body, 'path')) ?? [];
   let source = paritySourceBefore(entry);
-  window.location.hash = `#runs/saved/${path[1]}`;
+  window.location.hash = `#runs/saved/${path[1]}/entry`;
   const page = await renderPage({
     config: () => config,
     before: (fake) => {
@@ -196,7 +196,7 @@ it.each(['coin_run_switched_to_dissonance', 'saved_rides', 'saved_cycles'])(
 it('PE6 F6-14c inactive dissonant_tab follows its recorded save', async () => {
   const save = moreCase('inactive_saved_dissonant_tab');
   let source = moreSourceBefore(save);
-  window.location.hash = '#runs/saved/dissonance';
+  window.location.hash = '#runs/saved/dissonance/entry';
   const page = await renderPage({
     config: () => recorded('profile_target.inactive_editor_context_before_save').body,
     before: (fake) => {
@@ -239,7 +239,7 @@ it('PE6 F6-14c inactive dissonant_tab follows its recorded save', async () => {
 });
 
 it('RL13 F6-11-P3-03 absent rides describes the disabled quest-default action with a visible reason', async () => {
-  window.location.hash = '#runs/saved/quest_sm';
+  window.location.hash = '#runs/saved/quest_sm/entry';
   const page = await renderPage({
     config: () => config,
     before: (fake) => {

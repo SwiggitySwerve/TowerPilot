@@ -219,3 +219,14 @@ export async function reveal(label: Locator): Promise<void> {
     expect(await details.evaluate((element) => (element as HTMLDetailsElement).open)).toBe(true);
   }).toPass();
 }
+
+/**
+ * Show one section of a sectioned page (SectionTabs): the button keyed `key` in the row
+ * `row` (`runs-page`: live, saved, library; `runs-run`: routines, queue, entry;
+ * `runtime-page`; `runtime-group`). A shown section stays shown.
+ */
+export async function showSection(page: Page, row: string, key: string): Promise<void> {
+  const button = page.locator(`[data-sections="${row}"] [data-section="${key}"]`);
+  if ((await button.getAttribute('aria-pressed')) !== 'true') await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+}

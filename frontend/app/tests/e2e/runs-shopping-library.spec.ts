@@ -14,7 +14,7 @@ async function open(page: Page, scenario: string, width: number) {
   await page.setViewportSize({ width, height: 900 });
   await page.goto(`/__fake/use?scenario=shopping_library_${scenario}`);
   await page.evaluate(() => {
-    window.location.hash = '#runs/saved/farm';
+    window.location.hash = '#runs/library';
   });
   await expect
     .poll(() => page.evaluate(() => sessionStorage.getItem('tp.context.v1')))
@@ -56,15 +56,17 @@ async function check(page: Page, width: number, state: string, box: Locator = li
   expect(
     violations,
     JSON.stringify(
-      await page.locator('li:nth-child(1) > a[href$="#runs/saved/farm"]').evaluateAll((elements) =>
-        elements.map((element) => ({
-          html: element.outerHTML,
-          parent: element.parentElement?.parentElement?.outerHTML.slice(0, 300),
-          library: element.closest('[data-shopping-library]') !== null,
-          width: element.getBoundingClientRect().width,
-          height: element.getBoundingClientRect().height,
-        })),
-      ),
+      await page
+        .locator('li:nth-child(1) > a[href$="#runs/saved/farm/entry"]')
+        .evaluateAll((elements) =>
+          elements.map((element) => ({
+            html: element.outerHTML,
+            parent: element.parentElement?.parentElement?.outerHTML.slice(0, 300),
+            library: element.closest('[data-shopping-library]') !== null,
+            width: element.getBoundingClientRect().width,
+            height: element.getBoundingClientRect().height,
+          })),
+        ),
     ),
   ).toEqual([]);
   expect(

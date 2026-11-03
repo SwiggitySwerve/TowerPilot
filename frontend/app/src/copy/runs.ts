@@ -36,6 +36,8 @@ function capital(text: string): string {
 export const runs = {
   pageName: entry('Runs'),
   needsAttention: entry('Needs attention'),
+  /** The row that shows one of the page's sections at a time. */
+  sections: entry('Runs sections'),
   entrySections: {
     identity: entry('Identity'),
     behavior: entry('Entry behavior'),
@@ -169,6 +171,9 @@ export const runs = {
   saved: {
     routines: entry('Saved runs'),
     editor: entry('Routines of the run being edited'),
+    /** The row that shows one section of the edited run's settings at a time. */
+    sections: entry('Sections of the run being edited'),
+    routinesTab: entry('Routines'),
     title: entry('Saved settings'),
     scope: entry('Used by future battles'),
     picker: entry('Run'),

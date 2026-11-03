@@ -244,7 +244,7 @@ for (const width of widths) {
     );
     await expect(page.getByRole('link', { name: 'farm_deep', exact: true })).toHaveAttribute(
       'href',
-      '#runs/saved/farm_deep',
+      '#runs/saved/farm_deep/entry',
     );
     const help = page.getByRole('button', { name: 'About equipment selection', exact: true });
     await help.focus();
@@ -413,7 +413,7 @@ for (const width of widths) {
       page.getByRole('combobox', { name: 'Global preset selection', exact: true }),
     ).toHaveValue('Tournament');
     await page.getByRole('link', { name: 'farm_deep', exact: true }).click();
-    await expect(page).toHaveURL(/#runs\/saved\/farm_deep$/);
+    await expect(page).toHaveURL(/#runs\/saved\/farm_deep\/entry$/);
     await page.goBack();
     await expect(
       page.getByRole('combobox', { name: 'Global preset selection', exact: true }),

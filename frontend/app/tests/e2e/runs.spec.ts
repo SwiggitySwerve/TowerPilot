@@ -5,7 +5,14 @@ import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../../scripts/contract-fixture.mjs';
-import { axeCounts, bodiesTo, navigateApp, openScenario, posts } from './helpers/helpers.ts';
+import {
+  axeCounts,
+  bodiesTo,
+  navigateApp,
+  openScenario,
+  posts,
+  showSection,
+} from './helpers/helpers.ts';
 
 /**
  * The Runs page in a real browser on the fake backend (brief
@@ -29,7 +36,7 @@ async function openRuns(page: Page, scenario: string, hash: string, width = 1360
     window.location.hash = target;
   }, hash);
   await expect(page.getByRole('heading', { level: 1, name: 'Runs' })).toBeVisible();
-  await expect(page.locator('[data-region="runsSaved"] input[type="text"]').first()).toBeVisible();
+  await expect(page.locator('main input[type="text"]:visible').first()).toBeVisible();
   return problems;
 }
 
@@ -222,47 +229,58 @@ for (const width of WIDTHS) {
     page,
   }) => {
     const problems = await openRuns(page, 'runs_live_applied', '#runs', width);
-    await page.waitForTimeout(500);
-    expect(await axeCounts(page)).toEqual([]);
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(0);
-    const small = await page.evaluate(() =>
-      [
-        ...document.querySelectorAll<HTMLElement>(
-          'main button, main input, main select, main summary',
-        ),
-      ]
-        .filter((element) => element.getClientRects().length > 0)
-        .map((element) => ({
-          label: element.outerHTML.slice(0, 60),
-          box: element.getBoundingClientRect(),
-        }))
-        .filter((entry) => entry.box.height < 24 || entry.box.width < 24)
-        .map((entry) => entry.label),
-    );
-    expect(small).toEqual([]);
+    for (const section of ['live', 'library', 'saved']) {
+      await showSection(page, 'runs-page', section);
+      await page.waitForTimeout(500);
+      expect(await axeCounts(page), section).toEqual([]);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, section).toBeLessThanOrEqual(0);
+      const small = await page.evaluate(() =>
+        [
+          ...document.querySelectorAll<HTMLElement>(
+            'main button, main input, main select, main summary',
+          ),
+        ]
+          .filter((element) => element.getClientRects().length > 0)
+          .map((element) => ({
+            label: element.outerHTML.slice(0, 60),
+            box: element.getBoundingClientRect(),
+          }))
+          .filter((entry) => entry.box.height < 24 || entry.box.width < 24)
+          .map((entry) => entry.label),
+      );
+      expect(small, section).toEqual([]);
+    }
     if (width === 390) {
-      for (const name of ['Save run settings', 'Save changes to this battle']) {
+      for (const [section, name] of [
+        ['saved', 'Save run settings'],
+        ['live', 'Save changes to this battle'],
+      ] as const) {
+        await showSection(page, 'runs-page', section);
         const box = await page.getByRole('button', { name }).boundingBox();
         expect(box?.height ?? 0, name).toBeGreaterThanOrEqual(44);
       }
       // F6R-08: each number on its own line; the editor's buttons stacked, one per line.
-      for (const region of ['runsSaved', 'runsLive']) {
+      for (const [section, region] of [
+        ['saved', 'runsSaved'],
+        ['live', 'runsLive'],
+      ] as const) {
+        await showSection(page, 'runs-page', section);
         const tops = await page
           .locator(`[data-region="${region}"] [data-routine="ad_gems"] input[type="text"]`)
           .evaluateAll((inputs) => inputs.map((input) => input.getBoundingClientRect().top));
         expect(tops.length, region).toBeGreaterThan(1);
         expect(new Set(tops.map((top) => Math.round(top))).size, region).toBe(tops.length);
       }
-      const saved = page.locator('[data-region="runsSaved"]');
-      const save = await saved.getByRole('button', { name: 'Save run settings' }).boundingBox();
-      const check = await saved
-        .getByRole('button', { name: 'Read saved values again' })
-        .boundingBox();
-      expect(check?.y ?? 0).toBeGreaterThanOrEqual((save?.y ?? 0) + (save?.height ?? 0));
-      expect(Math.abs((check?.x ?? 0) - (save?.x ?? 0))).toBeLessThanOrEqual(1);
+      // Reading the run again serves every section of its settings: it sits in the header.
+      await showSection(page, 'runs-page', 'saved');
+      await expect(
+        page
+          .locator('[data-region="runsSaved"] .tp-region__end')
+          .getByRole('button', { name: 'Read saved values again' }),
+      ).toBeVisible();
     }
     await page.screenshot({
       path: path.join(OUT, `runs-page-${String(width)}.png`),

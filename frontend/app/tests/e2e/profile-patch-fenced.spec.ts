@@ -26,7 +26,7 @@ function hash(name: string) {
   const page = pageName(name);
   if (page === 'Schedule') return '#schedule';
   if (page.startsWith('Abilities')) return '#abilities';
-  if (page === 'Runs entry') return '#runs/saved/farm';
+  if (page === 'Runs entry') return '#runs/saved/farm/entry';
   return `#collection/policy/${name === 'active_unused_gather_deleted' ? 'spare' : 'all_on'}`;
 }
 function screenshotPage(name: string) {
@@ -385,7 +385,7 @@ test('RunEntry refused draft survives failed source reread and recovery without 
   await page.clock.install();
   await page.goto('/__fake/use?scenario=profile_patch_fenced_active_run_entry_label_saved_refused');
   await page.evaluate(() => {
-    location.hash = '#runs/saved/farm';
+    location.hash = '#runs/saved/farm/entry';
   });
   const row = page.locator('[data-entry-field="label"]');
   const input = row.getByLabel('Run label', { exact: true });
@@ -487,7 +487,7 @@ test('RunEntry current source without a revision stays editable with Save blocke
   });
   await page.goto('/__fake/use?scenario=profile_patch_fenced_active_run_entry_label_saved_refused');
   await page.evaluate(() => {
-    location.hash = '#runs/saved/farm';
+    location.hash = '#runs/saved/farm/entry';
   });
   const row = page.locator('[data-entry-field="label"]');
   const input = row.getByLabel('Run label', { exact: true });

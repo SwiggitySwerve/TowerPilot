@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { axeCounts, posts, reveal, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import { axeCounts, posts, reveal, showSection, WCAG_AA_TAGS } from './helpers/helpers.ts';
 import { measureVisibleWords } from './helpers/glance.ts';
 
 /** Exercise the mounted React component in real pages, using only the fixture backend. */
@@ -162,7 +162,7 @@ for (const { name, touch, width } of [
 
     test('Runs checkbox labels provide full targets without sending a save', async ({ page }) => {
       await page.request.get('/__fake/use?scenario=runs_entry_saved');
-      await page.goto('/ui/app/#runs/saved/farm_deep');
+      await page.goto('/ui/app/#runs/saved/farm_deep/entry');
       for (const field of ['restart_via_home', 'cancel_sprint', 'perk_bans']) {
         const label = page.locator(`[data-entry-field="${field}"] .tp-check-field`);
         const checkbox = label.getByRole('checkbox');
@@ -217,7 +217,7 @@ for (const { name, touch, width } of [
       page,
     }) => {
       await page.request.get('/__fake/use?scenario=shopping_library_v2');
-      await page.goto('/ui/app/#runs/saved/farm');
+      await page.goto('/ui/app/#runs/library');
       const library = page.locator('[data-shopping-library]');
       await reveal(library.getByText('Manage policies', { exact: true }));
       const form = library.locator('[data-library-policy="main_list"]');
@@ -247,6 +247,7 @@ for (const { name, touch, width } of [
     test('Runtime keeps event evidence visible and bounds expanded raw JSON', async ({ page }) => {
       await page.request.get('/__fake/use?scenario=runtime');
       await page.goto('/ui/app/#runtime');
+      await showSection(page, 'runtime-page', 'runtimeDiagnostics');
       const events = page.getByRole('region', { name: 'Returned events', exact: true });
       for (const text of ['unconfirmed', 'timeout', 'the device went away']) {
         await expect(events.getByText(text, { exact: true })).toBeVisible();

@@ -5,7 +5,8 @@
   max-width: 1160px;
   min-width: 0;
 }
-.tp-runtime > .tp-region > .tp-region__body {
+/* Each region sits in its section's panel, which adds no box of its own. */
+.tp-runtime > .tp-section-panel > .tp-region > .tp-region__body {
   display: flex;
   flex-direction: column;
   gap: var(--tp-space-3);

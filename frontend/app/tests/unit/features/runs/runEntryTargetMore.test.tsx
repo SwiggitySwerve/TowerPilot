@@ -123,7 +123,7 @@ async function open(
 ) {
   const path = stringList(own(entry.request.body, 'path')) ?? [];
   let source = initial ?? moreSourceBefore(entry);
-  window.location.hash = `#runs/saved/${path[1] ?? 'farm'}`;
+  window.location.hash = `#runs/saved/${path[1] ?? 'farm'}/entry`;
   const page = await renderPage({
     ...(storage === undefined ? {} : { storage }),
     config: () => recorded('profile_target.inactive_editor_context_before_save').body,

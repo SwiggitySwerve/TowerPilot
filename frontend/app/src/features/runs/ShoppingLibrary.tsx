@@ -35,7 +35,7 @@ import { RevocationFallback } from '../dashboard/shared/RevocationFallback.tsx';
 import { SaveOutcome } from '../settings/SaveOutcome.tsx';
 import { QueueEditor } from '../shopping/QueueEditor.tsx';
 import { LegacyEditor } from './ShoppingLibraryLegacy.tsx';
-import { ValidationSummary } from './ValidationSummary.tsx';
+import { ValidationSummary } from '../../ui/ValidationSummary.tsx';
 import './shoppingLibrary.css';
 
 const t = copy.shoppingLibrary;
@@ -165,7 +165,7 @@ function Policy({
             <ul>
               {policy.usage.map((run) => (
                 <li key={run.key}>
-                  <a href={pageHref('runs', { kind: 'saved', run: run.key })}>
+                  <a href={pageHref('runs', { kind: 'saved', run: run.key, section: 'entry' })}>
                     {run.name === null ? null : <ServerValue kind="name" value={run.name} />}
                   </a>
                 </li>
@@ -177,7 +177,9 @@ function Policy({
           className="tp-library__link"
           href={pageHref(
             'runs',
-            policy.usage[0] === undefined ? null : { kind: 'saved', run: policy.usage[0].key },
+            policy.usage[0] === undefined
+              ? null
+              : { kind: 'saved', run: policy.usage[0].key, section: 'entry' },
           )}
         >
           {t.binding.short}

@@ -24,7 +24,7 @@ async function openSaved(page: Page, width: number, routes: (page: Page) => Prom
   await routes(page);
   await page.goto('/__fake/use?scenario=shopping_saved_edit');
   await page.evaluate(() => {
-    window.location.hash = '#runs/saved/farm';
+    window.location.hash = '#runs/saved/farm/queue';
   });
   await expect(page.locator('[data-shopping-saved] .tp-shop__page .tp-chip-grid')).toHaveCount(3);
 }

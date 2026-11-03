@@ -19,7 +19,7 @@ afterEach(() => {
 });
 
 async function open(editor: 'collection' | 'runs') {
-  window.location.hash = editor === 'collection' ? '#collection' : '#runs/saved/farm';
+  window.location.hash = editor === 'collection' ? '#collection' : '#runs/saved/farm/entry';
   const page = await renderPage({
     config: () => recorded('inactive_editor_context_before_save').body,
     before: (fake) => {
