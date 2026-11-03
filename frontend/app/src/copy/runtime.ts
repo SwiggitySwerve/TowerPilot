@@ -8,6 +8,13 @@ export const runtime = {
   diagnostics: entry('Diagnostic events'),
   diagnosticQuery: entry('Query and refresh'),
   sections: entry('Runtime sections'),
+  /** The row that shows one group of saved settings at a time, and each group's short name. */
+  groups: entry('Settings groups'),
+  groupTabs: {
+    defaults: entry('Machine defaults'),
+    overrides: entry('This emulator'),
+    machine: entry('Tap and logging'),
+  },
   fullValue: entry('Show full value'),
   exactMatching: entry('Filters match exact values.'),
   eventKind: entry('Event'),

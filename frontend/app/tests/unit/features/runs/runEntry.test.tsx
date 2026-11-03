@@ -94,7 +94,7 @@ async function open(
   options: PageOptions = {},
   source: () => DashboardCase = () => INITIAL,
 ) {
-  window.location.hash = `#runs/saved/${run}`;
+  window.location.hash = `#runs/saved/${run}/entry`;
   const page = await renderPage({
     ...options,
     config: options.config ?? (() => CONFIG),

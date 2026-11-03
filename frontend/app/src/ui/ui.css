@@ -746,3 +746,20 @@ h3.tp-tile__title {
   color: color-mix(in srgb, var(--tp-color-text-muted) 70%, transparent);
   cursor: not-allowed;
 }
+
+/* A long page's sections, one shown at a time (SectionTabs): the legacy day-tab row. The
+   shown section's button reads pressed, as Schedule's day buttons do. */
+.tp-sections {
+  align-items: center;
+}
+.tp-sections__tab[aria-pressed='true'] {
+  border-color: var(--tp-color-focus);
+  background: var(--tp-color-surface-active);
+}
+/* A shown panel adds no box: its parts sit in the page as if it were not there. */
+.tp-section-panel {
+  display: contents;
+}
+.tp-section-panel[hidden] {
+  display: none;
+}

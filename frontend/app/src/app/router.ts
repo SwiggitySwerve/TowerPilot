@@ -2,6 +2,7 @@ import { useMemo, useSyncExternalStore } from 'react';
 import {
   HIDDEN_PAGE_IDS,
   PAGE_IDS,
+  SAVED_SECTIONS,
   pageHref,
   type HiddenPageId,
   type PageId,
@@ -12,7 +13,8 @@ import {
  * A tiny hash router: `#dashboard`-style routes like the legacy page's, so
  * Flask keeps serving static files only and no server route is needed. A page
  * may take one target after a slash: the Runs page opens `#runs/saved/<run>`
- * (one run's saved settings) or `#runs/live` (this battle's live settings).
+ * (one run's saved settings, `#runs/saved/<run>/entry` one section of them) or
+ * `#runs/live` (this battle's live settings) or `#runs/library` (shared shopping policies).
  */
 export const ROUTE_IDS = [...PAGE_IDS, ...HIDDEN_PAGE_IDS] as const;
 
@@ -62,9 +64,14 @@ function targetOf(id: RouteId, rest: readonly string[]): RouteTarget | null | un
   }
   if (id !== 'runs') return undefined;
   if (rest.length === 1 && rest[0] === 'live') return { kind: 'live' };
-  if (rest.length === 2 && rest[0] === 'saved') {
+  if (rest.length === 1 && rest[0] === 'library') return { kind: 'library' };
+  if ((rest.length === 2 || rest.length === 3) && rest[0] === 'saved') {
     const run = decoded(rest[1] ?? '');
-    return run === null || run === '' ? undefined : { kind: 'saved', run };
+    if (run === null || run === '') return undefined;
+    if (rest.length === 2) return { kind: 'saved', run };
+    // One section of the run's saved settings: `#runs/saved/<run>/entry`.
+    const section = SAVED_SECTIONS.find((name) => name === rest[2]);
+    return section === undefined ? undefined : { kind: 'saved', run, section };
   }
   return undefined;
 }

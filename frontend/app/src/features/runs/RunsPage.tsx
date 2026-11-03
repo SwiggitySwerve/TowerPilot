@@ -1,5 +1,5 @@
-import { useEffect, useId } from 'react';
-import type { PageTarget } from '../../ui/routes.ts';
+import { useEffect, useId, useState } from 'react';
+import { pageHref, type PageTarget, type SavedSection } from '../../ui/routes.ts';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyNode } from '../../copy/text.ts';
 import { selectRunsPage } from '../../store/selectors/runs.ts';
@@ -11,6 +11,7 @@ import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { Region, RegionBody, RegionEnd, RegionInline } from '../../ui/Region.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 import { Why } from '../../ui/Why.tsx';
+import { SectionPanel, SectionTabs } from '../../ui/SectionTabs.tsx';
 import {
   FaultPoint,
   useDashboard,
@@ -33,6 +34,22 @@ import { RunDefaults } from './RunDefaults.tsx';
 import './runs.css';
 
 const t = copy.runs;
+
+/** The page's sections, one shown at a time: this battle, saved settings, shared policies. */
+type PageSection = 'live' | 'saved' | 'library';
+
+const PAGE_SECTIONS = [
+  { key: 'live', label: t.live.title.short },
+  { key: 'saved', label: t.saved.title.short },
+  { key: 'library', label: copy.shoppingLibrary.title.short },
+] as const;
+
+/** The edited run's settings, one section at a time. */
+const SAVED_TABS = [
+  { key: 'routines', label: t.saved.routinesTab.short },
+  { key: 'queue', label: copy.shoppingSaved.title.short },
+  { key: 'entry', label: copy.runEntry.title.short },
+] as const;
 
 /** PE6: these forms keep their active values; the entry editor has its own target. */
 function ActiveOnly({ children }: { readonly children: CopyNode }) {
@@ -148,7 +165,13 @@ function LiveSection() {
   );
 }
 
-function SavedSection() {
+function SavedSection({
+  section,
+  onSection,
+}: {
+  readonly section: SavedSection;
+  readonly onSection: (section: SavedSection) => void;
+}) {
   const vm = useView(selectRunsPage);
   const { commands } = useDashboard();
   const saved = vm.saved;
@@ -157,6 +180,15 @@ function SavedSection() {
     <>
       <RegionEnd>
         {saved.readAgeSec === null ? null : <span>{t.readAge(saved.readAgeSec)}</span>}
+        {/* Reading the run again serves every section of its settings, so it sits beside its age. */}
+        {saved.editor === null ? null : (
+          <Button
+            tier="quiet"
+            label={t.saved.check.short}
+            focusKey="runs:check"
+            onClick={commands.checkRun}
+          />
+        )}
       </RegionEnd>
       <RegionBody>
         <Tile titleId="runs-saved-routines" title={t.saved.routines.short} intro={t.saved.scope}>
@@ -204,9 +236,19 @@ function SavedSection() {
               />
             </p>
           ) : null}
+        </Tile>
+        {/* The edited run's settings, one section at a time; its outcome and the defaults stay in view. */}
+        <SectionTabs
+          label={t.saved.sections.short}
+          idPrefix="runs-saved"
+          sections={SAVED_TABS}
+          current={section}
+          onSelect={onSection}
+        />
+        <SectionPanel idPrefix="runs-saved" section="routines" current={section}>
           <ActiveOnly>
             {saved.editor === null ? null : (
-              <Tile titleId="runs-saved-editor" title={t.saved.editor.short} level={4}>
+              <Tile titleId="runs-saved-editor" title={t.saved.editor.short}>
                 <RunEditor
                   editor={saved.editor}
                   live={false}
@@ -214,23 +256,19 @@ function SavedSection() {
                   onSave={(command) => {
                     void commands.saveRun(command);
                   }}
-                  extra={
-                    <Button
-                      tier="quiet"
-                      label={t.saved.check.short}
-                      focusKey="runs:check"
-                      onClick={commands.checkRun}
-                    />
-                  }
                 />
               </Tile>
             )}
           </ActiveOnly>
-        </Tile>
-        <ActiveOnly>
-          <SavedShopping />
-        </ActiveOnly>
-        <RunEntry />
+        </SectionPanel>
+        <SectionPanel idPrefix="runs-saved" section="queue" current={section}>
+          <ActiveOnly>
+            <SavedShopping />
+          </ActiveOnly>
+        </SectionPanel>
+        <SectionPanel idPrefix="runs-saved" section="entry" current={section}>
+          <RunEntry />
+        </SectionPanel>
         {line === null ? null : <RunOutcome outcome={line} />}
         <RunDefaults />
       </RegionBody>
@@ -263,11 +301,24 @@ function RunsRegion({
   );
 }
 
+/** Which sections a route opens; a route that names none keeps what is shown. */
+function sectionsOf(target: PageTarget | null): {
+  readonly page: PageSection | null;
+  readonly saved: SavedSection | null;
+} {
+  if (target?.kind === 'live') return { page: 'live', saved: null };
+  if (target?.kind === 'library') return { page: 'library', saved: null };
+  if (target?.kind === 'saved') return { page: 'saved', saved: target.section ?? null };
+  return { page: null, saved: null };
+}
+
 /**
- * The Runs page (brief RUN-01 to RUN-13): this battle's live settings, then
- * the saved settings of a run, each its own region with its own boundary
- * (a fallback keeps Pause harvesting and Turn input off). Opening it tells
- * the store which run to read; a route target focuses its section heading.
+ * The Runs page (brief RUN-01 to RUN-13): this battle's live settings, the saved
+ * settings of a run, and the shared shopping policies, one section at a time.
+ * Each is its own region with its own boundary (a fallback keeps Pause
+ * harvesting and Turn input off), and every section stays mounted while
+ * hidden. Opening it tells the store which run to read; a route target shows
+ * its section and focuses its heading.
  */
 export function RunsPage({
   target,
@@ -277,7 +328,22 @@ export function RunsPage({
 }) {
   const { commands } = useDashboard();
   const run = target?.kind === 'saved' ? target.run : null;
-  const focus = target?.kind === 'live' || target?.kind === 'saved' ? target.kind : null;
+  const focus =
+    target?.kind === 'live' || target?.kind === 'saved' || target?.kind === 'library'
+      ? target.kind
+      : null;
+  const route = target === null ? '' : pageHref('runs', target);
+  const [shown, setShown] = useState(() => {
+    const opened = sectionsOf(target);
+    return { route, page: opened.page ?? 'saved', saved: opened.saved ?? 'routines' };
+  });
+  let current = shown;
+  if (shown.route !== route) {
+    // A new route shows its section before anything paints, so its heading can take focus.
+    const opened = sectionsOf(target);
+    current = { route, page: opened.page ?? shown.page, saved: opened.saved ?? shown.saved };
+    setShown(current);
+  }
   useEffect(() => {
     commands.openRuns(true, run);
   }, [commands, run]);
@@ -289,8 +355,9 @@ export function RunsPage({
   );
   useEffect(() => {
     if (focus === null) return;
-    document.getElementById(focus === 'live' ? 'runsLive-title' : 'runsSaved-title')?.focus();
-  }, [focus, run]);
+    const heading = { live: 'runsLive', saved: 'runsSaved', library: 'shoppingLibrary' }[focus];
+    document.getElementById(`${heading}-title`)?.focus();
+  }, [focus, run, route]);
   return (
     <>
       <header className="tp-topbar">
@@ -306,17 +373,37 @@ export function RunsPage({
       <main id="main" className="tp-main" tabIndex={-1}>
         <FaultPoint part="page" />
         <div className="tp-runs">
-          <RunsRegion id="runsLive" part="runsLive" title={t.live.title}>
+          <SectionTabs
+            label={t.sections.short}
+            idPrefix="runs-page"
+            sections={PAGE_SECTIONS}
+            current={current.page}
+            onSelect={(page) => {
+              setShown({ ...current, page });
+            }}
+          />
+          <SectionPanel idPrefix="runs-page" section="live" current={current.page}>
+            <RunsRegion id="runsLive" part="runsLive" title={t.live.title}>
+              <ActiveOnly>
+                <LiveSection />
+              </ActiveOnly>
+            </RunsRegion>
+          </SectionPanel>
+          <SectionPanel idPrefix="runs-page" section="saved" current={current.page}>
+            <RunsRegion id="runsSaved" part="runsSaved" title={t.saved.title}>
+              <SavedSection
+                section={current.saved}
+                onSection={(saved) => {
+                  setShown({ ...current, saved });
+                }}
+              />
+            </RunsRegion>
+          </SectionPanel>
+          <SectionPanel idPrefix="runs-page" section="library" current={current.page}>
             <ActiveOnly>
-              <LiveSection />
+              <ShoppingLibrary />
             </ActiveOnly>
-          </RunsRegion>
-          <RunsRegion id="runsSaved" part="runsSaved" title={t.saved.title}>
-            <SavedSection />
-          </RunsRegion>
-          <ActiveOnly>
-            <ShoppingLibrary />
-          </ActiveOnly>
+          </SectionPanel>
         </div>
       </main>
     </>

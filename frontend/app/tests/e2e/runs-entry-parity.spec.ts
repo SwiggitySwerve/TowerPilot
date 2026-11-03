@@ -68,7 +68,7 @@ async function start(page: Page, run: string, initial: DashboardCase, reply: () 
   });
   await page.goto('/__fake/use?scenario=runs_entry_saved');
   await page.evaluate((run) => {
-    window.location.hash = `#runs/saved/${run}`;
+    window.location.hash = `#runs/saved/${run}/entry`;
   }, run);
   await expect(field(page, 'label').getByRole('textbox')).toBeVisible();
   return writes;

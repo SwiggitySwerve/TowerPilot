@@ -570,7 +570,7 @@ describe('Equipment Wanted rows', () => {
     expect(screen.getByLabelText('Selection mode')).toHaveValue('manual');
     expect(screen.getByRole('link', { name: 'farm_deep' })).toHaveAttribute(
       'href',
-      '#runs/saved/farm_deep',
+      '#runs/saved/farm_deep/entry',
     );
     expect(s.fake.writes()).toHaveLength(0);
   });
@@ -622,12 +622,15 @@ describe('Equipment Wanted rows', () => {
     ).toHaveLength(7);
     expect(screen.getByRole('link', { name: 'Night coins' })).toHaveAttribute(
       'href',
-      '#runs/saved/farm_deep',
+      '#runs/saved/farm_deep/entry',
     );
-    expect(screen.getByRole('link', { name: longLabel })).toHaveAttribute('href', '#runs/saved/x');
+    expect(screen.getByRole('link', { name: longLabel })).toHaveAttribute(
+      'href',
+      '#runs/saved/x/entry',
+    );
     expect(screen.getByRole('link', { name: 'shards' })).toHaveAttribute(
       'href',
-      '#runs/saved/shards',
+      '#runs/saved/shards/entry',
     );
     expect(screen.queryByRole('link', { name: 'Not the display label' })).toBeNull();
     expect(screen.getByRole('link', { name: 'unbreakable'.repeat(40) })).toBeVisible();

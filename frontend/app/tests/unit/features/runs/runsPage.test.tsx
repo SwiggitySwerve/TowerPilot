@@ -6,7 +6,7 @@ import { e0Config, postBodies } from '../../../support/dataLayer.ts';
 import { dashboardBody } from '../../../support/dashboardFixture.ts';
 import { sample, statusBody } from '../../../support/fixture.ts';
 import { selectRunsPage } from '../../../../src/store/selectors/runs.ts';
-import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
+import { renderPage, showSection, type PageOptions } from '../dashboard/harness.tsx';
 
 /**
  * The Runs page (brief backend/logs/reviews/ui-pages/runs-brief.md) on the
@@ -496,12 +496,14 @@ function withKeyedCommand(key: string, fields: Record<string, unknown> = {}): un
 type RunsPageHarness = Awaited<ReturnType<typeof openRuns>>;
 
 async function typeLive(page: RunsPageHarness, value: string) {
+  await showSection('runs-page', 'live');
   const input = within(liveRegion()).getByRole('textbox', { name: /^Ad gems Every$/u });
   await page.user.clear(input);
   await page.user.type(input, value);
 }
 
 async function typeSaved(page: RunsPageHarness, value: string) {
+  await showSection('runs-page', 'saved');
   await page.user.clear(savedInput(/^Ad gems Every$/u));
   await page.user.type(savedInput(/^Ad gems Every$/u), value);
 }
@@ -787,6 +789,7 @@ describe('Runs page: review fixes (F6R-02 to F6R-07)', () => {
     config = e0Config(true, 'other', 'fake:2');
     page.data.poller.read('config');
     await page.advance(1_000);
+    await showSection('runs-page', 'saved');
     expect(savedInput(/^Ad gems Every$/u)).toHaveValue('720');
     config = e0Config(true);
     page.data.poller.read('config');
@@ -797,6 +800,7 @@ describe('Runs page: review fixes (F6R-02 to F6R-07)', () => {
     page.data.commands.checkBattle();
     await page.advance(1_000);
     const live = () => within(liveRegion()).getByRole('textbox', { name: /^Ad gems Every$/u });
+    await showSection('runs-page', 'live');
     expect(live()).toHaveValue('720');
     generation = '0000001b-0000-4000-8000-000000000000';
     page.data.commands.checkBattle();

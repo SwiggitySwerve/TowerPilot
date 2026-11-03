@@ -26,6 +26,8 @@ describe('matchHash', () => {
     '#runs/saved/',
     '#runs/saved/%E0%A4%A',
     '#runs/live/extra',
+    '#runs/saved/bp_farm/other',
+    '#runs/saved/bp_farm/entry/extra',
   ])('reports %s as not found', (hash) => {
     expect(matchHash(hash)).toEqual({ kind: 'not_found', hash });
   });
@@ -47,6 +49,23 @@ describe('matchHash', () => {
       id: 'runs',
       target: { kind: 'saved', run: 'a b/c' },
     });
+  });
+
+  it("opens one section of a run's saved settings, and links to it", () => {
+    expect(matchHash('#runs/saved/bp_farm/entry')).toEqual({
+      kind: 'page',
+      id: 'runs',
+      target: { kind: 'saved', run: 'bp_farm', section: 'entry' },
+    });
+    expect(matchHash('#runs/library')).toEqual({
+      kind: 'page',
+      id: 'runs',
+      target: { kind: 'library' },
+    });
+    expect(hrefFor('runs', { kind: 'library' })).toBe('#runs/library');
+    expect(hrefFor('runs', { kind: 'saved', run: 'a b', section: 'queue' })).toBe(
+      '#runs/saved/a%20b/queue',
+    );
   });
 
   it('T4 a page state after `?` never decides the route (#runtime?kind=x)', () => {

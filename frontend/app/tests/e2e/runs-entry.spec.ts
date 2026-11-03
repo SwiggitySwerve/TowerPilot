@@ -40,7 +40,7 @@ for (const width of [1360, 1054, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/__fake/use?scenario=runs_entry_saved');
     await page.evaluate(() => {
-      window.location.hash = '#runs/saved/farm';
+      window.location.hash = '#runs/saved/farm/entry';
     });
     const editor = page.locator('[data-run-entry]');
     const row = editor.locator('[data-entry-field="label"]');
@@ -74,7 +74,7 @@ for (const width of [1360, 1054, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/__fake/use?scenario=runs_entry_refused');
     await page.evaluate(() => {
-      window.location.hash = '#runs/saved/farm';
+      window.location.hash = '#runs/saved/farm/entry';
     });
     const editor = page.locator('[data-run-entry]');
     const row = editor.locator('[data-entry-field="tier"]');
@@ -104,7 +104,7 @@ for (const width of [1360, 1054, 390]) {
     });
     await page.goto('/__fake/use?scenario=runs_entry_saved');
     await page.evaluate(() => {
-      window.location.hash = '#runs/saved/quest_sm';
+      window.location.hash = '#runs/saved/quest_sm/entry';
     });
     const editor = page.locator('[data-run-entry]');
     const action = editor

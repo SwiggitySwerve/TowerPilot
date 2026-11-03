@@ -530,7 +530,13 @@ it('F6-14b C-03 Collection journal validates the definite refusal before restora
 
 it.each([
   ['Collection', 'active_gather_label_saved', '#collection/policy/all_on', 'Name shown', 'Offline'],
-  ['Runs entry', 'active_run_entry_label_saved', '#runs/saved/farm', 'Run label', 'Offline farm'],
+  [
+    'Runs entry',
+    'active_run_entry_label_saved',
+    '#runs/saved/farm/entry',
+    'Run label',
+    'Offline farm',
+  ],
 ])(
   'F6-14b C-03 %s refusal survives reload and a matching read',
   async (pageName, name, hash, label, value) => {
@@ -766,7 +772,7 @@ it.each(collectionCases)(
   },
 );
 async function runsPage(name: string) {
-  const page = await dashboardPage(name, '#runs/saved/farm');
+  const page = await dashboardPage(name, '#runs/saved/farm/entry');
   const field = name === 'active_run_entry_label_saved' ? 'label' : 'perk_bans';
   const row = within(
     required(page.view.container.querySelector<HTMLElement>(`[data-entry-field="${field}"]`)),
@@ -930,8 +936,8 @@ it.each(
 const latePages = [
   { surface: 'Collection', name: 'active_gather_label_saved', hash: '#collection/policy/all_on' },
   { surface: 'Collection', name: 'active_unused_gather_deleted', hash: '#collection/policy/spare' },
-  { surface: 'Runs entry', name: 'active_run_entry_label_saved', hash: '#runs/saved/farm' },
-  { surface: 'Runs entry', name: 'active_run_entry_field_deleted', hash: '#runs/saved/farm' },
+  { surface: 'Runs entry', name: 'active_run_entry_label_saved', hash: '#runs/saved/farm/entry' },
+  { surface: 'Runs entry', name: 'active_run_entry_field_deleted', hash: '#runs/saved/farm/entry' },
 ];
 it.each(latePages.flatMap((page) => lateScenarios.map((scenario) => ({ ...page, scenario }))))(
   'F6-14b R2-02 $surface $name matching read then late $scenario preserves recovery',

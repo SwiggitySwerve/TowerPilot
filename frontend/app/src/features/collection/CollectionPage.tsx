@@ -76,7 +76,9 @@ function PolicyUses({
           {links === undefined ? (
             <ServerValue kind="id" value={run} />
           ) : (
-            <a href={pageHref('runs', { kind: 'saved', run: links[index] ?? '' })}>
+            <a
+              href={pageHref('runs', { kind: 'saved', run: links[index] ?? '', section: 'entry' })}
+            >
               <ServerValue kind="id" value={run} />
             </a>
           )}

@@ -10,7 +10,7 @@ import {
 import { sample, statusBody } from '../../../support/fixture.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { postBodies } from '../../../support/dataLayer.ts';
-import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
+import { renderPage, showSection, type PageOptions } from '../dashboard/harness.tsx';
 import { RUNTIME_SAVES } from '../../../support/fake-backend/runtime-fixtures.mjs';
 
 vi.mock('../../../../src/api/transport.ts', async (original) => ({
@@ -77,7 +77,13 @@ function input(id: string, key: string) {
   if (found === null) throw new Error(`field ${id}.${key} missing`);
   return found;
 }
+/** Show the settings group (its own section) that holds a module. */
+async function showModule(id: string) {
+  const group = moduleBox(id).closest<HTMLElement>('[data-section-panel]')?.dataset['sectionPanel'];
+  if (group !== undefined) await showSection('runtime-group', group);
+}
 async function edit(page: Page, id: string, key: string, value: string) {
+  await showModule(id);
   await page.user.clear(input(id, key));
   if (value !== '') await page.user.type(input(id, key), value);
 }
@@ -128,9 +134,11 @@ describe('T1 T2 shared Runtime settings', () => {
     const overrides = document.querySelector<HTMLElement>('[data-runtime-group="overrides"]');
     const machine = document.querySelector<HTMLElement>('[data-runtime-group="machine"]');
     if (overrides === null || machine === null) throw new Error('settings groups missing');
+    await showSection('runtime-group', 'overrides');
     expect(
       within(overrides).getByText(/This emulator · next time automation starts/),
     ).toBeVisible();
+    await showSection('runtime-group', 'machine');
     expect(
       within(machine).getByText(/This computer · every emulator · next time automation starts/),
     ).toBeVisible();
@@ -289,6 +297,7 @@ describe('T1 T2 shared Runtime settings', () => {
     page.view.unmount();
     page.data.stop();
     const reloaded = await openRuntime({ storage: page.storage });
+    await showModule('tap');
     expect(input('tap', 'jitter_px')).toHaveValue('7');
     expect(within(moduleBox('tap')).getByRole('button', { name: 'Save' })).toHaveAttribute(
       'aria-disabled',
@@ -391,6 +400,7 @@ it.each([
   ['no_snapshot_could_be_taken_at_start_nothing_to_compare', 'not reported'],
 ])('T3 %s remains explicit and no process action is offered', async (name, line) => {
   const page = await openRuntime({}, `runtime_state.${name}`);
+  await showSection('runtime-page', 'runtimeIdentity');
   const box = document.querySelector('[data-region="runtimeIdentity"]');
   expect(box).toHaveTextContent(line);
   const actions = within(box as HTMLElement)
@@ -401,6 +411,7 @@ it.each([
 });
 it('T3 unavailable identity retains last evidence and read failure', async () => {
   const page = await openRuntime();
+  await showSection('runtime-page', 'runtimeIdentity');
   page.fake.route('GET', '/api/runtime', () => 'hold');
   await page.user.click(screen.getByRole('button', { name: 'Refresh identity' }));
   page.fake.next('/api/runtime').lose();
@@ -412,6 +423,7 @@ it('T3 unavailable identity retains last evidence and read failure', async () =>
 });
 it('T3 source comparison stays visible while full fingerprint and capability evidence can be expanded', async () => {
   const page = await openRuntime();
+  await showSection('runtime-page', 'runtimeIdentity');
   const box = document.querySelector<HTMLElement>('[data-region="runtimeIdentity"]');
   if (box === null) throw new Error('identity missing');
   expect(within(box).getByText('Matches the source snapshot')).toBeVisible();
@@ -435,19 +447,22 @@ it('T3 source comparison stays visible while full fingerprint and capability evi
   }
   expect(page.fake.writes()).toEqual([]);
 });
-it('T4 section navigation focuses diagnostics without changing the applied query', async () => {
+it('T4 a diagnostic query opens Diagnostics; the section row switches without changing the query', async () => {
   const page = await openRuntime(
     {},
     identityDefault,
     diagnosticsDefault,
     '#runtime?operation_id=op-1',
   );
-  await page.user.click(
-    within(screen.getByRole('navigation', { name: 'Runtime sections' })).getByRole('button', {
-      name: 'Diagnostic events',
-    }),
-  );
-  expect(screen.getByRole('heading', { name: 'Diagnostic events' })).toHaveFocus();
+  const sections = screen.getByRole('navigation', { name: 'Runtime sections' });
+  const diagnostics = within(sections).getByRole('button', { name: 'Diagnostic events' });
+  expect(diagnostics).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('heading', { name: 'Diagnostic events' })).toBeVisible();
+  await page.user.click(within(sections).getByRole('button', { name: 'Saved runtime settings' }));
+  expect(screen.queryByRole('heading', { name: 'Diagnostic events' })).toBeNull();
+  await page.user.click(diagnostics);
+  expect(diagnostics).toHaveFocus();
+  expect(screen.getByRole('heading', { name: 'Diagnostic events' })).toBeVisible();
   expect(window.location.hash).toBe('#runtime?operation_id=op-1');
   expect(screen.queryByText('Filters match exact values.')).toBeNull();
   await page.user.hover(screen.getByRole('button', { name: 'About Event filters' }));
@@ -482,6 +497,7 @@ it('T1 T2 save context is visible before the forms and common module scope text 
 });
 it('T5 event timestamps and IDs have separate labels and keep literal values visible', async () => {
   await openRuntime();
+  await showSection('runtime-page', 'runtimeDiagnostics');
   const details = document.querySelector<HTMLDetailsElement>('[data-event-key]');
   if (details === null || details.parentElement === null) throw new Error('event missing');
   const summary = details.querySelector('summary');
@@ -496,6 +512,7 @@ it('T5 event timestamps and IDs have separate labels and keep literal values vis
 });
 it('T3 F6T-R1-02 missing worker build identity stays not reported and the complete raw runtime response is available', async () => {
   await openRuntime({}, 'runtime_state.worker_alive_and_verified');
+  await showSection('runtime-page', 'runtimeIdentity');
   const box = document.querySelector<HTMLElement>('[data-region="runtimeIdentity"]');
   if (box === null) throw new Error('identity missing');
   for (const label of [
@@ -542,6 +559,7 @@ it('T4 restores applied hash filters and Refresh keeps unapplied typing and inva
     diagnosticsDefault,
     '#runtime?operation_id=op-1',
   );
+  await showSection('runtime-page', 'runtimeDiagnostics');
   expect(screen.getByLabelText('Operation ID')).toHaveValue('op-1');
   expect(eventsRequests(page).at(-1)?.path).toBe('/api/diagnostics/events?operation_id=op-1');
   await page.user.type(screen.getByLabelText('Kind'), 'unapplied');
@@ -559,6 +577,7 @@ it('T4 restores applied hash filters and Refresh keeps unapplied typing and inva
 });
 it('T4 Apply sends every exact filter and browser-local Since as epoch seconds', async () => {
   const page = await openRuntime();
+  await showSection('runtime-page', 'runtimeDiagnostics');
   for (const label of [
     'Instance',
     'Operation ID',
@@ -584,6 +603,7 @@ it('T4 Apply sends every exact filter and browser-local Since as epoch seconds',
 });
 it('T4 optional timer uses applied filters, stops on hide and unmount, and leaves focus and drafts alone', async () => {
   const page = await openRuntime();
+  await showSection('runtime-page', 'runtimeDiagnostics');
   await page.user.click(screen.getByLabelText(/Auto-refresh every 5 seconds/));
   const field = screen.getByLabelText('Kind');
   await page.user.type(field, 'draft');
@@ -614,12 +634,14 @@ it.each([
   ['writer_health_reports_failed_writes', 'the log file is locked'],
 ])('T5 bounded diagnostics %s shows coverage and health beside results', async (name, line) => {
   await openRuntime({}, identityDefault, `runtime_diagnostics.${name}`);
+  await showSection('runtime-page', 'runtimeDiagnostics');
   expect(document.querySelector('[data-region="runtimeDiagnostics"]')).toHaveTextContent(line);
   expect(screen.getByRole('heading', { name: 'Scan coverage' })).toBeVisible();
   expect(screen.getByRole('heading', { name: 'Dashboard writer health' })).toBeVisible();
 });
 it('T5 event outcomes and failure evidence remain visible with raw JSON closed', async () => {
   const page = await openRuntime();
+  await showSection('runtime-page', 'runtimeDiagnostics');
   const events = document.querySelector<HTMLElement>('[aria-labelledby="runtime-events"]');
   if (events === null) throw new Error('Event results missing');
   for (const text of [
@@ -644,6 +666,7 @@ it('T5 event outcomes and failure evidence remain visible with raw JSON closed',
 
 it('T5 T6 raw JSON, disclosure and focused summary survive refresh and a 400 retains stale results with server text', async () => {
   const page = await openRuntime();
+  await showSection('runtime-page', 'runtimeDiagnostics');
   const details = document.querySelector<HTMLDetailsElement>('[data-event-key]');
   if (details === null) throw new Error('event missing');
   const summary = details.querySelector('summary');
@@ -675,6 +698,7 @@ it('T6 export downloads the last applied result with coverage and health, ignori
     diagnosticsDefault,
     '#runtime?operation_id=op-1',
   );
+  await showSection('runtime-page', 'runtimeDiagnostics');
   await page.user.type(screen.getByLabelText('Kind'), 'unsent');
   let blob: Blob | undefined;
   const create = vi.fn((value: Blob) => {

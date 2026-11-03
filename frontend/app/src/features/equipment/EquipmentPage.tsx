@@ -228,7 +228,11 @@ export function EquipmentPage({ equipment }: { readonly equipment: EquipmentStor
                                 <a
                                   id={`equipment:run:${encodeURIComponent(row.key)}:${encodeURIComponent(consumer.key)}`}
                                   key={consumer.key}
-                                  href={pageHref('runs', { kind: 'saved', run: consumer.key })}
+                                  href={pageHref('runs', {
+                                    kind: 'saved',
+                                    run: consumer.key,
+                                    section: 'entry',
+                                  })}
                                 >
                                   <ServerValue kind="name" value={consumer.label} />
                                 </a>

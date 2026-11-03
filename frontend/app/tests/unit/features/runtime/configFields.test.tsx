@@ -3,7 +3,7 @@ import { axe } from 'jest-axe';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { fetchTransport } from '../../../../src/api/transport.ts';
 import { dashboardPagesCase as pages } from '../../../support/dashboardFixture.ts';
-import { renderPage } from '../dashboard/harness.tsx';
+import { renderPage, showSection } from '../dashboard/harness.tsx';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { selectRuntimeSettings } from '../../../../src/store/selectors/runtime.ts';
 import { selectRunDefaults } from '../../../../src/store/selectors/runDefaults.ts';
@@ -497,6 +497,14 @@ it('C15-10 C15-11 C15-12 C15-13 C15-14 defaults precede overrides with separate 
     active_instance: string;
     instances: Record<string, { label: string }>;
   };
+  // Each group is its own section, defaults first; the emulator's overrides are the next one.
+  const groups = screen.getByRole('navigation', { name: 'Settings groups' });
+  expect(
+    within(groups)
+      .getAllByRole('button')
+      .map((button) => button.textContent),
+  ).toEqual(['Machine defaults', 'This emulator', 'Tap and logging']);
+  await showSection('runtime-group', 'overrides');
   expect(
     screen.getByRole('heading', {
       name: `Overrides for ${config.instances[config.active_instance]?.label ?? ''} (${config.active_instance})`,

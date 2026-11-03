@@ -7,6 +7,7 @@ import {
   navigateApp,
   openScenario,
   posts,
+  showSection,
   WCAG_AA_TAGS,
 } from './helpers/helpers.ts';
 import {
@@ -26,9 +27,14 @@ async function open(page: Page, width: number, scenario = 'runtime') {
   const problems = await openScenario(page, scenario, { width });
   await navigateApp(page, 'Runtime');
   await expect(page.getByRole('heading', { name: 'Runtime', exact: true })).toBeVisible();
-  await expect(page.locator('[data-runtime-module="loop"] input').first()).toBeVisible();
+  // Each section and settings group is shown on its own; every one has loaded.
+  await showSection(page, 'runtime-page', 'runtimeIdentity');
   await expect(page.locator('[data-source-state]')).toBeVisible();
+  await showSection(page, 'runtime-page', 'runtimeDiagnostics');
   await expect(page.getByRole('heading', { name: 'Scan coverage' })).toBeVisible();
+  await showSection(page, 'runtime-page', 'runtimeSettings');
+  await showSection(page, 'runtime-group', 'overrides');
+  await expect(page.locator('[data-runtime-module="loop"] input').first()).toBeVisible();
   return problems;
 }
 const shot = (page: Page, name: string) =>
@@ -71,6 +77,7 @@ for (const width of [1360, 1054, 390]) {
         .locator('[data-runtime-group="overrides"]')
         .getByText(/This emulator · next time automation starts/),
     ).toBeVisible();
+    await showSection(page, 'runtime-group', 'machine');
     await expect(
       page
         .locator('[data-runtime-group="machine"]')
@@ -81,6 +88,7 @@ for (const width of [1360, 1054, 390]) {
     expect(await posts(page)).toEqual([]);
     await shot(page, `page-${width}`);
     await layout(page, width);
+    await showSection(page, 'runtime-group', 'overrides');
     const fps = page.locator('[data-runtime-module="loop"] [data-part="fps"]');
     await fps.fill('');
     await expect(fps).toHaveAttribute('aria-invalid', 'true');
@@ -91,6 +99,7 @@ for (const width of [1360, 1054, 390]) {
     await fps.fill('3');
     await fps.press('Tab');
     await expect(page.locator(':focus')).not.toHaveCount(0);
+    await showSection(page, 'runtime-page', 'runtimeDiagnostics');
     const filters = page.locator('.tp-runtime__filters > summary');
     await filters.focus();
     await page.keyboard.press('Enter');
@@ -157,14 +166,30 @@ for (const width of [1360, 1054, 390]) {
   test(`T3 T5 source changed, unknown workers, bounded errors and writer health at ${width}`, async ({
     page,
   }) => {
-    for (const [scenario, name, line] of [
-      ['runtime_source_changed', 'source-changed', 'Source changed since the server loaded'],
-      ['runtime_worker_unknown', 'unknown-worker', 'Liveness cannot be verified'],
-      ['runtime_truncated', 'diagnostics-truncated', 'Malformed records'],
-      ['runtime_read_errors', 'diagnostics-errors', 'the file is locked by another process'],
-      ['runtime_writer_failure', 'writer-failure', 'the log file is locked'],
+    for (const [scenario, name, line, section] of [
+      [
+        'runtime_source_changed',
+        'source-changed',
+        'Source changed since the server loaded',
+        'runtimeIdentity',
+      ],
+      [
+        'runtime_worker_unknown',
+        'unknown-worker',
+        'Liveness cannot be verified',
+        'runtimeIdentity',
+      ],
+      ['runtime_truncated', 'diagnostics-truncated', 'Malformed records', 'runtimeDiagnostics'],
+      [
+        'runtime_read_errors',
+        'diagnostics-errors',
+        'the file is locked by another process',
+        'runtimeDiagnostics',
+      ],
+      ['runtime_writer_failure', 'writer-failure', 'the log file is locked', 'runtimeDiagnostics'],
     ] as const) {
       await open(page, width, scenario);
+      await showSection(page, 'runtime-page', section);
       await expect(page.getByText(line, { exact: false }).first()).toBeVisible();
       if (scenario === 'runtime_worker_unknown') {
         for (const label of [
@@ -200,6 +225,7 @@ for (const width of [1360, 1054, 390]) {
     page,
   }) => {
     await open(page, width);
+    await showSection(page, 'runtime-page', 'runtimeDiagnostics');
     await page.getByLabel('Operation ID').fill('op-1');
     const read = page.waitForResponse((r) =>
       r.url().includes('/api/diagnostics/events?operation_id=op-1'),
@@ -226,6 +252,7 @@ for (const width of [1360, 1054, 390]) {
       ['runtime_save_tap', 'tap'],
     ] as const) {
       await open(page, width, scenario);
+      await showSection(page, 'runtime-group', module === 'loop' ? 'overrides' : 'machine');
       const form = page.locator(`[data-runtime-module="${module}"]`);
       await form.screenshot({
         path: path.join(SCREENS, `runtime-settings-scope-${module}-${width}.png`),
@@ -294,6 +321,7 @@ for (const width of [1360, 1054, 390]) {
         await route.fulfill({ status: Number(recorded['status']), json: recorded['body'] });
       }
     });
+    await showSection(page, 'runtime-group', 'machine');
     const form = page.locator('[data-runtime-module="tap"]');
     await form.locator('[data-part="jitter_px"]').fill('6');
     await form.getByRole('button', { name: 'Save', exact: true }).click();

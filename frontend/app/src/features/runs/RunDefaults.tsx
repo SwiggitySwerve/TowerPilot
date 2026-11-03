@@ -9,7 +9,7 @@ import { ActionRow } from '../../ui/ActionRow.tsx';
 import { Fact, Facts } from '../../ui/Facts.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
-import { ValidationSummary } from './ValidationSummary.tsx';
+import { ValidationSummary } from '../../ui/ValidationSummary.tsx';
 import './runDefaults.css';
 
 export function RunDefaults() {

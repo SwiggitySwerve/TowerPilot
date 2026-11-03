@@ -1,6 +1,6 @@
-import { copy } from '../../copy/catalogue.ts';
-import { settings } from '../../copy/settings.ts';
-import { Chip } from '../../ui/Chip.tsx';
+import { copy } from '../copy/catalogue.ts';
+import { settings } from '../copy/settings.ts';
+import { Chip } from './Chip.tsx';
 
 /** Summarize existing field problems without hiding their individual messages. */
 export function ValidationSummary({ problems }: { readonly problems: number }) {

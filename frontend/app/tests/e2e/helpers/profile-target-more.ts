@@ -89,7 +89,7 @@ export function invalidSourceTests(
         await openMore(
           page,
           width,
-          editor === 'runs' ? '#runs/saved/farm' : `#${editor}`,
+          editor === 'runs' ? '#runs/saved/farm/entry' : `#${editor}`,
           `profile_target_${editor === 'abilities' ? 'abilities_uw' : editor === 'runs' ? 'runs_saved' : editor === 'collection' ? 'collection_label' : 'schedule_saved'}`,
         );
         await expect(page.locator('main')).toContainText(

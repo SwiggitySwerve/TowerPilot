@@ -12,7 +12,12 @@ import {
   type DashboardCase,
 } from '../../../support/dashboardFixture.ts';
 import { postBodies } from '../../../support/dataLayer.ts';
-import { renderPage, type PageHarness, type PageOptions } from '../dashboard/harness.tsx';
+import {
+  renderPage,
+  showSection,
+  type PageHarness,
+  type PageOptions,
+} from '../dashboard/harness.tsx';
 
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
 const CONFIG = dashboardPagesCase(
@@ -58,7 +63,7 @@ function create() {
   return within(element);
 }
 async function open(source: () => DashboardCase = () => INITIAL, options: PageOptions = {}) {
-  window.location.hash = '#runs/saved/farm';
+  window.location.hash = '#runs/library';
   const page = await renderPage({
     ...options,
     config: options.config ?? (() => CONFIG),
@@ -151,6 +156,8 @@ describe('SQ9 shared shopping policies', () => {
         );
       },
     });
+    // The saved defaults sit under Saved settings.
+    await showSection('runs-page', 'saved');
     const defaults = document.querySelector<HTMLElement>('[data-run-defaults]');
     if (defaults === null) throw new Error('missing saved defaults');
     const summary = defaults.querySelector('summary');
@@ -174,8 +181,14 @@ describe('SQ9 shared shopping policies', () => {
   it('SQ9 shows all policy usages, names affected runs, forbids used deletion and passes catalogue/axe', async () => {
     const page = await open();
     const main = within(policy('main_list'));
-    expect(main.getByRole('link', { name: 'farm' })).toHaveAttribute('href', '#runs/saved/farm');
-    expect(main.getByRole('link', { name: 'other' })).toHaveAttribute('href', '#runs/saved/other');
+    expect(main.getByRole('link', { name: 'farm' })).toHaveAttribute(
+      'href',
+      '#runs/saved/farm/entry',
+    );
+    expect(main.getByRole('link', { name: 'other' })).toHaveAttribute(
+      'href',
+      '#runs/saved/other/entry',
+    );
     expect(main.getByRole('button', { name: 'Delete policy' })).toHaveAttribute(
       'aria-disabled',
       'true',
