@@ -1,25 +1,44 @@
 """Collect diamonds on an existing battle; never start, equip or end a run.
 
 Home, menus, results and unknown screens are observation-only: collection
-requires a recognized battle and a readable wave."""
+requires a recognized battle, a readable wave and an undimmed closed menu."""
 import argparse
 import sqlite3
 import time
 import traceback
 from types import SimpleNamespace
+import numpy as np
 import settings
 from device import adbclient, capture
 from runtime import logger, priority
 from runtime.stage_clock import clock
 from vision import wave_reader, screen
 from vision.frame_reads import FrameReads
+from vision.hud import closed_menu_visible
 from scheduling import runflag
 from flows.shard import GemWatch
+from interactions.tourney import Abort
 
 
 FENCE_RECHECK_SEC = 5
 PASS_PERIOD_SEC = 1.0       # target time from the start of one pass to the start of the next
 LEDGER_BUSY_LIMIT_SEC = 180
+
+
+class CollectionObscured(Abort):
+    """A collector frame no longer proves an unobscured battle; send no input."""
+
+
+def collection_guard(frame: np.ndarray, expected: str) -> np.ndarray:
+    """Additional HUD proof on each gem routine's fresh pre-input frame.
+
+    Only the collector installs this guard. Other screen.identify consumers
+    retain their existing contract, including flows that own an open menu.
+    The routines already verify screen and wave; do not repeat those reads.
+    """
+    if expected != 'battle' or not closed_menu_visible(frame):
+        raise CollectionObscured('Collection requires an unobscured battle with the menu closed')
+    return frame
 
 
 class FenceUnknown(Exception):
@@ -145,7 +164,7 @@ def main(instance, preset):
     body = session.effective_preset() if session is not None else resolved_preset()
     from runtime.action_session import ActionSession
     actions = ActionSession.for_battle(session, 'collector') if session is not None else None
-    gems=GemWatch(body.get('gather', {}), session=actions)
+    gems=GemWatch(body.get('gather', {}), guard=collection_guard, session=actions)
     state = SimpleNamespace(gems=gems, tracker=wave_reader.WaveTracker(), mission=None, shop=None)
     wave_hwm = None
     logger.event('gem_collector_started',preset=preset,ad_gems=gems.ad_gems.enabled,orbit=gems.orbit.enabled)
@@ -222,7 +241,7 @@ def main(instance, preset):
                                          previous_battle_id=previous)
                 prepare_owed = None if prepared else dict(origin='partial_adoption', previous_battle_id=previous)
                 # when locked out, the live branch finishes it, still linked to the record this one continues
-            gems = GemWatch(body.get('gather', {}), session=actions)
+            gems = GemWatch(body.get('gather', {}), guard=collection_guard, session=actions)
             state.gems = gems
             state.tracker = wave_reader.WaveTracker()
             wave_hwm = None
@@ -245,7 +264,8 @@ def main(instance, preset):
                 logger.event('gem_collector_stopped',reason=reason)
                 return
         saw_battle=saw_battle or live
-        label='collecting' if live else 'waiting_for_battle'
+        clear = live and closed_menu_visible(frame)
+        label = ('collecting' if clear else 'waiting_for_clear_battle') if live else 'waiting_for_battle'
         if label!=last_status:
             logger.event('gem_collector_state',state=label)
             last_status=label
@@ -262,15 +282,20 @@ def main(instance, preset):
                     # by a later pass (ledger.retrying); collecting goes on meanwhile, under this record.
                     prepare_owed = None
                     if not was_live:            # a new record: a new battle's routines
-                        gems = GemWatch(body.get('gather', {}), session=actions)
+                        gems = GemWatch(body.get('gather', {}), guard=collection_guard, session=actions)
                         state.gems = gems
                         state.tracker = wave_reader.WaveTracker()
                         wave_hwm = None
                 with clock.stage('ledger'):
                     ledger.run('observe', lambda: (session.observe(state, raw), session.checkpoint(state, battle_visible=True)))
-            if authorized:
+            if authorized and clear:
                 with clock.stage('poll'):
-                    gems.poll(frame, reads=reads)
+                    try:
+                        gems.poll(frame, reads=reads)
+                    except CollectionObscured as exc:
+                        # AdGemCollector propagates Abort unchanged; only this
+                        # collector's visual refusal resumes observation here.
+                        logger.event('gem_collector_obscured', reason=str(exc))
         elif session is not None and session.battle['status'] in ('prepared', 'active'):
             with clock.stage('ledger'):
                 ledger.run('checkpoint', session.checkpoint, state, battle_visible=False)

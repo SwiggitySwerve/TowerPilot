@@ -1,5 +1,5 @@
 # Gem collector in-battle overlay exclusion
-> **Status:** Open
+> **Status:** In Progress
 > **Type:** Task
 > **Created:** 2026-11-04
 > **Updated:** 2026-11-04
@@ -9,10 +9,8 @@
 ## Problem
 
 The gem collector's battle collection is gated on the screen classifier saying `battle` with
-a readable wave (`backend/gem_collector.py`, the `live` check). Its other path, claiming the
-Ad Gem offer on Home, is being removed by
-[#45](https://github.com/SwiggitySwerve/TowerPilot/pull/45), after which `live` is the only
-gate on collector input. The classifier in
+a readable wave (`backend/gem_collector.py`, the `live` check). The Home Ad Gem path was removed by
+[#45](https://github.com/SwiggitySwerve/TowerPilot/pull/45). The classifier in
 `backend/vision/screen.py` checks its `OVERLAYS` list first, then, when no screen header
 matches, returns `Screen("battle", ...)` for any frame where `wave_reader.read_wave(frame)`
 reads a wave (the `if best_s < HDR_THRESH:` fallback near the end of `identify`). The
@@ -97,3 +95,44 @@ detector itself.
 1. With a known in-battle overlay open, the collector sends no input; synthetic tests prove it.
 2. Ad and orbit success rates in battle keep their usual level after a deploy between
    battles (`python tools/gem_health.py`).
+
+
+---
+
+## Implementation and remaining acceptance
+
+The collector requires the closed menu's three bright horizontal bars as well as a
+recognized battle and readable wave. The structural detector is shared with calibration
+in `backend/vision/hud.py`; the extraction preserved its thresholds. Geometry is read
+from the display-bound manifest, and scaled crops use the detector's reference size.
+No template is loaded or written for this check, so a missing overlay template does not
+change the policy on an install. Missing, dimmed, covered or unrecognized bars mean no
+collection until a later frame proves the HUD again.
+
+| Panel | Existing recognition | Collector evidence |
+|---|---|---|
+| Perk choice / selected perks | `battle_perks` is described in the interface manifest, absent from `screen.OVERLAYS` | Modal scrim dims the underlying HUD; saved selected-perks frames were inspected read-only |
+| Expanded battle menu | Existing calibrated close-X and structural hamburger recognition, absent from `screen.OVERLAYS` | Open menu replaces the hamburger with an X; saved open-menu frame inspected read-only |
+| Target Priority / Orb Distance Adjuster | Described in the interface manifest, absent from `screen.OVERLAYS` | Synthetic modal-scrim cases; real panel-specific verification remains outstanding |
+| Existing recognized dialogs and menus | `screen.identify` names them before the wave fallback | Existing battle-only gate remains in force |
+
+`GemWatch` receives the collector guard at every construction. The existing ad and
+orbit guard calls apply it again to their fresh frames, including between orbit taps.
+Only this guard's `CollectionObscured` refusal is caught by the collector to resume
+observation; unrelated `Abort` exceptions still propagate. `device/act.py`,
+`interactions/ad_gems.py`, and the shared classifier remain unchanged.
+
+Collector-only policy keeps flows that intentionally own menus on their current screen
+contract. The vision layer owns the reusable structural recognition. This does not
+claim that a readable wave alone is safe for other flows, or that a hypothetical panel
+leaving the closed-menu bars fully bright is excluded.
+
+Synthetic regressions first failed on the original collector behavior, then passed with
+the guard. They cover modal scrims, an expanded menu, native display scaling, clean
+battle collection, fresh ad frames, and panels appearing between orbit taps.
+
+No deployment or live check was requested. The running collector keeps the old code
+until it is relaunched. This task stays In Progress until an authorized deployment and
+live panel checks verify exclusion and normal ad/orbit success rates. In particular,
+verify the perk-choice panel and each other in-battle panel against the HUD invariant;
+synthetic fixtures establish the policy, not every game's rendering variant.

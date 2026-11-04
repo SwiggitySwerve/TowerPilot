@@ -10,7 +10,7 @@ class Exhausted(Exception):
 
 
 def run(monkeypatch, frames, *, session=None, requested=None, fence=None, gems=None, sleep=None, clock=None,
-        grabbed=None, screen=None, read_wave=None, entry='main'):
+        grabbed=None, screen=None, read_wave=None, entry='main', gem_factory=None, hud=None):
     """Returns (events, polled, returned, gems). `gems` defaults to routines that record each polled frame.
     `entry` is the worker function that is run: `main`, or `run_logged` to see how a failure leaves the process."""
     import gem_collector as worker
@@ -26,7 +26,15 @@ def run(monkeypatch, frames, *, session=None, requested=None, fence=None, gems=N
         gems = types.SimpleNamespace(ad_gems=types.SimpleNamespace(enabled=True),
                                      orbit=types.SimpleNamespace(enabled=True), busy=lambda: [])
         gems.poll = lambda frame, reads=None: polled.append(frame)
-    monkeypatch.setattr(worker, 'GemWatch', lambda gather=None, **kw: gems)
+    def make_gems(gather=None, **kwargs):
+        nonlocal gems
+        if gem_factory is not None:
+            gems = gem_factory(gather, **kwargs)
+        return gems
+    monkeypatch.setattr(worker, 'GemWatch', make_gems)
+    # Loop tests use frame tokens; pixel regressions explicitly supply the
+    # real detector. The seam mirrors the screen and wave readers below.
+    monkeypatch.setattr(worker, 'closed_menu_visible', hud or (lambda frame: True))
     remaining = iter(frames)
 
     def grab():
