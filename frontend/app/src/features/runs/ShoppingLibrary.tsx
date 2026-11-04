@@ -1,6 +1,6 @@
 import { useId, useLayoutEffect, useState } from 'react';
 import { copy } from '../../copy/catalogue.ts';
-import type { CopyEntry } from '../../copy/text.ts';
+import type { CopyEntry, CopyNode } from '../../copy/text.ts';
 import { pinLibrary } from '../../core/shoppingLibrary.ts';
 import {
   draftChanges,
@@ -87,17 +87,21 @@ function LibraryQueue({
   draft,
   vm,
   onDraft,
+  footer,
 }: {
   readonly base: QueueBase;
   readonly draft: QueueDraft;
   readonly vm: QueueEditorVM;
   readonly onDraft: (next: QueueDraft) => void;
+  /** The Save row: under the queue (QueueEditor's footer). */
+  readonly footer: CopyNode;
 }) {
   const own = useId();
   return (
     <QueueEditor
       idBase={own}
       vm={vm}
+      footer={footer}
       onEdit={(key, value) => {
         onDraft({ ...draft, [key]: value });
       }}
@@ -139,6 +143,24 @@ function Policy({
   const send = (command: ProfilePatchCommand | null) => {
     if (command !== null) void commands.patchProfile(command);
   };
+  const actions = (
+    <div className="tp-library__actions tp-control-row">
+      <Action
+        label={t.save}
+        reason={policy.reason}
+        onClick={() => {
+          send(policy.save);
+        }}
+      />
+      <Button
+        tier="quiet"
+        label={t.discard.short}
+        onClick={() => {
+          commands.discardDraft(policy.scope);
+        }}
+      />
+    </div>
+  );
   const apply = (next: QueueDraft) => {
     if (policy.revision === null) return;
     const pinned = pinLibrary(policy.baseValue, policy.revision, {
@@ -207,33 +229,24 @@ function Policy({
           }
         >
           {!policy.contextReady ? (
-            <p role="status">{copy.runs.reasons.context_unknown.short}</p>
+            <>
+              <p role="status">{copy.runs.reasons.context_unknown.short}</p>
+              {actions}
+            </>
           ) : policy.base.plan !== null ? (
             <LibraryQueue
               base={policy.base}
               draft={policy.draft}
               vm={policy.queue}
               onDraft={apply}
+              footer={actions}
             />
           ) : (
-            <LegacyEditor policy={policy} onDraft={apply} />
+            <>
+              <LegacyEditor policy={policy} onDraft={apply} />
+              {actions}
+            </>
           )}
-          <div className="tp-library__actions tp-control-row">
-            <Action
-              label={t.save}
-              reason={policy.reason}
-              onClick={() => {
-                send(policy.save);
-              }}
-            />
-            <Button
-              tier="quiet"
-              label={t.discard.short}
-              onClick={() => {
-                commands.discardDraft(policy.scope);
-              }}
-            />
-          </div>
         </Disclosure>
         <div className="tp-library__actions tp-control-row">
           <Action label={t.copy} reason={copyReason} onClick={onCopy} />
@@ -315,6 +328,24 @@ export function ShoppingLibrary() {
       ? (create.copying ? 0 : create.queue.review.problems) + (create.reason === 'id' ? 1 : 0)
       : 0);
   const firstName = vm.policies.find((policy) => policyProblems(policy) > 0)?.name;
+  const createActions = (
+    <div className="tp-library__actions tp-control-row">
+      <Action
+        label={t.save}
+        reason={create.reason}
+        onClick={() => {
+          if (create.save !== null) void commands.patchProfile(create.save);
+        }}
+      />
+      <Button
+        tier="quiet"
+        label={t.discard.short}
+        onClick={() => {
+          commands.discardDraft(create.scope);
+        }}
+      />
+    </div>
+  );
   const apply = (next: QueueDraft) => {
     for (const [key, value] of draftChanges(create.draft, next))
       commands.editDraft(create.scope, key, value);
@@ -414,30 +445,17 @@ export function ShoppingLibrary() {
                     }}
                   />
                 </label>
-                {create.copying ? null : (
+                {create.copying ? (
+                  createActions
+                ) : (
                   <LibraryQueue
                     base={create.base}
                     draft={create.draft}
                     vm={create.queue}
                     onDraft={apply}
+                    footer={createActions}
                   />
                 )}
-                <div className="tp-library__actions tp-control-row">
-                  <Action
-                    label={t.save}
-                    reason={create.reason}
-                    onClick={() => {
-                      if (create.save !== null) void commands.patchProfile(create.save);
-                    }}
-                  />
-                  <Button
-                    tier="quiet"
-                    label={t.discard.short}
-                    onClick={() => {
-                      commands.discardDraft(create.scope);
-                    }}
-                  />
-                </div>
               </fieldset>
             )}
             {create.outcome === null ? null : (

@@ -207,6 +207,7 @@ export function SavedShopping() {
                         }}
                       />
                     </ActionRow>
+                    <QueueRefusal message={vm.refusal} />
                   </div>
                 }
                 onEdit={(key, value) => {
@@ -293,7 +294,7 @@ export function SavedShopping() {
                 )}
               </div>
             )}
-            <QueueRefusal message={vm.refusal} />
+            {vm.showEditor ? null : <QueueRefusal message={vm.refusal} />}
           </details>
         )}
       </Tile>

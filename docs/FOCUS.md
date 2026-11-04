@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Queue
 > **Created:** 2026-10-24
-> **Updated:** 2026-10-30
+> **Updated:** 2026-11-04
 > **Tags:** backlog, queue, planning
 
 The order of the open work, and nothing else. Each row links one task file in
@@ -33,6 +33,7 @@ action history (#30).
 | 4 | [Setup scan sides and capture swap](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Setup%20scan%20sides%20and%20capture%20swap.task.md) | scan sides landed (#31); the file swap needs a race-free worker guard; live gates D3, D5, D8 |
 | 5 | [Guild store terminal section evidence](pending-tasks/%5B2026-10-20%5D%5BOpen%5D%20Guild%20store%20terminal%20section%20evidence.task.md) | a calibration session the person starts |
 | 6 | [Render-time latency measurement](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Render-time%20latency%20measurement.task.md) | the person: is the harness sample enough? |
+| 7 | [Gem collector in-battle overlay exclusion](pending-tasks/%5B2026-11-04%5D%5BOpen%5D%20Gem%20collector%20in-battle%20overlay%20exclusion.task.md) | new overlay templates would come from a calibration session the person starts |
 
 At most two in flight, and only when they touch different files.
 
