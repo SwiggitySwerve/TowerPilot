@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { own } from '../../src/core/read.ts';
 import { shopCatalog } from '../../src/core/shoppingPlan.ts';
 import { dashboardBody, dashboardPagesCase } from '../support/dashboardFixture.ts';
+import { showShopPage } from './helpers/helpers.ts';
 
 /**
  * Geometry of the Runs page on the built app and the fake backend: the shopping editor as a
@@ -18,6 +19,7 @@ const SCENARIOS = [
   { name: 'tablet 1054', width: 1054, minColumns: 2, beside: true },
   { name: 'phone 390', width: 390, minColumns: 1, beside: false },
 ] as const;
+const PAGE_ROW = '[data-shopping-saved] .tp-shop__picker [data-sections]';
 
 async function openSaved(page: Page, width: number, routes: (page: Page) => Promise<void>) {
   await page.setViewportSize({ width, height: 900 });
@@ -42,6 +44,7 @@ for (const scenario of SCENARIOS) {
       expect(CATALOG).toHaveLength(48);
       const pages = page.locator('[data-shopping-saved] .tp-shop__page .tp-chip-grid');
       for (const [index, section] of SECTIONS.entries()) {
+        await showShopPage(page.locator('[data-shopping-saved]'), section);
         const grid = pages.nth(index);
         const expected = CATALOG.filter((item) => item.section === section).map(
           (item) => item.label,
@@ -72,20 +75,25 @@ for (const scenario of SCENARIOS) {
       page,
     }) => {
       await openSaved(page, scenario.width, nothing);
-      const grids = await page
-        .locator('[data-shopping-saved] .tp-shop__page .tp-chip-grid')
-        .evaluateAll((lists) =>
-          lists.map((list) => {
-            const boxes = [...list.children].map((chip) => chip.getBoundingClientRect());
-            const on = [...list.children].filter(
-              (chip) => chip.getAttribute('data-on') === 'true',
-            ).length;
-            return {
-              boxes: boxes.map((box) => ({ width: box.width, height: box.height, top: box.top })),
-              on,
-            };
-          }),
+      const grids = [];
+      for (const [index, section] of SECTIONS.entries()) {
+        await showShopPage(page.locator('[data-shopping-saved]'), section);
+        grids.push(
+          await page
+            .locator('[data-shopping-saved] .tp-shop__page .tp-chip-grid')
+            .nth(index)
+            .evaluate((list) => {
+              const boxes = [...list.children].map((chip) => chip.getBoundingClientRect());
+              const on = [...list.children].filter(
+                (chip) => chip.getAttribute('data-on') === 'true',
+              ).length;
+              return {
+                boxes: boxes.map((box) => ({ width: box.width, height: box.height, top: box.top })),
+                on,
+              };
+            }),
         );
+      }
       // Damage and Health are in the saved queue: the check covers selected and plain chips.
       expect(grids.reduce((sum, grid) => sum + grid.on, 0)).toBe(2);
       for (const grid of grids) {
@@ -126,6 +134,37 @@ for (const scenario of SCENARIOS) {
       expect(rows).toHaveLength(2);
       expect(Math.abs((rows[0] ?? 0) - (rows[1] ?? 0))).toBeLessThanOrEqual(1);
       await expect(root.locator('.tp-queue__end')).toBeVisible();
+    });
+
+    test('a phone shows one shop page at a time under the Save row; wider shows every page', async ({
+      page,
+    }) => {
+      await openSaved(page, scenario.width, nothing);
+      const root = page.locator('[data-shopping-saved]');
+      const grids = root.locator('.tp-shop__page .tp-chip-grid');
+      if (scenario.beside) {
+        await expect(page.locator(PAGE_ROW)).toHaveCount(0);
+        for (const index of SECTIONS.keys()) await expect(grids.nth(index)).toBeVisible();
+        await expect(root.locator('.tp-shop__never')).toBeVisible();
+        return;
+      }
+      const row = page.locator(PAGE_ROW);
+      await expect(row.locator('button')).toHaveText(['Attack', 'Defense', 'Utility', 'Never buy']);
+      await expect(row.locator('[aria-pressed="true"]')).toHaveText('Attack');
+      await expect(grids.nth(0)).toBeVisible();
+      await expect(grids.nth(1)).toBeHidden();
+      await expect(root.locator('.tp-shop__never')).toBeHidden();
+      // Save sits right under the queue it saves, above the pages.
+      const save = await root.locator('.tp-shop__footer').boundingBox();
+      const picker = await root.locator('.tp-shop__picker').boundingBox();
+      expect((save?.y ?? 0) + (save?.height ?? 0)).toBeLessThanOrEqual(picker?.y ?? 0);
+      await showShopPage(root, 'defense');
+      await expect(grids.nth(0)).toBeHidden();
+      await expect(grids.nth(1)).toBeVisible();
+      await expect(root.getByText('Excluded by default:')).toBeVisible();
+      await showShopPage(root, 'never');
+      await expect(grids.nth(1)).toBeHidden();
+      await expect(root.locator('.tp-shop__never')).toBeVisible();
     });
 
     test('nothing in the editor scrolls or folds: every chip is on the page', async ({ page }) => {

@@ -58,40 +58,46 @@ export function LiveShopping() {
               const next = moveUpgradeTo(vm.base, vm.draft, id, to);
               if (next !== null) apply(next);
             }}
-          />
-          <p>{t.overrides.short}</p>
-          <ActionRow
-            reason={
-              vm.reason === null ? null : (
-                <Reason
-                  id="shopping-live-reason"
-                  entry={
-                    Object.entries(t.reasons).find(([key]) => key === vm.reason)?.[1] ??
-                    t.reasons.unsupported
+            footer={
+              <>
+                <p>{t.overrides.short}</p>
+                <ActionRow
+                  reason={
+                    vm.reason === null ? null : (
+                      <Reason
+                        id="shopping-live-reason"
+                        entry={
+                          Object.entries(t.reasons).find(([key]) => key === vm.reason)?.[1] ??
+                          t.reasons.unsupported
+                        }
+                      />
+                    )
                   }
-                />
-              )
+                >
+                  <Button
+                    tier="secondary"
+                    label={t.save.short}
+                    {...(vm.command === null
+                      ? { disabled: true, reasonId: 'shopping-live-reason' }
+                      : {})}
+                    onClick={() => {
+                      if (vm.command !== null) void commands.saveLive(vm.command);
+                    }}
+                  />
+                  {vm.discard ? (
+                    <Button
+                      tier="quiet"
+                      label={t.discard.short}
+                      onClick={() => {
+                        commands.discardDraft(vm.scope);
+                      }}
+                    />
+                  ) : null}
+                </ActionRow>
+                <QueueRefusal message={vm.refusal} />
+              </>
             }
-          >
-            <Button
-              tier="secondary"
-              label={t.save.short}
-              {...(vm.command === null ? { disabled: true, reasonId: 'shopping-live-reason' } : {})}
-              onClick={() => {
-                if (vm.command !== null) void commands.saveLive(vm.command);
-              }}
-            />
-            {vm.discard ? (
-              <Button
-                tier="quiet"
-                label={t.discard.short}
-                onClick={() => {
-                  commands.discardDraft(vm.scope);
-                }}
-              />
-            ) : null}
-          </ActionRow>
-          <QueueRefusal message={vm.refusal} />
+          />
         </details>
       ) : null}
       {/* Why the queue can't change here, and the one place to act instead, on one line. */}

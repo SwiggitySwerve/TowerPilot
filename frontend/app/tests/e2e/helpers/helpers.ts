@@ -230,3 +230,29 @@ export async function showSection(page: Page, row: string, key: string): Promise
   if ((await button.getAttribute('aria-pressed')) !== 'true') await button.click();
   await expect(button).toHaveAttribute('aria-pressed', 'true');
 }
+
+/** A queue editor's Save row sits right under its queue, above the pages or beside them. */
+export async function expectSaveUnderQueue(editor: Locator): Promise<void> {
+  const save = editor.locator('.tp-shop__footer');
+  await expect(save.getByRole('button').first()).toBeVisible();
+  const box = await save.boundingBox();
+  const queue = await editor.locator('.tp-shop__queue').boundingBox();
+  const pages = await editor.locator('.tp-shop__picker').boundingBox();
+  expect(box?.y ?? 0).toBeGreaterThanOrEqual((queue?.y ?? 0) + (queue?.height ?? 0));
+  if ((await editor.locator('.tp-shop__picker [data-sections]').count()) > 0)
+    // Narrow: above the pages, which come after it.
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(pages?.y ?? 0);
+  // Wide: in the queue's column, beside the pages.
+  else expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(pages?.x ?? 0);
+}
+
+/**
+ * Show one shop page of a queue editor (`attack`, `defense`, `utility`, `never`). A narrow
+ * editor shows one page at a time from its page row; a wide one shows every page and has none.
+ */
+export async function showShopPage(editor: Locator, key: string): Promise<void> {
+  const button = editor.locator(`.tp-shop__picker [data-sections] [data-section="${key}"]`);
+  if ((await button.count()) === 0) return;
+  if ((await button.getAttribute('aria-pressed')) !== 'true') await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+}

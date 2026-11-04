@@ -3,6 +3,7 @@ import { own } from '../../../src/core/read.ts';
 import { shopCatalog } from '../../../src/core/shoppingPlan.ts';
 import { dashboardPagesCase } from '../../support/dashboardFixture.ts';
 import { boundsDraft } from '../../support/shoppingBounds.ts';
+import { showShopPage } from './helpers.ts';
 
 const LABELS: Readonly<Record<string, string>> = {
   tap_limit: 'Tap attempts this battle',
@@ -21,6 +22,14 @@ function field(editor: Locator, key: string) {
   return editor.getByRole('spinbutton', { name: `${LABELS[name] ?? ''}: ${upgrade}`, exact: true });
 }
 
+/** A chip's own number box is on its shop page: show that page (wave ranges sit in the queue). */
+async function onItsPage(editor: Locator, key: string) {
+  const [, id = '', name = ''] = key.split(':');
+  const section = CATALOG.find((item) => item.id === id)?.section;
+  if ((name === 'tap_limit' || name === 'weight') && section != null)
+    await showShopPage(editor, section);
+}
+
 /** The wave ranges fold away and the weight shows only in Weighted split: open both for `act`. */
 async function revealed(editor: Locator, act: () => Promise<void>) {
   await editor.locator('details:not(:has(details)):has(.tp-shop__waves)').evaluate((element) => {
@@ -35,14 +44,18 @@ async function revealed(editor: Locator, act: () => Promise<void>) {
 
 export async function fillBoundsDraft(editor: Locator, name: string) {
   await revealed(editor, async () => {
-    for (const [key, value] of Object.entries(boundsDraft(name)))
+    for (const [key, value] of Object.entries(boundsDraft(name))) {
+      await onItsPage(editor, key);
       await field(editor, key).fill(String(value));
+    }
   });
 }
 
 export async function expectBoundsDraft(editor: Locator, name: string) {
   await revealed(editor, async () => {
-    for (const [key, value] of Object.entries(boundsDraft(name)))
+    for (const [key, value] of Object.entries(boundsDraft(name))) {
+      await onItsPage(editor, key);
       await expect(field(editor, key)).toHaveValue(String(value));
+    }
   });
 }
