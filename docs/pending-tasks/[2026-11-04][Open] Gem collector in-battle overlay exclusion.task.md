@@ -8,8 +8,11 @@
 
 ## Problem
 
-The gem collector collects only while the screen classifier says `battle` with a readable
-wave (`backend/gem_collector.py`, the `live` check). The classifier in
+The gem collector's battle collection is gated on the screen classifier saying `battle` with
+a readable wave (`backend/gem_collector.py`, the `live` check). Its other path, claiming the
+Ad Gem offer on Home, is being removed by
+[#45](https://github.com/SwiggitySwerve/TowerPilot/pull/45), after which `live` is the only
+gate on collector input. The classifier in
 `backend/vision/screen.py` checks its `OVERLAYS` list first, then, when no screen header
 matches, returns `Screen("battle", ...)` for any frame where `wave_reader.read_wave(frame)`
 reads a wave (the `if best_s < HDR_THRESH:` fallback near the end of `identify`). The
@@ -60,11 +63,32 @@ recorded either way.
 
 - Found while removing Home claims from the collector (2026-11-04). The person chose
   battle-only collection, and chose to track overlay hardening here instead of in that PR.
-- The research notes and log audit are local, in `backend/logs/reviews/` (git-ignored).
-  Counts from the audit: ad claims in battles 710 started / 709 finished, 681 confirmed;
-  orbit windows 336 started / 333 finished, 198 confirmed, 135 `attempt_timeout`.
+- Evidence (git-ignored, local to the machine that ran it):
+  [audit.txt](../../backend/logs/reviews/gem-collector-battle-only/audit.txt), a log audit
+  of 102 collector process logs with every contributing log-line reference. Its counts: ad
+  claims with no surface label (logged while `collecting`) 710 started / 709 finished, 681
+  confirmed; orbit windows 336 started / 333 finished, 198 confirmed, 135
+  `attempt_timeout`. Home claims, now removed: 16 attempts, 1 confirmed.
 - This touches screen recognition that every flow uses, so changes need the per-machine
   variant approach from CLAUDE.md ("never by lowering thresholds") and a live check.
+
+---
+
+## Architectural Reasoning
+
+Two places can hold the fix:
+
+| Approach | Gain | Risk |
+|---|---|---|
+| Shared classifier: add in-battle overlays to `OVERLAYS` in `backend/vision/screen.py` | Every flow that trusts `battle` (orchestrator, shard, collector) stops acting under the panel | A new entry changes what every flow sees; a missed or noisy template can turn a real battle into a non-battle and stall collection or the orchestrator |
+| Collector only: a check in `backend/gem_collector.py` / `backend/interactions/ad_gems.py` before input | Limited blast radius; the collector refuses, other flows unchanged | Other flows keep tapping under the panel; two places learn the same overlay |
+
+The choice depends on what step 1 finds: if the orchestrator or shard flows also tap during a
+battle and would misread the same panels, the shared classifier is the right home (one place
+that knows the screen, per the manifest rule in CLAUDE.md). If only the collector acts while
+such a panel can be open, a collector-local refusal is the smaller change. Either way, the
+templates come from the human-started calibrator (CLAUDE.md rule 6), never from the
+detector itself.
 
 ---
 
