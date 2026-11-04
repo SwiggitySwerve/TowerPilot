@@ -406,22 +406,12 @@ def routine():
 
 
 @pytest.mark.parametrize('origin,expected', [('started', 'full'), ('adopted', 'since_adoption'), ('partial_adoption', 'since_adoption')])
-@pytest.mark.parametrize('tracked_only', [False, True])
-def test_the_projection_publishes_the_coverage_the_rows_are_stored_with(tmp_path, origin, expected, tracked_only):
-    host = cases.RealHost(tmp_path, origin=origin, tracked_only=tracked_only)
+def test_the_projection_publishes_the_coverage_the_rows_are_stored_with(tmp_path, origin, expected):
+    host = cases.RealHost(tmp_path, origin=origin)
     host.session.finish(host.session.begin('ad_gems'), result='no_op', reason='x')
     (item,) = host.session.project({'ad_gems': routine()})['items']
     (row,) = host.rows()
     assert item['coverage'] == row['coverage'] == expected
-
-
-def test_a_tracked_only_session_publishes_full_for_what_it_records_between_battles(tmp_path):
-    host = cases.RealHost(tmp_path, origin='adopted', tracked_only=True)
-    host.end_battle()                                                                           # the battle is over; the collector still acts at Home
-    host.session.finish(host.session.begin('ad_gems'), result='no_op', reason='x')
-    (item,) = host.session.project({'ad_gems': routine()})['items']
-    (row,) = host.rows()
-    assert row['host']['battle_id'] is None and item['coverage'] == row['coverage'] == 'full'
 
 
 def test_the_projection_follows_the_driver_to_its_next_battle(tmp_path):

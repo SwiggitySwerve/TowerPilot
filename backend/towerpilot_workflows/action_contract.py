@@ -615,7 +615,7 @@ AD_GEMS = ActionDefinition(
     id='ad_gems', label='Ad gems', family='gems', hosts=_GEM_HOSTS, schedule=StartToStart(),
     fields=(_ENABLED, _INTERVAL, _WINDOW),
     capabilities=Capabilities(live_controls=True, pause=True, run_now=True), saved='gather_policy',
-    evidence=('balance_increased',))     # Home: stable exact +6. A battle offer that vanished after the tap is a sighting, not proof of a gem (see effect_of)
+    evidence=('balance_increased',))     # Kept for Home claims already in the ledger (Home claiming was removed). A battle offer that vanished after the tap is a sighting, not proof of a gem (see effect_of)
 FLOATING_GEMS = ActionDefinition(
     id='floating_gems', label='Floating gems', family='gems', hosts=_GEM_HOSTS, schedule=AppearanceDriven(),
     fields=(_ENABLED,

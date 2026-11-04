@@ -32,12 +32,9 @@ def test_a_short_pass_waits_only_the_remainder_and_a_long_pass_does_not_wait(mon
     assert starts[3] - starts[2] == pytest.approx(1.0)
 
 
-def test_the_home_branch_is_paced_the_same_way(monkeypatch):
+def test_observing_home_is_paced_the_same_way(monkeypatch):
     now, sleeps, identify, sleep = world(monkeypatch, [0.25, 0.25])
     fence = lambda: None                                             # noqa: E731 - a harvesting collector's fence
-    ad = types.SimpleNamespace(enabled=True, poll_home=lambda f, reads=None: None, leave_home=lambda: None)
-    gems = types.SimpleNamespace(ad_gems=ad, orbit=types.SimpleNamespace(enabled=True), busy=lambda: [],
-                                 poll=lambda f, reads=None: None)
-    run(monkeypatch, ['home', 'home'], fence=fence, gems=gems, sleep=sleep, read_wave=lambda f: None,
+    run(monkeypatch, ['home', 'home'], fence=fence, sleep=sleep, read_wave=lambda f: None,
         screen=lambda f: types.SimpleNamespace(name='home') if identify(f) else None)
     assert sleeps == [pytest.approx(0.75), pytest.approx(0.75)]

@@ -47,7 +47,7 @@ def test_the_orchestrators_shopper_is_given_a_recorder_and_the_collector_follows
     assert calls('orchestrator.py', 'GemWatch')
     assert 'recorder' in (BACKEND / 'orchestrator.py').read_text(encoding='utf-8').split('self.shop = shopper.Shopper(preset())')[1][:200]
     collector = (BACKEND / 'gem_collector.py').read_text(encoding='utf-8')
-    assert collector.count('session=actions') == 3 and "ActionSession.for_battle(session, 'collector', tracked_only=True)" in collector
+    assert collector.count('session=actions') == 3 and "ActionSession.for_battle(session, 'collector')" in collector
 
 
 # ---------------------------------------------------------------------- gem hosts

@@ -59,7 +59,7 @@ def execution(*, action='ad_gems', instance=None, battle_id='b1', generation='g1
 class RealHost:
     """One driver over a temporary ledger: an operation, its battle, a battle session and the ActionSession attached to it."""
 
-    def __init__(self, root, *, origin='started', key='op-1', clock=None, tracked_only=False, previous_battle_id=None, driver='orchestrator'):
+    def __init__(self, root, *, origin='started', key='op-1', clock=None, previous_battle_id=None, driver='orchestrator'):
         from runtime.action_session import ActionSession
         from runtime.battle_session import BattleSession
         self.path = operations.ledger_path(root)
@@ -67,7 +67,7 @@ class RealHost:
         self.operation, _ = self.ops.accept('farm', CONTEXT, {}, key)
         self.store = Battles(self.path)
         self.battle_session = BattleSession(self.store, self.operation['id'], dict(BODY), {'active_profile': 'mine'}, origin=origin, previous_battle_id=previous_battle_id)
-        self.session = ActionSession.for_battle(self.battle_session, driver, tracked_only=tracked_only)
+        self.session = ActionSession.for_battle(self.battle_session, driver)
         self.session.clock = clock or FakeClock()
         actions.Actions(str(self.path))        # the ledger names itself now, after the battle it will hold (a battle made before it is 'recorded before action history')
 
