@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry, CopyNode, CopyText } from '../../copy/text.ts';
 import { entryKey, type EntryField, type FieldReview } from '../../core/shoppingPlan.ts';
@@ -15,6 +15,7 @@ import { Disclosure } from '../../ui/Disclosure.tsx';
 import { HelpTip } from '../../ui/HelpTip.tsx';
 import { Mark } from '../../ui/ItemGlyph.tsx';
 import { PriorityQueue } from '../../ui/PriorityQueue.tsx';
+import { SectionPanel, SectionTabs } from '../../ui/SectionTabs.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
 import { Tile } from '../../ui/Tile.tsx';
 import { ToggleChip, type ItemTone } from '../../ui/ToggleChip.tsx';
@@ -38,7 +39,7 @@ export interface QueueEditorProps extends QueueEditorActions {
   readonly vm: QueueEditorVM;
   /** Unique per editor on the page (saved run, live battle, library policy). */
   readonly idBase: string;
-  /** The editor's Save row: kept in view under the queue on wide layouts, after the grids when narrow. */
+  /** The editor's Save row: under the queue, kept in view beside the grids on wide layouts. */
   readonly footer?: CopyNode;
 }
 
@@ -377,6 +378,80 @@ function NeverBuy({ vm, idBase, actions }: Parts) {
   );
 }
 
+/** The width (CSS `@container (min-width: 40rem)` in shopping.css) where the grids sit beside the queue. */
+const WIDE_REM = 40;
+
+/**
+ * True while the editor is narrower than the two-pane layout. Without a way to measure (tests,
+ * old browsers) it reads wide, which shows every page.
+ */
+function useNarrow(ref: RefObject<HTMLElement | null>): boolean {
+  const [narrow, setNarrow] = useState(false);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (element === null || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => {
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      setNarrow(element.getBoundingClientRect().width < WIDE_REM * rem);
+    };
+    measure();
+    const watcher = new ResizeObserver(measure);
+    watcher.observe(element);
+    return () => {
+      watcher.disconnect();
+    };
+  }, [ref]);
+  return narrow;
+}
+
+const NEVER_BUY = 'never';
+/** A page's key in the page row: its known name, else its place (server names may hold spaces). */
+const pageKey = (section: PickerSectionVM, index: number): string =>
+  section.known ?? `page-${String(index)}`;
+
+/**
+ * The workshop pages. Narrow, one page at a time from a row of page buttons (the queue above
+ * lists every queued upgrade, and a page holding a problem says so on its button); wide, all.
+ */
+function Pages({ narrow, ...parts }: Parts & { readonly narrow: boolean }) {
+  const { vm, idBase } = parts;
+  const keys = [...vm.picker.map(pageKey), NEVER_BUY];
+  const [chosen, setChosen] = useState(keys[0] ?? NEVER_BUY);
+  const shown = keys.includes(chosen) ? chosen : (keys[0] ?? NEVER_BUY);
+  const idPrefix = `${idBase}-pages`;
+  const current = (key: string) => (narrow ? shown : key);
+  return (
+    <>
+      {narrow ? (
+        <SectionTabs
+          label={t.pageTabs.short}
+          idPrefix={idPrefix}
+          sections={[
+            ...vm.picker.map((section, index) => ({
+              key: pageKey(section, index),
+              label: sectionLabel(section),
+            })),
+            { key: NEVER_BUY, label: t.excluded.short },
+          ]}
+          current={shown}
+          onSelect={setChosen}
+        />
+      ) : null}
+      {vm.picker.map((section, index) => {
+        const key = pageKey(section, index);
+        return (
+          <SectionPanel key={section.key} idPrefix={idPrefix} section={key} current={current(key)}>
+            <Page section={section} {...parts} />
+          </SectionPanel>
+        );
+      })}
+      <SectionPanel idPrefix={idPrefix} section={NEVER_BUY} current={current(NEVER_BUY)}>
+        <NeverBuy {...parts} />
+      </SectionPanel>
+    </>
+  );
+}
+
 /** The wave range of each upgrade of the plan: kept from the earlier editor, folded as few use it. */
 function WaveRanges({ vm, idBase, actions }: Parts) {
   return (
@@ -425,6 +500,8 @@ export function QueueEditor(props: QueueEditorProps) {
   const { vm, idBase } = props;
   const review = vm.review;
   const parts: Parts = { vm, idBase, actions: props };
+  const root = useRef<HTMLDivElement>(null);
+  const narrow = useNarrow(root);
   const sections = new Map(
     vm.picker.flatMap((section) => section.items.map((item) => [item.id, section] as const)),
   );
@@ -448,7 +525,7 @@ export function QueueEditor(props: QueueEditorProps) {
     ...(review.cadenceProblem === null ? [] : [t.cadence.short]),
   ];
   return (
-    <div className="tp-shop">
+    <div className="tp-shop" ref={root}>
       <Tile
         as="fieldset"
         className="tp-shop__rules"
@@ -525,10 +602,7 @@ export function QueueEditor(props: QueueEditorProps) {
           intro={vm.mode.value === 'weighted_split' ? t.pickerHintWeighted : t.pickerHint}
         >
           {vm.orderProvisional ? <p className="tp-shop__hint">{t.orderProvisional.short}</p> : null}
-          {vm.picker.map((section) => (
-            <Page key={section.key} section={section} {...parts} />
-          ))}
-          <NeverBuy {...parts} />
+          <Pages narrow={narrow} {...parts} />
         </Tile>
       </div>
       {problems.length === 0 ? null : (

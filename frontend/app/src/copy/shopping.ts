@@ -104,6 +104,8 @@ export const shopping = {
     utility: entry('Utility'),
   },
   otherSection: entry('Other'),
+  /** The row that shows one shop page at a time on a narrow screen. */
+  pageTabs: entry('Shop pages to show'),
   excluded: entry('Never buy'),
   noneExcluded: entry('No upgrade is kept out.'),
   excludeAdd: entry('Upgrade to keep out'),

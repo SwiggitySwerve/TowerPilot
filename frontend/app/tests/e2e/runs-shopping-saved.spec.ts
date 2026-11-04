@@ -2,7 +2,7 @@ import { fillBoundsDraft, expectBoundsDraft } from './helpers/shopping-bounds.ts
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page, type Locator } from '@playwright/test';
-import { axeIds, bodiesTo, posts, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import { axeIds, bodiesTo, posts, showShopPage, WCAG_AA_TAGS } from './helpers/helpers.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
 import { bounds } from '../support/shoppingBounds.ts';
 import { own } from '../../src/core/read.ts';
@@ -146,6 +146,7 @@ async function weighted(page: Page) {
     root(page).getByRole('spinbutton', { name: 'Tap attempts this battle: Damage', exact: true }),
     '',
   );
+  await showShopPage(root(page), 'defense');
   await fill(root(page).getByRole('spinbutton', { name: 'Weight: Health', exact: true }), '3');
   // Wave ranges open by themselves once a queue has entries; make sure they are open.
   await root(page)

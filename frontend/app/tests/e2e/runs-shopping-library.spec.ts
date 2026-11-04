@@ -3,7 +3,14 @@ import path from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { entries, ownPath } from '../../src/core/read.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
-import { axeViolations, bodiesTo, posts, reveal, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import {
+  axeViolations,
+  bodiesTo,
+  posts,
+  reveal,
+  showShopPage,
+  WCAG_AA_TAGS,
+} from './helpers/helpers.ts';
 
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -32,6 +39,7 @@ async function weighted(page: Page) {
   await form.getByLabel('Cash reserve', { exact: true }).fill('750.5');
   await form.getByLabel('Purchase pattern', { exact: true }).selectOption('weighted_split');
   await form.getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
+  await showShopPage(form, 'defense');
   await form.getByRole('spinbutton', { name: 'Weight: Health', exact: true }).fill('3');
   // Wave ranges open by themselves once a queue has entries; make sure they are open.
   await form.locator('details:not(:has(details)):has(.tp-shop__waves)').evaluate((element) => {
@@ -40,6 +48,7 @@ async function weighted(page: Page) {
   await form
     .getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true })
     .fill('20');
+  await showShopPage(form, 'attack');
   await form
     .getByRole('spinbutton', { name: 'Tap attempts this battle: Damage', exact: true })
     .fill('');

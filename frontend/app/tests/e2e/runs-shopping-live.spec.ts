@@ -6,7 +6,7 @@ import { entries, own, ownPath } from '../../src/core/read.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
 import { copy } from '../../src/copy/catalogue.ts';
 import { bounds } from '../support/shoppingBounds.ts';
-import { axeIds, bodiesTo, posts } from './helpers/helpers.ts';
+import { axeIds, bodiesTo, posts, showShopPage } from './helpers/helpers.ts';
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
@@ -131,6 +131,7 @@ async function edit(page: Page) {
   await editor.getByLabel('Purchase pattern', { exact: true }).selectOption('weighted_split');
   await editor.getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
   await editor.getByRole('button', { name: /Move up.*Health/ }).click();
+  await showShopPage(editor, 'defense');
   await editor.getByRole('spinbutton', { name: 'Weight: Health', exact: true }).fill('3');
   // Wave ranges open by themselves once a queue has entries; make sure they are open.
   await editor.locator('details:not(:has(details)):has(.tp-shop__waves)').evaluate((element) => {
@@ -139,6 +140,7 @@ async function edit(page: Page) {
   await editor
     .getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true })
     .fill('20');
+  await showShopPage(editor, 'attack');
   await editor
     .getByRole('spinbutton', { name: 'Tap attempts this battle: Damage', exact: true })
     .fill('');

@@ -230,3 +230,14 @@ export async function showSection(page: Page, row: string, key: string): Promise
   if ((await button.getAttribute('aria-pressed')) !== 'true') await button.click();
   await expect(button).toHaveAttribute('aria-pressed', 'true');
 }
+
+/**
+ * Show one shop page of a queue editor (`attack`, `defense`, `utility`, `never`). A narrow
+ * editor shows one page at a time from its page row; a wide one shows every page and has none.
+ */
+export async function showShopPage(editor: Locator, key: string): Promise<void> {
+  const button = editor.locator(`.tp-shop__picker [data-sections] [data-section="${key}"]`);
+  if ((await button.count()) === 0) return;
+  if ((await button.getAttribute('aria-pressed')) !== 'true') await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+}

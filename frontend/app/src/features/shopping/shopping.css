@@ -101,17 +101,17 @@
 .tp-shop__problem {
   color: var(--tp-color-bad);
 }
-/* Narrow: the queue, then the grids, then the Save row (its side wrapper is not a box). */
+/* Narrow: the queue, its Save row, then the grids (the side wrapper is not a box). */
 .tp-shop__side {
   display: contents;
 }
 .tp-shop__queue {
   order: 1;
 }
-.tp-shop__picker {
+.tp-shop__footer {
   order: 2;
 }
-.tp-shop__footer {
+.tp-shop__picker {
   order: 3;
 }
 @container (min-width: 40rem) {

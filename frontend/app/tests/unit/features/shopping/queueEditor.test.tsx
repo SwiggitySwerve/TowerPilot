@@ -2,7 +2,7 @@ import { act, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { own, ownPath } from '../../../../src/core/read.ts';
 import {
   appendUpgrade,
@@ -215,5 +215,54 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
     );
     expect(textOutsideCatalogue(document.body)).toEqual([]);
     expect(await axe(document.body)).toHaveNoViolations();
+  });
+
+  it('narrow, one shop page at a time; a page holding a problem says so on its button', async () => {
+    // The editor measures itself: 300 px is narrower than its two-pane layout (40rem).
+    const observed: Array<() => void> = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          observed.push(callback);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const box = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(new DOMRect(0, 0, 300, 100));
+    try {
+      renderRegion(
+        initialDashboardState(),
+        <main>
+          <Harness initial={{ 'entry:health:weight': '1.5e' }} />
+        </main>,
+      );
+      const row = screen.getByRole('navigation', { name: 'Shop pages to show' });
+      const buttons = within(row).getAllByRole('button');
+      expect(buttons.map((button) => button.textContent)).toEqual([
+        'Attack',
+        'DefenseNeeds attention1 problem',
+        'Utility',
+        'Never buy',
+      ]);
+      expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+      expect(page('Attack').getAllByRole('button')).toHaveLength(17);
+      expect(screen.getByRole('list', { name: 'Defense', hidden: true })).not.toBeVisible();
+      fireEvent.click(within(row).getByRole('button', { name: /^Defense/u }));
+      expect(screen.getByRole('list', { name: 'Defense' })).toBeVisible();
+      expect(screen.getByRole('list', { name: 'Attack', hidden: true })).not.toBeVisible();
+      expect(screen.getByRole('spinbutton', { name: 'Weight: Health' })).toHaveAttribute(
+        'aria-invalid',
+        'true',
+      );
+      expect(textOutsideCatalogue(document.body)).toEqual([]);
+      expect(await axe(document.body)).toHaveNoViolations();
+    } finally {
+      box.mockRestore();
+      vi.unstubAllGlobals();
+    }
   });
 });
