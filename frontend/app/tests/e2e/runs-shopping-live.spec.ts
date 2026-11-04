@@ -6,7 +6,7 @@ import { entries, own, ownPath } from '../../src/core/read.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
 import { copy } from '../../src/copy/catalogue.ts';
 import { bounds } from '../support/shoppingBounds.ts';
-import { axeIds, bodiesTo, posts, showShopPage } from './helpers/helpers.ts';
+import { axeIds, bodiesTo, expectSaveUnderQueue, posts, showShopPage } from './helpers/helpers.ts';
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
@@ -127,6 +127,7 @@ async function check(page: Page, width: number, state: string) {
 }
 async function edit(page: Page) {
   const editor = page.locator('.tp-shopping-live');
+  await expectSaveUnderQueue(editor);
   await editor.getByRole('textbox', { name: 'Cash reserve', exact: true }).fill('750.5');
   await editor.getByLabel('Purchase pattern', { exact: true }).selectOption('weighted_split');
   await editor.getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
@@ -247,7 +248,9 @@ for (const width of [1360, 1054, 390]) {
       await fillBoundsDraft(editor, name);
       await editor.getByRole('button', { name: 'Save queue for this battle', exact: true }).click();
       if (answer.status === 400) {
-        const refusal = editor.locator('[data-queue-refusal] [data-server-text="message"]');
+        const refusal = editor.locator(
+          '.tp-shop__footer [data-queue-refusal] [data-server-text="message"]',
+        );
         await expect(refusal).toBeVisible();
         await expect(refusal).toHaveText(String(own(answer.body, 'error')));
         await expect(page.locator('[data-outcome="live_applied"]')).toHaveCount(0);

@@ -286,7 +286,9 @@ for (const width of [1360, 1054, 390]) {
       await fillBoundsDraft(root(page), name);
       await root(page).getByRole('button', { name: 'Save queue', exact: true }).click();
       if (answer.status === 400) {
-        const refusal = root(page).locator('[data-queue-refusal] [data-server-text="message"]');
+        const refusal = root(page).locator(
+          '.tp-shop__footer [data-queue-refusal] [data-server-text="message"]',
+        );
         await expect(refusal).toBeVisible();
         await expect(refusal).toHaveText(String(own(answer.body, 'error')));
         await expect(page.locator('[data-outcome="saved"]')).toHaveCount(0);

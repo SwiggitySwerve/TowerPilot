@@ -6,6 +6,7 @@ import { dashboardPagesCase } from '../support/dashboardFixture.ts';
 import {
   axeViolations,
   bodiesTo,
+  expectSaveUnderQueue,
   posts,
   reveal,
   showShopPage,
@@ -36,6 +37,7 @@ async function edit(page: Page, id = 'main_list') {
 }
 async function weighted(page: Page) {
   const form = await edit(page);
+  await expectSaveUnderQueue(form);
   await form.getByLabel('Cash reserve', { exact: true }).fill('750.5');
   await form.getByLabel('Purchase pattern', { exact: true }).selectOption('weighted_split');
   await form.getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
