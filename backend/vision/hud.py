@@ -1,5 +1,8 @@
 """Structural HUD recognition shared by calibration and runtime readers."""
 import cv2
+import numpy as np
+
+from player.bootstrap_layout import manifest, reference_manifest
 
 
 def three_bars(crop):
@@ -28,3 +31,25 @@ def three_bars(crop):
     heights = [b - a for a, b in bands]
     return max(heights) <= 2.5 * min(heights)
 
+
+def closed_menu_visible(frame: np.ndarray) -> bool:
+    """Positive, undimmed battle HUD evidence, without any stored template.
+
+    In-game modals dim/cover the HUD; the expanded side menu replaces the
+    hamburger with an X. Neither supplies the three bright bars. Unknown
+    geometry or an unreadable glyph refuses collection. The caller must also
+    verify battle and wave: this landmark alone is not a screen classifier.
+    """
+    layout = manifest()
+    if frame.shape != (layout['layout']['height'], layout['layout']['width'], 3):
+        return False
+    x, y, w, h = layout['side_menu']['toggle']['rect']
+    if min(x, y) < 0 or min(w, h) <= 0 or x+w > frame.shape[1] or y+h > frame.shape[0]:
+        return False
+    crop = frame[y:y+h, x:x+w]
+    # Keep the established detector's reference-pixel band sizes unchanged.
+    # Native geometry comes from the display-bound manifest on every call.
+    _, _, rw, rh = reference_manifest()['side_menu']['toggle']['rect']
+    if (w, h) != (rw, rh):
+        crop = cv2.resize(crop, (rw, rh), interpolation=cv2.INTER_NEAREST)
+    return bool(three_bars(crop))
