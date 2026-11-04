@@ -1,88 +1,93 @@
-"""The collector's Home branch (r15c): which frames reach `AdGemCollector.poll_home`, and under which conditions."""
+"""Only a recognized battle with a readable wave may reach gem collection."""
 import types
+from unittest.mock import Mock
 
 import pytest
 
-
-class Exhausted(Exception):
-    pass
-
-
-def run(monkeypatch, frames, *, fence=True, enabled=True, battle=None, refuse_at=None):
-    import gem_collector as worker
-    from runtime import runners, device_lease
-    from runtime import battle_session, action_session
-    calls, checkpoints, fences = [], [], []
-    monkeypatch.setattr(device_lease, 'prepare_instance', lambda name: None)
-    monkeypatch.setattr(worker.settings, 'select_instance', lambda *a: None)
-    monkeypatch.setattr(runners, 'other_runners', lambda: iter([]))
-
-    def check():
-        fences.append(1)
-        calls.append(('fence',))
-        if refuse_at is not None and len(fences) >= refuse_at:
-            raise RuntimeError('harvesting no longer asks for this collector')
-    monkeypatch.setattr(worker, 'automatic_fence', lambda: check if fence else None)
-    session = None
-    if battle is not None:
-        session = types.SimpleNamespace(
-            battle=dict(status=battle, id='b1'), effective_preset=lambda: {},
-            checkpoint=lambda state, **kw: checkpoints.append(kw), observe=lambda state, raw: True,
-            finish=lambda *a, **kw: None, prepare_next=lambda **kw: None)
-    monkeypatch.setattr(battle_session.BattleSession, 'from_environment', classmethod(lambda cls, *a, **kw: session))
-    monkeypatch.setattr(action_session.ActionSession, 'for_battle', classmethod(lambda cls, *a, **kw: None))
-    ad = types.SimpleNamespace(enabled=enabled, poll_home=lambda f, reads=None: calls.append(('poll_home', f)),
-                               leave_home=lambda: calls.append(('leave_home',)))
-    monkeypatch.setattr(worker, 'GemWatch', lambda gather=None, **kw: types.SimpleNamespace(
-        ad_gems=ad, orbit=types.SimpleNamespace(enabled=True), poll=lambda f, reads=None: calls.append(('poll', f))))
-    remaining = iter(frames)
-
-    def grab():
-        try:
-            return next(remaining)
-        except StopIteration:
-            raise Exhausted from None
-    monkeypatch.setattr(worker.capture, 'grab', grab)
-    monkeypatch.setattr(worker.screen, 'identify', lambda f: types.SimpleNamespace(name=f))
-    monkeypatch.setattr(worker.wave_reader, 'read_wave', lambda f: 100 if f == 'battle' else None)
-    monkeypatch.setattr(worker.time, 'sleep', lambda _: None)
-    monkeypatch.setattr(worker.runflag, 'requested', lambda: None)
-    monkeypatch.setattr(worker.logger, 'event', lambda name, **kw: calls.append(('event', name, kw.get('state'))))
-    with pytest.raises((Exhausted, RuntimeError)) as stopped:
-        worker.main('main', 'bp_farm')
-    return [c for c in calls if c[0] != 'event'], [c for c in calls if c[0] == 'event'], checkpoints, fences, stopped.value
+from device import act
+from gem_collector_run import run as run_world
 
 
-def test_a_harvesting_collector_polls_only_exact_home_frames_and_leaves_home_on_anything_else(monkeypatch):
-    calls, events, _, fences, _ = run(monkeypatch, ['home', 'home', 'unknown', 'modules', 'home', 'battle'])
-    # The startup fence, then the fence immediately before every Home poll.
-    assert calls == [('fence',), ('fence',), ('poll_home', 'home'), ('fence',), ('poll_home', 'home'),
-                     ('leave_home',), ('leave_home',), ('fence',), ('poll_home', 'home'), ('poll', 'battle')]
-    assert ('event', 'gem_collector_state', 'claiming_home_offer') in events
+def test_harvesting_never_polls_ad_gems_or_sends_input_on_home(monkeypatch):
+    # Keep a spy for the removed entry point: this test fails on the old Home branch.
+    ad = types.SimpleNamespace(enabled=True, poll_home=Mock(), leave_home=Mock())
+    gems = types.SimpleNamespace(ad_gems=ad, orbit=types.SimpleNamespace(enabled=True),
+                                 busy=lambda: [], poll=Mock())
+    tap, swipe = Mock(), Mock()
+    monkeypatch.setattr(act, 'tap', tap)
+    monkeypatch.setattr(act, 'swipe', swipe)
+    run_world(monkeypatch, ['home'], fence=lambda: None, gems=gems)
+
+    ad.poll_home.assert_not_called()
+    gems.poll.assert_not_called()
+    tap.assert_not_called()
+    swipe.assert_not_called()
 
 
-def test_a_collector_a_person_started_never_acts_on_home(monkeypatch):
-    calls, events, _, fences, _ = run(monkeypatch, ['home', 'home', 'unknown'], fence=False)
-    assert calls == [] and fences == []
-    assert ('event', 'gem_collector_state', 'claiming_home_offer') not in events
+@pytest.mark.parametrize('name', ['home', 'cards', 'modules', 'guild', 'tournament',
+                                  'game_stats', 'tournament_stats', 'unknown'])
+@pytest.mark.parametrize('wave', [None, 100])
+@pytest.mark.parametrize('harvesting', [False, True])
+def test_nonbattle_screens_are_observation_only(monkeypatch, name, wave, harvesting):
+    from flows.shard import GemWatch
+
+    gems = GemWatch({'gem_delay_sec': (0, 0)})
+    ad_poll, orbit_poll = Mock(wraps=gems.ad_gems.poll), Mock(wraps=gems.orbit.poll)
+    monkeypatch.setattr(gems.ad_gems, 'poll', ad_poll)
+    monkeypatch.setattr(gems.orbit, 'poll', orbit_poll)
+    tap, swipe = Mock(), Mock()
+    monkeypatch.setattr(act, 'tap', tap)
+    monkeypatch.setattr(act, 'swipe', swipe)
+    grabbed = []
+    events, _, returned, _ = run_world(
+        monkeypatch, [name, name], gems=gems, grabbed=grabbed,
+        fence=(lambda: None) if harvesting else None, read_wave=lambda frame: wave)
+
+    assert not returned and grabbed == [name, name]
+    assert ('gem_collector_state', {'state': 'waiting_for_battle'}) in events
+    ad_poll.assert_not_called()
+    orbit_poll.assert_not_called()
+    tap.assert_not_called()
+    swipe.assert_not_called()
 
 
-def test_a_disabled_ad_gem_routine_never_acts_on_home(monkeypatch):
-    calls, _, _, _, _ = run(monkeypatch, ['home', 'home'], enabled=False)
-    assert calls == [('fence',), ('leave_home',), ('leave_home',)]
+@pytest.mark.parametrize('status', ['prepared', 'active'])
+def test_home_checkpoints_do_not_preserve_an_ad_offer(monkeypatch, status):
+    session = types.SimpleNamespace(
+        battle=dict(status=status, id='b1'), effective_preset=lambda: {}, checkpoint=Mock())
+    _, polled, _, _ = run_world(monkeypatch, ['home'], session=session, fence=lambda: None)
+    assert polled == []
+    assert session.checkpoint.call_args.kwargs == {'battle_visible': False}
 
 
-def test_no_home_claim_while_a_battle_is_still_active(monkeypatch):
-    calls, _, checkpoints, _, _ = run(monkeypatch, ['home', 'home'], battle='active')
-    assert ('poll_home', 'home') not in calls
+def test_a_battle_without_a_readable_wave_does_not_collect(monkeypatch):
+    _, polled, _, _ = run_world(monkeypatch, ['battle'], read_wave=lambda frame: None)
+    assert polled == []
 
 
-def test_home_polls_keep_the_prepared_battle_published_with_the_offer_still_observed(monkeypatch):
-    calls, _, checkpoints, _, _ = run(monkeypatch, ['home', 'home'], battle='prepared')
-    assert calls == [('fence',), ('fence',), ('poll_home', 'home'), ('fence',), ('poll_home', 'home')]
-    assert checkpoints == [dict(battle_visible=False, observed=('ad_gems',))] * 2
+@pytest.mark.parametrize('battle_kind', ['normal', 'tournament'])
+def test_a_recognized_battle_still_claims_then_waits_on_home(monkeypatch, battle_kind):
+    from flows.shard import GemWatch
+    from interactions import ad_gems
+    from tap_recorder import tap_recorder
 
+    # Both battle types use the classifier's same 'battle' name and readable wave.
+    initial, fresh, after = [f'{battle_kind}-{phase}' for phase in ('offer', 'fresh', 'after')]
+    gems = GemWatch({'gem_delay_sec': (0, 0)})
+    orbit = Mock(side_effect=lambda frame, reads=None: frame)
+    monkeypatch.setattr(gems.orbit, 'poll', orbit)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect',
+                        lambda frame, **kw: None if frame == after else (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems.overlays, 'windows',
+                        lambda serial, **kw: [ad_gems.overlays.GAME_PKG + '/Activity'])
+    taps = tap_recorder(monkeypatch, act)
+    _, _, returned, _ = run_world(
+        monkeypatch, [initial, fresh, after, 'home'], gems=gems, fence=lambda: None,
+        screen=lambda frame: types.SimpleNamespace(name='home' if frame == 'home' else 'battle'),
+        read_wave=lambda frame: None if frame == 'home' else 100)
 
-def test_a_fence_refusal_on_home_stops_the_collector_before_any_home_poll(monkeypatch):
-    calls, _, _, _, stopped = run(monkeypatch, ['home', 'home'], refuse_at=2)
-    assert isinstance(stopped, RuntimeError) and calls == [('fence',), ('fence',)]
+    assert not returned and len(taps.calls) == 1
+    assert gems.ad_gems.last_outcome['reason'] == 'offer_disappeared'
+    assert gems.ad_gems.counters['confirmed'] == 1
+    orbit.assert_called_once()
+    assert orbit.call_args.args == (after,)

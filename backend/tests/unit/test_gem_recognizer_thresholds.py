@@ -113,23 +113,8 @@ def test_an_interior_that_only_partly_matches_the_hud_glyph_is_not_a_gem(damage)
 
 # ---- ocr.read_gem_balance: counter regions and the .8 score floor -------------------------------
 
-def test_the_counter_regions_are_the_measured_ones():
-    """Native 1080x2560. Home: the digits start 13 px inside, right of the diamond icon (x 382-428), left of the stones icon (x >= 668)."""
+def test_the_battle_counter_region_is_the_measured_one():
     assert ocr.GEM_BALANCE_REGION == (90, 190, 240, 60)
-    assert ocr.HOME_GEM_BALANCE_REGION == (434, 18, 226, 60)
-
-
-def test_the_home_counter_is_read_from_the_home_region_only(font):
-    frame = np.zeros((2560, 1080, 3), np.uint8)
-    x, y, _, _ = ocr.HOME_GEM_BALANCE_REGION
-    x += 13
-    for digit in '966':
-        glyph = font[digit]
-        h, w = glyph.shape
-        frame[y+10:y+10+h, x:x+w] = glyph[:, :, None]
-        x += w+5
-    assert ocr.read_gem_balance(frame, ocr.HOME_GEM_BALANCE_REGION) == 966
-    assert ocr.read_gem_balance(frame) is None                                       # the battle HUD region holds nothing
 
 
 @pytest.mark.parametrize('kernel,expected', [(3, 747), (5, None), (7, None)])

@@ -81,21 +81,6 @@ def test_another_database_error_is_not_absorbed(monkeypatch):
         run(monkeypatch, ['battle'] * 3, session=session)
 
 
-def test_an_unread_fence_sends_no_home_input(monkeypatch):
-    attempts, ad_calls = [], []
-
-    def fence():
-        attempts.append(1)
-        if len(attempts) == 2:                  # the startup check passes; the first Home check meets the lock
-            raise locked()
-    ad = types.SimpleNamespace(enabled=True, poll_home=lambda f, reads=None: ad_calls.append(f), leave_home=lambda: None)
-    gems = types.SimpleNamespace(ad_gems=ad, orbit=types.SimpleNamespace(enabled=True), busy=lambda: [],
-                                 poll=lambda f, reads=None: None)
-    events, _, returned, _ = run_world(monkeypatch, ['home', 'home'], fence=fence, gems=gems)
-    assert not returned
-    assert ad_calls == ['home']                 # the pass whose fence was locked sent nothing; the next one did
-    assert [kw['stage'] for name, kw in events if name == 'gem_collector_ledger_busy'] == ['fence']
-
 def test_an_unread_fence_sends_no_battle_input_that_pass(monkeypatch):
     import gem_collector as worker
     monkeypatch.setattr(worker, 'FENCE_RECHECK_SEC', 0)     # every pass rechecks the person's choice

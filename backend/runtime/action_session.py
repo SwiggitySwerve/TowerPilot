@@ -77,21 +77,14 @@ class ActionSession:
 
     # --------------------------------------------------------- factories
     @classmethod
-    def for_battle(cls, battle_session, driver='orchestrator', *, tracked_only=False):
-        """The session of a tracked battle driver. It follows the driver's battles through `prepare_next`.
-
-        tracked_only: a driver that also acts between battles (the collector's Home claims) records an execution that
-        starts while its battle is neither prepared nor active as operation-scoped (no battle id, full coverage),
-        never under the battle that already ended."""
+    def for_battle(cls, battle_session, driver='orchestrator'):
+        """The session of a tracked battle driver. It follows the driver's battles through `prepare_next`."""
         context = dict(battle_session.battle['context'])
         context['profile'] = (battle_session.config or {}).get('active_profile')
 
-        def tracked():
-            return not tracked_only or battle_session.battle['status'] in ('prepared', 'active')
-
         session = cls(battle_session.store.path, context=context, driver=driver, operation_id=battle_session.operation_id,
-                      identity=lambda: (battle_session.battle['id'], battle_session.generation) if tracked() else (None, None),
-                      coverage=lambda: action_history.battle_coverage(battle_session.battle) if tracked() else 'full')
+                      identity=lambda: (battle_session.battle['id'], battle_session.generation),
+                      coverage=lambda: action_history.battle_coverage(battle_session.battle))
         battle_session.actions = session
         return session
 

@@ -1,10 +1,6 @@
 """HUD Ad Gems are separate from free Store gems and orbiting diamonds.
 
-The same offer also shows at the top of the left column on the Home screen. A
-harvesting collector claims it there through the same windows, response delay,
-recognition and input guards; only the screen check and the proof differ: Home
-needs the exact Home screen, and only a stable, exact +6 on the Home gem
-counter confirms a Home claim.
+Collection requires a recognized battle and a readable wave.
 
 Response delay. A visible offer waits a delay drawn from the person's range,
 then is verified on a fresh frame before any input. Two rules keep that wait
@@ -29,7 +25,7 @@ import uuid
 import subprocess
 import cv2
 from device import act, capture, overlays
-from vision import wave_reader, screen, ocr, textocr
+from vision import wave_reader, screen, textocr
 from runtime import logger
 from runtime.stage_clock import clock
 from interactions.tourney import Abort
@@ -40,14 +36,6 @@ import settings
 TEMPLATE = 'buttons/ad_gems_claim.png'
 EDGE_INSET_PX = AD_GEM_FIELDS['edge_inset_px']['default']
 OBSERVATION_TIMEOUT_SEC = 2.0
-HOME_REWARD = 6                  # the amount find_claim_rect verified beside CLAIM
-HOME_CONFIRMATION_SEC = 3.0      # Home counter reading after the tap; reads only, never input
-HOME_CONFIRMATION_GAP_SEC = 0.5
-# Under load one read (capture, exact-Home check, counter) took about 2 s, so
-# 3 s held one or two reads and a real +6 went unconfirmed (r15d). Reading
-# goes on to this many reads, within HOME_CONFIRMATION_MAX_SEC.
-HOME_CONFIRMATION_MIN_READS = 3
-HOME_CONFIRMATION_MAX_SEC = 10.0
 
 
 class RecognitionIncomplete(Exception):
@@ -223,9 +211,6 @@ class AdGemCollector:
                              confirmed=0, windows_missed=0)
         self.durations = dict(scheduling_wait_sec=None, response_delay_sec=None,
                               verification_sec=None, observed_wait_sec=None)
-        self.surface = 'battle'          # 'home' only while the host feeds exact Home frames
-        self._window_home = False         # a Home attempt happened in the current window
-        self._home_diagnostic_written = False
         self._trace_id = uuid.uuid4().hex[:12]
         self._window_count = self._offer_count = 0
         self._attempt_started_at = None
@@ -289,15 +274,9 @@ class AdGemCollector:
             with clock.stage('ad.wave', into=spent):
                 wave = read_wave(frame)
             _remaining(deadline)
-            if self.surface == 'home':
-                # Exactly Home: no wave, and no menu, dialog, store or overlay.
-                with clock.stage('ad.screen', into=spent):
-                    name = identify(frame).name if wave is None else None
-                expected, missing = wave is None and name == 'home', 'not_home'
-            else:
-                with clock.stage('ad.screen', into=spent):
-                    name = None if wave is None else identify(frame).name
-                expected, missing = wave is not None and name == 'battle', 'not_battle'
+            with clock.stage('ad.screen', into=spent):
+                name = None if wave is None else identify(frame).name
+            expected, missing = wave is not None and name == 'battle', 'not_battle'
             self._last_frame_evidence = dict(wave=wave, screen=name)
             _remaining(deadline)
             if not expected:
@@ -319,7 +298,7 @@ class AdGemCollector:
         self._count_read('absent' if point is None else 'visible')
         previous = self.visibility
         self.last_observed_at = now
-        self.visibility_reason = 'home_frame' if self.surface == 'home' else 'battle_frame'
+        self.visibility_reason = 'battle_frame'
         self.claim_rect = point
         if point is None:
             self.visibility = 'absent'
@@ -517,8 +496,6 @@ class AdGemCollector:
         attempts = self.counters['attempts'] - marks['attempts']
         confirmed = self.counters['confirmed'] - marks['confirmed']
         refs = dict(window_id=self.window_id)
-        if self._window_home:
-            refs['surface'] = 'home'
         if self._window_observation is not None:
             refs['observation'] = dict(self._window_observation)
         if confirmed or reason == 'confirmed':
@@ -541,8 +518,6 @@ class AdGemCollector:
         if self.recorder is None:
             return
         refs = dict(missed=count)
-        if self.surface == 'home':
-            refs['surface'] = 'home'
         self.recorder.record(result='no_op', reason='window_missed', effect='none', scheduled_for=scheduled_for, refs=refs)
 
     def _window_expired(self):
@@ -557,44 +532,8 @@ class AdGemCollector:
         Passive checks never capture or input. Only the original collection
         window and response deadline authorize fresh verification and a tap.
         """
-        self.leave_home()
-        return self._poll(frame, reads)
-
-    def poll_home(self, frame, reads=None):
-        """Observe and claim the offer on the exact Home screen.
-
-        Only the harvesting collector calls this, for a frame it identified as
-        Home while harvesting still asks for it and no battle is active. The
-        routine must be enabled: a disabled routine never acts here, even for a
-        pending Run now; with it enabled, a pending Run now opens its window here
-        as it would in battle. Windows, response delay, pacing and input guards
-        are the battle ones.
-        """
-        if not self.enabled:
-            self.mark_unknown('disabled')
-            return frame
-        with logger.context(surface='home'):
-            if self.surface != 'home':
-                self.mark_unknown('surface_changed')     # nothing seen in battle carries over to Home
-                self.surface = 'home'
-            return self._poll(frame, reads)
-
-    def leave_home(self, reason='left_home'):
-        """The host saw something other than the exact Home screen (a person
-        navigating, a battle starting): forget the Home offer and close a window
-        a Home observation was using, so Home input resumes only in a later
-        window. No-op unless Home was being observed."""
-        if self.surface != 'home':
-            return
-        with logger.context(surface='home'):
-            self.surface = 'battle'
-            self.mark_unknown(reason)
-            if self.window_deadline is not None:
-                self._close_window(reason)
-
-    def _poll(self, frame, reads=None):
         if self.guard is not None:
-            frame = self.guard(frame, self.surface)
+            frame = self.guard(frame, 'battle')
         now = time.monotonic()
         if self.window_deadline is not None and now >= self.window_deadline:
             self._close_window()
@@ -633,9 +572,7 @@ class AdGemCollector:
                 self.window_id = f'{self._trace_id}:window:{self._window_count}'
                 self.claim_attempt_id = None
                 self.blocker = None
-                self._window_home = False
                 self._window_observation = dict(reads=0, incomplete=0, absent=0)
-                self._home_diagnostic_written = False
                 logger.event('ad_gems_window', duration_sec=duration, interval_sec=interval,
                              window_deadline=self._epoch(self.window_deadline),
                              next_window_at=self._epoch(self.next_window_at), **self._context())
@@ -726,23 +663,17 @@ class AdGemCollector:
         self._attempt_latest_frame = frame
         # Recheck before touching a shifting HUD, not a remembered position.
         self._attempt_stage = 'fresh_capture'
-        home = self.surface == 'home'
-        if home:
-            self._window_home = True
         fresh=capture.grab()
         if self.guard is not None:
-            fresh = self.guard(fresh, self.surface)
+            fresh = self.guard(fresh, 'battle')
         self._attempt_latest_frame = fresh
         self._attempt_stage = 'fresh_recognition'
         current = self._observe(fresh, deadline=self.window_deadline)
         if self.visibility == 'unknown':
-            left = self.visibility_reason == ('not_home' if home else 'not_battle')
-            self._skip(('fresh_frame_not_home' if home else 'fresh_frame_not_battle') if left
+            self._skip('fresh_frame_not_battle' if self.visibility_reason == 'not_battle'
                        else 'fresh_recognition_incomplete',
                        recognition_reason=self.visibility_reason, **self._last_frame_evidence)
-            if home and left:
-                self.leave_home()             # a person navigating: nothing more in this window
-            elif time.monotonic() >= self.window_deadline:
+            if time.monotonic() >= self.window_deadline:
                 self._close_window()
             return fresh
         if current is None:
@@ -757,20 +688,6 @@ class AdGemCollector:
             self._skip('offer_moved', observed_rect=point, fresh_rect=current,
                        center_displacement_px=_center_displacement(current, point))
             return fresh
-        baseline = None
-        if home:
-            # A Home claim is proven only by the counter, so input needs a
-            # readable baseline that the decision frame and the fresh frame agree on.
-            self._attempt_stage = 'home_balance'
-            reads = [ocr.read_gem_balance(image, ocr.HOME_GEM_BALANCE_REGION) for image in (frame, fresh)]
-            if None in reads:
-                self._home_balance_unreadable(fresh if reads[1] is None else frame, 'before_tap')
-                self._skip('balance_unreadable', balance_reads=reads)
-                return fresh
-            if reads[0] != reads[1]:
-                self._skip('balance_unstable', balance_reads=reads)
-                return fresh
-            baseline = reads[1]
         try:
             self._attempt_stage = 'foreground_evidence'
             visible_windows = overlays.windows(settings.instance()['serial'], visible_only=True)
@@ -809,8 +726,6 @@ class AdGemCollector:
             self.next_at = min(self.window_deadline, time.monotonic()
                                + self.rng.uniform(*self.options['retry_cooldown_sec']))
             return fresh
-        if home:
-            return self._confirm_home(baseline, fresh)
         time.sleep(.35)
         self._attempt_stage = 'confirmation_capture'
         after=capture.grab()
@@ -832,64 +747,4 @@ class AdGemCollector:
         elif not self._window_expired():
             self.next_at=min(self.window_deadline, time.monotonic()
                              + self.rng.uniform(*self.options['retry_cooldown_sec']))
-        return after
-
-    def _home_balance_unreadable(self, frame, stage):
-        """Keep the exact counter pixels once per window; never capture again or write a template."""
-        if self._home_diagnostic_written:
-            return
-        self._home_diagnostic_written = True
-        crop = ocr.gem_balance_crop(frame, ocr.HOME_GEM_BALANCE_REGION)
-        filename = logger.shot(crop, 'home_gem_balance_unreadable') if crop is not None else None
-        logger.event('ad_gems_home_balance_unreadable', stage=stage, counter_frame=filename, **self._context())
-
-    def _confirm_home(self, baseline, latest):
-        """Read the Home counter after the tap, without input, for at most
-        HOME_CONFIRMATION_SEC (at least HOME_CONFIRMATION_MIN_READS reads, never
-        past HOME_CONFIRMATION_MAX_SEC). Only two consecutive exact baseline+6 reads on the
-        exact Home screen confirm. Any other readable amount is a conflict; a
-        screen that is not Home, or an unreadable or unchanged counter, proves
-        nothing. Leaving Home or a conflict ends the window."""
-        expected = baseline + HOME_REWARD
-        started = time.monotonic()
-        ends_at, gives_up_at = started + HOME_CONFIRMATION_SEC, started + HOME_CONFIRMATION_MAX_SEC
-        reads, after, reason = [], latest, None
-        while reason is None:
-            time.sleep(.35 if not reads else HOME_CONFIRMATION_GAP_SEC)
-            self._attempt_stage = 'confirmation_capture'
-            after = capture.grab()
-            if self.guard is not None:
-                after = self.guard(after, 'home')
-            self._attempt_latest_frame = after
-            self._attempt_stage = 'confirmation_recognition'
-            wave = wave_reader.read_wave(after)
-            if wave is not None or screen.identify(after).name != 'home':
-                reason = 'post_claim_not_home'
-                break
-            value = ocr.read_gem_balance(after, ocr.HOME_GEM_BALANCE_REGION)
-            reads.append(value)
-            if value is not None and value not in (baseline, expected):
-                reason = 'balance_changed_without_confirmation'
-            elif value == expected and reads[-2:] == [expected, expected]:
-                reason = 'balance_increased'
-            elif time.monotonic() >= ends_at and (len(reads) >= HOME_CONFIRMATION_MIN_READS
-                                                  or time.monotonic() >= gives_up_at):
-                reason = ('post_claim_balance_unreadable' if value is None else
-                          'balance_unchanged' if value == baseline else 'balance_unstable')
-        confirmed = reason == 'balance_increased'
-        if not confirmed and reads and reads[-1] is None:
-            self._home_balance_unreadable(after, 'confirmation')
-        logger.event('ad_gems_claim', confirmed=confirmed, reason=reason, before=baseline,
-                     after=reads[-1] if reads else None, reads=reads, **self._context())
-        self._finish_attempt('confirmed' if confirmed else 'not_confirmed', reason,
-                             before=baseline, after=reads[-1] if reads else None)
-        if confirmed:
-            self._close_window('confirmed')
-        elif reason == 'post_claim_not_home':
-            self.leave_home()
-        elif reason == 'balance_changed_without_confirmation':
-            self._close_window(reason)
-        elif not self._window_expired():
-            self.next_at = min(self.window_deadline, time.monotonic()
-                               + self.rng.uniform(*self.options['retry_cooldown_sec']))
         return after
