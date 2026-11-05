@@ -120,6 +120,13 @@ def sample_waiting_for_battle(h):
     return h.status(host=found_at_start(h))        # the collector the dashboard found at its start, and kept
 
 
+def sample_waiting_for_clear_battle(h):
+    choose(h)
+    store, battle = _battle(h, _collector(h), routines=ON_ROUTINES, evidence=EVIDENCE)
+    store.update_status(battle['id'], 'g1', {'waiting_for_clear_battle_since': NOW - 65})
+    return h.status(host=HOST)
+
+
 def sample_live_paused(h):
     choose(h)
     _battle(h, _collector(h), routines={'ad_gems': routine(False), 'floating_gems': routine(False)})

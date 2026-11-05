@@ -6,6 +6,24 @@ import { contextOf, rec, TURN_ON_READY } from '../../support/core.ts';
 
 const ALLOW = { blocks_launch: false, scope: 'collection', code: null, message: null };
 
+it('shows the published clear-HUD wait and its age instead of collecting', () => {
+  const harvest = sampleRecord('status.waiting_for_clear_battle');
+  expect(gemSeen(contextOf(statusBody(harvest)))).toMatchObject({
+    word: 'waiting',
+    line: 'waiting_for_clear_battle',
+    params: { seconds: 65 },
+  });
+});
+
+it('does not show an old clear-HUD wait as current', () => {
+  const harvest = sampleRecord('status.waiting_for_clear_battle');
+  rec(rec(harvest['operation'])['battle'])['fresh'] = false;
+  expect(gemSeen(contextOf(statusBody(harvest)))).toMatchObject({
+    word: 'unknown',
+    line: 'collector_state_unknown',
+  });
+});
+
 describe('S-034 desired and observed are separate facts', () => {
   it('S-034 manual_collector: choice Not set beside Running, with its operation Stop; never "On"', () => {
     const body = statusBody(sampleRecord('status.manual_collector'));

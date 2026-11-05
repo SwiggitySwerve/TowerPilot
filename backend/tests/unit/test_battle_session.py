@@ -49,6 +49,17 @@ def test_control_applies_at_checkpoint_and_owned_reward_flow_drains(driver):
     assert session.effective_preset()['gather']['ad_gems'] is True
 
 
+def test_checkpoint_publishes_clear_hud_wait_and_clears_it_on_resume(driver):
+    session, rs, _ = driver
+    for since in (1800000000.0, 1800000000.0, None):
+        rs.waiting_for_clear_battle_since = since
+        session._published_at = 0
+        session.checkpoint(rs, battle_visible=True)
+        runtime = session.store.get(session.battle['id'])['runtime']
+        assert runtime['waiting_for_clear_battle_since'] == since
+        assert runtime['observation_status'] == 'observing'
+
+
 def test_manual_disabled_collector_waits_for_safe_screen_then_records_real_window(driver, monkeypatch):
     from interactions import ad_gems
     session, rs, operation = driver

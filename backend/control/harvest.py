@@ -323,6 +323,16 @@ def collector_state(op, battle, alive, now, claims=None):
         if claims and claims['failing']:
             return ('collecting', 'claims_failing',
                     f"Ad gem claims failing: {claims['failure_streak']} in a row.", view)
+        # Only an enabled routine can be waiting: paused or unreported routines keep their own state, and a
+        # failure the person must see outranks a panel that will close.
+        waiting_since = runtime.get('waiting_for_clear_battle_since')
+        if waiting_since is not None:
+            if not finite(waiting_since) or not 0 <= waiting_since <= shown['published_at']:
+                return ('unavailable', 'observation_invalid',
+                        'The collector reported no usable clear-HUD wait time; its state is unknown.', view)
+            view['waiting_for_clear_battle_sec'] = int(now - waiting_since)
+            return ('waiting_for_battle', 'waiting_for_clear_battle',
+                    f"Waiting for an in-game panel to close ({view['waiting_for_clear_battle_sec']} s).", view)
         return 'collecting', 'collecting', 'Collecting gems in the battle on screen.', view
     if all(gates[name] is False for name in ROUTINES):
         return ('live_paused', 'gem_routines_paused',

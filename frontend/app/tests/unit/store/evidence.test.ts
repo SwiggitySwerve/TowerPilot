@@ -6,7 +6,7 @@ import { selectInputSlot } from '../../../src/store/selectors/inputSlot.ts';
 import { e0Config } from '../../support/dataLayer.ts';
 import { sample, sampleNames, sampleRecord, statusBody } from '../../support/fixture.ts';
 import { storeHarness } from '../../support/storeHarness.ts';
-import { MATRIX } from '../spec/specData.ts';
+import { MATRIX } from '../spec/harvestMatrix.ts';
 
 /**
  * Spec 7.3: every chip of every fixture status sample, drawn through the

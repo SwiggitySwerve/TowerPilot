@@ -149,13 +149,16 @@ An ad claim the guard refuses on its fresh frame is a skip before input
 (`fresh_frame_obscured`), like `fresh_frame_not_battle`, not lost ownership; a panel that
 appears after the claim tap makes the claim `not_confirmed` (`post_claim_obscured`).
 
+Done from the post-merge review of #47: the standalone collector publishes
+`waiting_for_clear_battle_since`, clearing it when the HUD clears or the battle is no
+longer observed. `control/harvest.py` reports `waiting_for_clear_battle` with its elapsed
+seconds, and the Dashboard Gem slot shows the panel-close wait and age using its existing
+Waiting presentation; only while a gem routine is on, and never over paused or unreported
+routines or failing ad claims. Synthetic loop, runtime-publication and Dashboard tests cover this
+path. Deployment and live acceptance remain outstanding.
+
 Still open from the post-merge review of #47:
 
-- The dashboard says "Collecting" while the collector waits for a clear HUD: the
-  `waiting_for_clear_battle` state reaches only the events log
-  (`gem_collector.py` publishes no runtime field for it; `control/harvest.py` derives
-  "Collecting gems in the battle on screen." from routine gates). Publish it and show the
-  wait with its age.
 - Live acceptance: open each side-menu entry during a battle and confirm the toggle
   refuses. No saved real frame shows a modal over an open menu, so "a panel dims the X"
   rests on synthetic tests and a scrim probe (a uniform black scrim of 14-18% opacity

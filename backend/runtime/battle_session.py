@@ -323,6 +323,8 @@ class BattleSession:
             observed_duration_sec=self._observed_duration, observation_gaps=copy.deepcopy(self._observation_gaps),
             observation_gap_started_at=self._gap_started_at,
             driver_generation=self.generation, observation_status='observing' if battle_visible else 'waiting_for_game_state')
+        if hasattr(rs, 'waiting_for_clear_battle_since'):
+            status['waiting_for_clear_battle_since'] = rs.waiting_for_clear_battle_since
         if self.actions is not None:     # additive: `routines` above stays as the compatibility projection
             try:
                 listed = {(action_contract.split_key(key)[1] or key): binding.descriptor_variants()

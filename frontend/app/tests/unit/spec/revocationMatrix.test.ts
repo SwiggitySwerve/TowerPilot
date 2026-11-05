@@ -28,7 +28,8 @@ import {
   serverTimeOf,
   statusBody,
 } from '../../support/fixture.ts';
-import { MATRIX, W_ROWS, X_ROWS } from './specData.ts';
+import { MATRIX } from './harvestMatrix.ts';
+import { W_ROWS, X_ROWS } from './specData.ts';
 
 /**
  * Spec 9.1, the core-decided columns, computed from the fixture bodies of the

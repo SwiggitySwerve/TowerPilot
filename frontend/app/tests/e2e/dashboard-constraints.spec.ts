@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { MATRIX } from '../unit/spec/specData.ts';
+import { MATRIX } from '../unit/spec/harvestMatrix.ts';
 import { bodiesTo, openScenario, posts } from './helpers/helpers.ts';
 
 /**
@@ -9,7 +9,7 @@ import { bodiesTo, openScenario, posts } from './helpers/helpers.ts';
  * sending exactly the named request, or absent; the Stop targets (INV-3) with
  * the exact request; the Gem, Input and Automation words. E1 (allow_taps
  * true) shows Turn input off on every row. The X rows the browser can
- * stage follow. Expected cells are the spec's (tests/unit/spec/specData.ts).
+ * stage follow. Expected cells are the spec's (tests/unit/spec/harvestMatrix.ts).
  */
 const WIDTHS = [1360, 1054, 390] as const;
 const E0_CONTEXT = { instance: 'main', serial: 'fake:1' };

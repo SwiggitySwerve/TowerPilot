@@ -40,6 +40,7 @@ export type GemRow =
   | 'G3e'
   | 'G3f'
   | 'G3g'
+  | 'G3h'
   | 'G4a'
   | 'G4b'
   | 'G4c'
@@ -57,6 +58,7 @@ export type GemLine =
   | 'last_read'
   | 'collecting_gems'
   | 'claims_failing'
+  | 'waiting_for_clear_battle'
   | 'gem_routines_off'
   | 'stop_not_confirmed'
   | 'starting'
@@ -98,6 +100,12 @@ export function gemSeen(context: StatusContext): GemDecision {
     // The collector's state is the backend's published `code`; it is read, not recomputed (invariant 11).
     // A collecting code still needs the fresh publication D-6 proves before it is shown (S-028).
     const code = view.code;
+    if (code === 'waiting_for_clear_battle' && operationPublication(harvest) !== null) {
+      const seconds = finite(own(operation, 'waiting_for_clear_battle_sec'));
+      return decide('G3h', 'waiting', 'waiting_for_clear_battle', 'EV-2', {
+        seconds: seconds !== undefined && seconds >= 0 ? seconds : null,
+      });
+    }
     if (code === 'collecting' || code === 'claims_failing') {
       const collecting = collectionEvidence(harvest);
       const claim = confirmCollecting(harvest);
