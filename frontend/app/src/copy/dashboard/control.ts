@@ -163,6 +163,7 @@ export const control = {
         'The status read did not carry a readable harvesting record.',
       ),
       collecting_gems: entry('Collecting gems'),
+      waiting_for_clear_battle: entry('Waiting for an in-game panel to close'),
       claims_failing: entry(
         'Ad gem claims failing',
         'The collector is running, but its recent ad gem claims were not confirmed.',
@@ -208,6 +209,8 @@ export const control = {
       other: entry('A collector from before this dashboard start was found'),
     },
     retryingIn: (seconds: number): CopyText => made(`retrying in ${duration(seconds)}`),
+    waitingForClearBattle: (seconds: number): CopyText =>
+      made(`Waiting for an in-game panel to close (${duration(seconds)})`),
     /** G3g: the stated warning, with the backend's count of claims in a row that were not confirmed. */
     claimsFailing: (streak: number): CopyText =>
       made(`Ad gem claims failing: ${String(streak)} in a row`),

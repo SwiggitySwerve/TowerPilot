@@ -562,6 +562,36 @@ def test_a_crashed_worker_is_retired_then_counted(h):
 
 
 # ------------------------------------------------------- what is observed
+def test_clear_hud_wait_overrides_enabled_routines_and_claim_failures(h):
+    choose(h)
+    op = _collector(h)
+    store, battle = _battle(h, op)
+    store.update_status(battle['id'], 'g1', {'waiting_for_clear_battle_since': NOW - 65})
+    state, code, message, view = harvest.collector_state(
+        op, store.get(battle['id']), lambda worker: True, NOW,
+        claims={'failing': True, 'failure_streak': 4})
+    assert (state, code) == ('waiting_for_battle', 'waiting_for_clear_battle')
+    assert message == 'Waiting for an in-game panel to close (65 s).'
+    assert view['waiting_for_clear_battle_sec'] == 65
+    store.update_status(battle['id'], 'g1', {'waiting_for_clear_battle_since': None})
+    assert h.status()['code'] == 'collecting'
+
+
+def test_stale_clear_hud_wait_is_unknown(h):
+    choose(h)
+    store, battle = _battle(h, _collector(h), published=NOW - harvest.FRESH_SEC - 1)
+    store.update_status(battle['id'], 'g1', {'waiting_for_clear_battle_since': NOW - 65})
+    assert h.status()['code'] == 'stale_observation'
+
+
+@pytest.mark.parametrize('since', [True, -1, NOW, 'yesterday', float('nan')])
+def test_invalid_clear_hud_wait_is_unknown(h, since):
+    op = _collector(h)
+    _, battle = _battle(h, op)
+    battle['runtime']['waiting_for_clear_battle_since'] = since
+    assert harvest.collector_state(op, battle, lambda worker: True, NOW)[1] == 'observation_invalid'
+
+
 @pytest.mark.parametrize('kwargs,state,code', [
     (dict(), 'collecting', 'collecting'),
     (dict(observing=False), 'waiting_for_battle', 'waiting_for_battle'),

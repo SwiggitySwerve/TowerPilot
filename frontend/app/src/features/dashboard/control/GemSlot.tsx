@@ -43,6 +43,17 @@ function seenLine(vm: GemSlotVM): {
         why: text.lines.claims_failing.why,
       };
     }
+    case 'waiting_for_clear_battle': {
+      const seconds = numberParam(chip, 'seconds');
+      return {
+        line:
+          seconds === null
+            ? text.lines.waiting_for_clear_battle.short
+            : text.waitingForClearBattle(seconds),
+        extra: null,
+        why: undefined,
+      };
+    }
     case 'collecting_gems':
       return {
         line: text.lines.collecting_gems.short,

@@ -7,7 +7,7 @@ import { copy } from '../../../../../src/copy/catalogue.ts';
 import { selectAutomationSlot } from '../../../../../src/store/selectors/automationSlot.ts';
 import { selectInputSlot } from '../../../../../src/store/selectors/inputSlot.ts';
 import { textOutsideCatalogue } from '../../../copy/renderedText.ts';
-import { MATRIX } from '../../../spec/specData.ts';
+import { MATRIX } from '../../../spec/harvestMatrix.ts';
 import {
   addBody,
   addCase,

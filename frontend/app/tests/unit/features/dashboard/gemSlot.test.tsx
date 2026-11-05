@@ -83,6 +83,14 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+it('renders the clear-HUD wait with its age using the existing waiting chip', () => {
+  const { view } = drawGem(sample('status.waiting_for_clear_battle'));
+  expect(chip(view.container)).toHaveTextContent('Waiting');
+  expect(screen.getByText('Waiting for an in-game panel to close (1 m)')).toBeVisible();
+  expect(screen.queryByText('Collecting gems')).toBeNull();
+  expect(textOutsideCatalogue(view.container)).toEqual([]);
+});
+
 describe('S-001 Pause harvesting (INV-1) as drawn', () => {
   it.each(sampleNames('status'))(
     'S-001 %s: Pause is drawn and enabled exactly when the core rule offers it',

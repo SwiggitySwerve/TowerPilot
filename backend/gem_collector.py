@@ -166,7 +166,8 @@ def main(instance, preset):
     from runtime.action_session import ActionSession
     actions = ActionSession.for_battle(session, 'collector') if session is not None else None
     gems=GemWatch(body.get('gather', {}), guard=collection_guard, session=actions)
-    state = SimpleNamespace(gems=gems, tracker=wave_reader.WaveTracker(), mission=None, shop=None)
+    state = SimpleNamespace(gems=gems, tracker=wave_reader.WaveTracker(), mission=None, shop=None,
+                            waiting_for_clear_battle_since=None)
     wave_hwm = None
     logger.event('gem_collector_started',preset=preset,ad_gems=gems.ad_gems.enabled,orbit=gems.orbit.enabled)
     last_status=None
@@ -266,6 +267,11 @@ def main(instance, preset):
                 return
         saw_battle=saw_battle or live
         clear = live and menu_toggle_visible(frame)
+        if live and not clear:
+            if state.waiting_for_clear_battle_since is None:
+                state.waiting_for_clear_battle_since = time.time()
+        else:
+            state.waiting_for_clear_battle_since = None
         label = ('collecting' if clear else 'waiting_for_clear_battle') if live else 'waiting_for_battle'
         if label!=last_status:
             logger.event('gem_collector_state',state=label)
