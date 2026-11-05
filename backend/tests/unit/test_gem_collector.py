@@ -92,7 +92,7 @@ def test_collection_only_waits_through_menus_and_stops_at_run_boundary(monkeypat
     monkeypatch.setattr(worker.capture, 'grab', lambda: next(frames))
     monkeypatch.setattr(worker.screen, 'identify', lambda f: types.SimpleNamespace(name=f))
     monkeypatch.setattr(worker.wave_reader, 'read_wave', lambda f: 100)
-    monkeypatch.setattr(worker, 'closed_menu_visible', lambda frame: True)
+    monkeypatch.setattr(worker, 'menu_toggle_visible', lambda frame: True)
     monkeypatch.setattr(worker.time, 'sleep', lambda _: None)
     monkeypatch.setattr(worker.runflag, 'requested', lambda: 'finish this run')
     monkeypatch.setattr(worker.logger, 'event', lambda name, **kw: events.append((name, kw)))

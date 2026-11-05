@@ -66,7 +66,7 @@ def collector(monkeypatch, *, polls=None, grabs=None, busy_for=None, session=Tru
     monkeypatch.setattr(worker.capture, 'grab', grab)
     monkeypatch.setattr(worker.screen, 'identify', lambda f: types.SimpleNamespace(name=f))
     monkeypatch.setattr(worker.wave_reader, 'read_wave', lambda f: 100)
-    monkeypatch.setattr(worker, 'closed_menu_visible', lambda frame: True)
+    monkeypatch.setattr(worker, 'menu_toggle_visible', lambda frame: True)
     monkeypatch.setattr(worker.time, 'sleep', lambda _: None)
     monkeypatch.setattr(worker.runflag, 'requested', lambda: None)
     monkeypatch.setattr(worker.logger, 'event', lambda name, **kw: events.append((name, kw)))

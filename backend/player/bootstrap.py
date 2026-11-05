@@ -9,7 +9,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 from player.bootstrap_layout import manifest
-from vision.hud import three_bars
+from vision.hud import close_cross, three_bars
 from player.calibration_report import entries_since, observed_since
 
 
@@ -134,13 +134,7 @@ def icon_present(frame, spec):
     if spec["hue"] == "bars":
         return three_bars(crop)
     if spec['hue'] == 'cross':
-        # White close-X with a cyan/green glow; the glow hue varies by theme.
-        hh,ww=crop.shape[:2]
-        inner=crop[int(hh*.2):int(hh*.8),int(ww*.2):int(ww*.8)]
-        white=inner.min(axis=2)>210
-        yy,xx=np.indices(white.shape)
-        diagonal=(abs(xx/white.shape[1]-yy/white.shape[0])<.18)|(abs(xx/white.shape[1]+yy/white.shape[0]-1)<.18)
-        return bool(white[diagonal].mean()>.55 and white[~diagonal].mean()<.35)
+        return close_cross(crop)
     lit = masks[spec["hue"]] & (s > 80) & (v > 170)
     ys, xs = np.nonzero(lit)
     return bool(len(xs) >= 100 and np.ptp(xs) >= crop.shape[1]*.35 and np.ptp(ys) >= crop.shape[0]*.35)

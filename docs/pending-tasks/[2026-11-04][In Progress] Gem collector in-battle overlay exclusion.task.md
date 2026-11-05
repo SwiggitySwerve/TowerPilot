@@ -2,7 +2,7 @@
 > **Status:** In Progress
 > **Type:** Task
 > **Created:** 2026-11-04
-> **Updated:** 2026-11-04
+> **Updated:** 2026-11-05
 > **Priority:** Medium
 > **Tags:** gem-collector, recognition, safety
 
@@ -101,34 +101,42 @@ detector itself.
 
 ## Implementation and remaining acceptance
 
-The collector requires the closed menu's three bright horizontal bars as well as a
-recognized battle and readable wave. The structural detector is shared with calibration
-in `backend/vision/hud.py`; the extraction preserved its thresholds. Geometry is read
-from the display-bound manifest, and scaled crops use the detector's reference size.
-No template is loaded or written for this check, so a missing overlay template does not
-change the policy on an install. Missing, dimmed, covered or unrecognized bars mean no
-collection until a later frame proves the HUD again.
+The collector requires a bright side-menu toggle as well as a recognized battle and
+readable wave: the closed menu's three horizontal bars or the open menu's close-X. The
+structural detectors are shared with calibration in `backend/vision/hud.py`; the
+extraction preserved their thresholds. Geometry is read from the display-bound manifest,
+and scaled crops use the detector's reference size. No template is loaded or written for
+this check, so a missing overlay template does not change the policy on an install. A
+missing, dimmed, covered or unrecognized toggle means no collection until a later frame
+proves the HUD again.
+
+The first version (#47) accepted only the closed bars. Every saved live battle frame on
+this machine shows the side menu open, so it would have refused all collection. The
+follow-up accepts the X too; on the saved full-size frames (2026-11-05) all 17 battle
+frames now pass, and game stats, death, Home, store, modules and unknown screens are
+still refused (`backend/logs/reviews/gem-collector-battle-only/menu_state_after.json`).
 
 | Panel | Existing recognition | Collector evidence |
 |---|---|---|
 | Perk choice / selected perks | `battle_perks` is described in the interface manifest, absent from `screen.OVERLAYS` | Modal scrim dims the underlying HUD; saved selected-perks frames were inspected read-only |
-| Expanded battle menu | Existing calibrated close-X and structural hamburger recognition, absent from `screen.OVERLAYS` | Open menu replaces the hamburger with an X; saved open-menu frame inspected read-only |
+| Expanded battle menu | Existing calibrated close-X and structural hamburger recognition, absent from `screen.OVERLAYS` | Not an obstruction: battles run with it open; its X counts as a clear HUD |
 | Target Priority / Orb Distance Adjuster | Described in the interface manifest, absent from `screen.OVERLAYS` | Synthetic modal-scrim cases; real panel-specific verification remains outstanding |
 | Existing recognized dialogs and menus | `screen.identify` names them before the wave fallback | Existing battle-only gate remains in force |
 
 `GemWatch` receives the collector guard at every construction. The existing ad and
 orbit guard calls apply it again to their fresh frames, including between orbit taps.
-Only this guard's `CollectionObscured` refusal is caught by the collector to resume
-observation; unrelated `Abort` exceptions still propagate. `device/act.py`,
-`interactions/ad_gems.py`, and the shared classifier remain unchanged.
+Only this guard's refusal (`CollectionObscured`, an `interactions/ad_gems.py`
+`InputObscured`) is handled: the ad claimer records it (see below), and the collector
+catches an orbit refusal to resume observation. Unrelated `Abort` exceptions still
+propagate. `device/act.py` and the shared classifier remain unchanged.
 
 Collector-only policy keeps flows that intentionally own menus on their current screen
 contract. The vision layer owns the reusable structural recognition. This does not
 claim that a readable wave alone is safe for other flows, or that a hypothetical panel
-leaving the closed-menu bars fully bright is excluded.
+leaving the toggle (bars or X) fully bright is excluded.
 
 Synthetic regressions first failed on the original collector behavior, then passed with
-the guard. They cover modal scrims, an expanded menu, native display scaling, clean
+the guard. They cover modal scrims, an expanded menu (collects) and a dimmed one (refused), native display scaling, clean
 battle collection, fresh ad frames, and panels appearing between orbit taps.
 
 No deployment or live check was requested. The running collector keeps the old code
@@ -136,3 +144,27 @@ until it is relaunched. This task stays In Progress until an authorized deployme
 live panel checks verify exclusion and normal ad/orbit success rates. In particular,
 verify the perk-choice panel and each other in-battle panel against the HUD invariant;
 synthetic fixtures establish the policy, not every game's rendering variant.
+
+An ad claim the guard refuses on its fresh frame is a skip before input
+(`fresh_frame_obscured`), like `fresh_frame_not_battle`, not lost ownership; a panel that
+appears after the claim tap makes the claim `not_confirmed` (`post_claim_obscured`).
+
+Still open from the post-merge review of #47:
+
+- The dashboard says "Collecting" while the collector waits for a clear HUD: the
+  `waiting_for_clear_battle` state reaches only the events log
+  (`gem_collector.py` publishes no runtime field for it; `control/harvest.py` derives
+  "Collecting gems in the battle on screen." from routine gates). Publish it and show the
+  wait with its age.
+- An open orbit attempt is not expired while the HUD is obscured (`flows/shard.py` runs
+  the guard before `_expire_attempt`), so it can close as `attempt_timeout` after the panel
+  goes. Low impact.
+- Live acceptance: open each side-menu entry during a battle and confirm the toggle
+  refuses. No saved real frame shows a modal over an open menu, so "a panel dims the X"
+  rests on synthetic tests and a scrim probe (a uniform black scrim of 14-18% opacity
+  already refuses every accepted saved X frame).
+- The open side menu covers roughly x 850-1080, y 0-740 (native) of the battlefield,
+  including EXIT BATTLE. The default 135° orbit arc (`flows/shard.py`) stays clear of it,
+  but a blueprint's `gem_orbit.angle_deg` can move taps there and `field_region` does not
+  exclude it. Exclude the open-menu area from orbit tap points, or refuse such angles.
+  (Existed before #47.)
