@@ -159,3 +159,12 @@ Still open from the post-merge review of #47:
 - An open orbit attempt is not expired while the HUD is obscured (`flows/shard.py` runs
   the guard before `_expire_attempt`), so it can close as `attempt_timeout` after the panel
   goes. Low impact.
+- Live acceptance: open each side-menu entry during a battle and confirm the toggle
+  refuses. No saved real frame shows a modal over an open menu, so "a panel dims the X"
+  rests on synthetic tests and a scrim probe (a uniform black scrim of 14-18% opacity
+  already refuses every accepted saved X frame).
+- The open side menu covers roughly x 850-1080, y 0-740 (native) of the battlefield,
+  including EXIT BATTLE. The default 135° orbit arc (`flows/shard.py`) stays clear of it,
+  but a blueprint's `gem_orbit.angle_deg` can move taps there and `field_region` does not
+  exclude it. Exclude the open-menu area from orbit tap points, or refuse such angles.
+  (Existed before #47.)
