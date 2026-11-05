@@ -125,9 +125,10 @@ still refused (`backend/logs/reviews/gem-collector-battle-only/menu_state_after.
 
 `GemWatch` receives the collector guard at every construction. The existing ad and
 orbit guard calls apply it again to their fresh frames, including between orbit taps.
-Only this guard's `CollectionObscured` refusal is caught by the collector to resume
-observation; unrelated `Abort` exceptions still propagate. `device/act.py`,
-`interactions/ad_gems.py`, and the shared classifier remain unchanged.
+Only this guard's refusal (`CollectionObscured`, an `interactions/ad_gems.py`
+`InputObscured`) is handled: the ad claimer records it (see below), and the collector
+catches an orbit refusal to resume observation. Unrelated `Abort` exceptions still
+propagate. `device/act.py` and the shared classifier remain unchanged.
 
 Collector-only policy keeps flows that intentionally own menus on their current screen
 contract. The vision layer owns the reusable structural recognition. This does not
