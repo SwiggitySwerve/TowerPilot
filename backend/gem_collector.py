@@ -246,6 +246,7 @@ def main(instance, preset):
             gems = GemWatch(body.get('gather', {}), guard=collection_guard, session=actions)
             state.gems = gems
             state.tracker = wave_reader.WaveTracker()
+            state.waiting_for_clear_battle_since = None
             wave_hwm = None
             continue
         if wave is not None:

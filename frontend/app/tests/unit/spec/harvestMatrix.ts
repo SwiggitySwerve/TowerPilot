@@ -2,6 +2,7 @@ import { MATRIX as SPEC_MATRIX } from './specData.ts';
 
 // The clear-HUD fixture adds a Waiting row after the historical spec snapshot.
 // Its two aliased ids also move the later collector samples' Stop targets.
+// Redo these remaps whenever the fixture regenerates with a new sample before them.
 const STOP_TARGETS: Readonly<Record<string, string>> = {
   worker_not_running: '00000027@2',
   worker_unverified: '00000028@2',

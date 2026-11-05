@@ -562,19 +562,31 @@ def test_a_crashed_worker_is_retired_then_counted(h):
 
 
 # ------------------------------------------------------- what is observed
-def test_clear_hud_wait_overrides_enabled_routines_and_claim_failures(h):
+def test_clear_hud_wait_overrides_collecting_but_not_claim_failures(h):
     choose(h)
     op = _collector(h)
     store, battle = _battle(h, op)
     store.update_status(battle['id'], 'g1', {'waiting_for_clear_battle_since': NOW - 65})
-    state, code, message, view = harvest.collector_state(
-        op, store.get(battle['id']), lambda worker: True, NOW,
-        claims={'failing': True, 'failure_streak': 4})
+    state, code, message, view = harvest.collector_state(op, store.get(battle['id']), lambda worker: True, NOW)
     assert (state, code) == ('waiting_for_battle', 'waiting_for_clear_battle')
     assert message == 'Waiting for an in-game panel to close (65 s).'
     assert view['waiting_for_clear_battle_sec'] == 65
+    # A failure the person must see outranks the wait.
+    assert harvest.collector_state(op, store.get(battle['id']), lambda worker: True, NOW,
+                                   claims={'failing': True, 'failure_streak': 4})[1] == 'claims_failing'
     store.update_status(battle['id'], 'g1', {'waiting_for_clear_battle_since': None})
     assert h.status()['code'] == 'collecting'
+
+
+@pytest.mark.parametrize('routines,code', [
+    ({'ad_gems': {'enabled': False}, 'floating_gems': {'enabled': False}}, 'gem_routines_paused'),
+    ({}, 'routines_not_reported'),
+], ids=['both-off', 'no-routines'])
+def test_clear_hud_wait_never_hides_paused_or_unreported_routines(h, routines, code):
+    choose(h)
+    store, battle = _battle(h, _collector(h), routines=routines)
+    store.update_status(battle['id'], 'g1', {'waiting_for_clear_battle_since': NOW - 65})
+    assert h.status()['code'] == code
 
 
 def test_stale_clear_hud_wait_is_unknown(h):
