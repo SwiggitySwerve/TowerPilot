@@ -201,11 +201,14 @@ def _under_side_menu(points, frame) -> bool:
     and battles run with it open. A blueprint's `gem_orbit.angle_deg` can aim the
     arc there, so the column is tap-free unless this frame's toggle positively
     shows the closed menu's bars. Geometry comes from the display-bound manifest.
+    The column is widened by how far `act.tap` may move a press (its jitter plus
+    the hold's drift), so the press itself stays out, not only the aimed point.
     """
     from player.bootstrap_layout import manifest
     from vision.hud import side_menu_closed
     x, y, w, h = manifest()['side_menu']['column']
-    inside = any(x <= px < x + w and y <= py < y + h for px, py in points)
+    pad = CONFIG['tap']['jitter_px'] + act.TAP_DRIFT_PX
+    inside = any(x - pad <= px < x + w + pad and y - pad <= py < y + h + pad for px, py in points)
     return inside and not side_menu_closed(frame)
 
 

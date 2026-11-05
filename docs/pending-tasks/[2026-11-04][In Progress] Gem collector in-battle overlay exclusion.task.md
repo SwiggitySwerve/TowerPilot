@@ -164,4 +164,11 @@ Still open from the post-merge review of #47:
 Done after the review: a pass that polls no routine (covered HUD or unread fence) still
 closes an ad window or orbit attempt past its deadline (`gems.busy()`, no input, no capture),
 and orbit taps skip the side-menu column (`side_menu.column`) unless the toggle shows the
-closed bars (`flows/shard.py` `_under_side_menu`, `vision/hud.py` `side_menu_closed`).
+closed bars (`flows/shard.py` `_under_side_menu`, `vision/hud.py` `side_menu_closed`). The
+column is widened by `act.tap`'s jitter plus its hold drift, so the press stays out too.
+
+Follow-up: a blueprint whose `gem_orbit.angle_deg` and measured radius reach the column
+collects no orbit gems while the menu is open; each set is refused as `side_menu` and only
+one `gem_orbit_skip` line shows it. The default 135 degree arc never reaches it (rightmost
+point x=486 for radii 40-895, second review of the follow-up PR). Warn in Settings when an
+angle and radius can reach the column, or show a repeated refusal in the routine status.

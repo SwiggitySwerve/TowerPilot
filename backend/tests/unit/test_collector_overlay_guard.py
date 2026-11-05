@@ -271,3 +271,25 @@ def test_covered_hud_still_expires_an_overdue_orbit_attempt(monkeypatch):
     # Closed while the panel is still up, not when it goes.
     assert gems.orbit.attempt_started is None
     assert gems.orbit.last_outcome['reason'] == 'attempt_timeout'
+
+
+def test_side_menu_margin_keeps_the_jittered_press_out(monkeypatch):
+    # act.tap moves the press by its jitter and the hold's drift after the check.
+    from flows import shard
+    monkeypatch.setattr(detect, '_tpl', no_template)
+    opened = battle_frame('side_menu')
+    x, y, w, h = manifest()['side_menu']['column']
+    pad = act.CONFIG['tap']['jitter_px'] + act.TAP_DRIFT_PX
+    assert shard._under_side_menu([(x - pad, y + h // 2)], opened)
+    nearest = (x - pad - 1, y + h // 2)
+    assert not shard._under_side_menu([nearest], opened)
+    sent = []
+    monkeypatch.setattr(act, '_input', lambda *command, **kwargs: sent.append(command))
+    monkeypatch.setattr(act, 'instance', lambda: {'allow_taps': True})
+    monkeypatch.setattr(act, 'wait_for_tap_slot', lambda: 0)
+    monkeypatch.setattr(act.time, 'sleep', lambda seconds: None)
+    monkeypatch.setitem(act.CONFIG['loop'], 'dry_run', False)
+    monkeypatch.setattr(act.random, 'randint', lambda low, high: high)   # the furthest press toward the menu
+    act._tap(*nearest)
+    _, jx, _, ex, _, _ = sent[0]
+    assert max(jx, ex) < x
