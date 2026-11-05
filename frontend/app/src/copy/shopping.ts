@@ -38,7 +38,10 @@ export const shopping = {
   },
   unknownChoice: entry('Not a known choice; shown as the server sent it'),
   queue: entry('Queue (priority order)'),
-  queueHint: entry('Leaving an upgrade out keeps its limits and place.'),
+  queueHint: entry(
+    'Leaving an upgrade out keeps its limits and place.',
+    'From and Until limit each upgrade to a wave range. A blank From uses the server default; Until is exclusive, and a blank Until means no last wave.',
+  ),
   emptyQueue: entry('No upgrades in the queue. Include upgrades from the shop pages.'),
   included: entry('Included in queue'),
   added: entry('Added in this draft'),
