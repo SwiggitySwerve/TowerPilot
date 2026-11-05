@@ -194,6 +194,21 @@ def _in_ability_row(pt, margin: int = 25) -> bool:
             and y - margin <= pt[1] <= y + h + margin)
 
 
+def _under_side_menu(points, frame) -> bool:
+    """Would any point land in the side-menu column while the menu may be open?
+
+    The open menu covers the battlefield's top-right (its tiles and EXIT BATTLE),
+    and battles run with it open. A blueprint's `gem_orbit.angle_deg` can aim the
+    arc there, so the column is tap-free unless this frame's toggle positively
+    shows the closed menu's bars. Geometry comes from the display-bound manifest.
+    """
+    from player.bootstrap_layout import manifest
+    from vision.hud import side_menu_closed
+    x, y, w, h = manifest()['side_menu']['column']
+    inside = any(x <= px < x + w and y <= py < y + h for px, py in points)
+    return inside and not side_menu_closed(frame)
+
+
 class GemWatch:
     """Collect Ad Gems and orbiting diamonds using their separate policies."""
 
@@ -728,6 +743,9 @@ class GemOrbitTapper:
         if any(not (fx <= x < fx+fw and fy <= y < fy+fh) for x, y in points):
             self._backoff('invalid_orbit_arc')
             return frame
+        if _under_side_menu(points, frame):
+            self._backoff('side_menu')
+            return frame
         ok, why, verified_frame = battlefield_observation(points, frame,
                                     **({"guard": self.guard} if self.guard is not None else {}))
         if not ok or verified_frame is None:
@@ -782,6 +800,9 @@ class GemOrbitTapper:
                 return frame
             if _in_ability_row((x, y)):
                 self._backoff("ability_row")
+                return frame
+            if _under_side_menu([(x, y)], frame):
+                self._backoff("side_menu")
                 return frame
             geometry = self._gem_geometry(frame, 'pre_tap')
             if geometry is None:

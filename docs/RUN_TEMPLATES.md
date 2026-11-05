@@ -1,7 +1,7 @@
 # Shipped run templates
 > **Status:** Active
 > **Type:** User guide
-> **Updated:** 2026-10-22
+> **Updated:** 2026-11-05
 
 Farm, Tournament, Shard farming and Dissonance are available above the run list in Control. Choose a template, name it, choose your tier and equipment, then add it. Advanced settings are expanded. Adding a run does not start it or schedule it.
 
@@ -49,7 +49,7 @@ No game artwork, personal preset names, learned coordinates or account snapshots
 
 Ad Gems and free Store gems are separate switches: `ad_gems` watches the six-gem CLAIM button on the battle HUD, while `free_store_gems` runs the Store visit. Store collection is off in the shipped recipes until selected. The HUD collector rechecks a fresh frame before tapping and confirms disappearance only while the battle remains visible. A dry run or a screen change is not a confirmed claim. It never opens the Store. A saved CLAIM image is optional: without one, the collector requires the CLAIM label and the six-gem amount on the same offer.
 
-Rotating diamonds use the existing `gem_orbit` timed-click collector. Shipped recipes disable floating-image matching and enable timed orbit clicks. Account geometry can override the reference point through `center`, `radius`, `angle_deg`, `interval_sec`, `taps`, `jitter_frac`, and `spread_deg` in the gathering policy. No rotating-diamond PNG is required. Before a tap set, the collector checks that the game is in front and the arc is moving rather than covered by a static panel. Each tap also checks a fresh battle frame, and a screen change stops the remaining taps. Ad-gem claims share the foreground-window check. A `gem_orbit_tap` event proves an attempted tap, not a collected reward; verify a balance increase when tuning the orbit for an account.
+Rotating diamonds use the existing `gem_orbit` timed-click collector. Shipped recipes disable floating-image matching and enable timed orbit clicks. Account geometry can override the reference point through `center`, `radius`, `angle_deg`, `interval_sec`, `taps`, `jitter_frac`, and `spread_deg` in the gathering policy. No rotating-diamond PNG is required. Before a tap set, the collector checks that the game is in front and the arc is moving rather than covered by a static panel. Each tap also checks a fresh battle frame, and a screen change stops the remaining taps. No tap lands in the side-menu column (the manifest's `side_menu.column`) unless that frame shows the closed menu's three bars: battles run with the menu open, and an `angle_deg` aimed at the top right would otherwise tap its tiles or EXIT BATTLE. Such a set is skipped as `side_menu`. Ad-gem claims share the foreground-window check. A `gem_orbit_tap` event proves an attempted tap, not a collected reward; verify a balance increase when tuning the orbit for an account.
 
 Overview's Live control shows whether Ad Gems and floating gems are enabled for the selected run. **Start** uses both settings during farming. **Collect diamonds only** uses the same collection sequence on an existing battle without starting a battle or changing equipment. It requires learned wave digits, waits while the battle HUD is absent or a recognized dialog is open, and appears as **Diamond collector** in Live control. **Stop now** stops the driver without touching the game. **Finish current run, then stop** exits after an observed battle reaches its results or Home screen. Starting another automation requires stopping this collector first.
 

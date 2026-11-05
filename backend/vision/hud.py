@@ -44,6 +44,24 @@ def close_cross(crop):
     return bool(white[diagonal].mean() > .55 and white[~diagonal].mean() < .35)
 
 
+def _toggle_crop(frame: np.ndarray) -> np.ndarray | None:
+    """The side-menu toggle at the detectors' reference size, or None when the
+    display-bound geometry does not fit this frame."""
+    layout = manifest()
+    if frame.shape != (layout['layout']['height'], layout['layout']['width'], 3):
+        return None
+    x, y, w, h = layout['side_menu']['toggle']['rect']
+    if min(x, y) < 0 or min(w, h) <= 0 or x+w > frame.shape[1] or y+h > frame.shape[0]:
+        return None
+    crop = frame[y:y+h, x:x+w]
+    # Keep the established detector's reference-pixel band sizes unchanged.
+    # Native geometry comes from the display-bound manifest on every call.
+    _, _, rw, rh = reference_manifest()['side_menu']['toggle']['rect']
+    if (w, h) != (rw, rh):
+        crop = cv2.resize(crop, (rw, rh), interpolation=cv2.INTER_NEAREST)
+    return crop
+
+
 def menu_toggle_visible(frame: np.ndarray) -> bool:
     """Positive, undimmed battle HUD evidence, without any stored template.
 
@@ -54,16 +72,12 @@ def menu_toggle_visible(frame: np.ndarray) -> bool:
     caller must also verify battle and wave: this landmark alone is not a
     screen classifier.
     """
-    layout = manifest()
-    if frame.shape != (layout['layout']['height'], layout['layout']['width'], 3):
-        return False
-    x, y, w, h = layout['side_menu']['toggle']['rect']
-    if min(x, y) < 0 or min(w, h) <= 0 or x+w > frame.shape[1] or y+h > frame.shape[0]:
-        return False
-    crop = frame[y:y+h, x:x+w]
-    # Keep the established detector's reference-pixel band sizes unchanged.
-    # Native geometry comes from the display-bound manifest on every call.
-    _, _, rw, rh = reference_manifest()['side_menu']['toggle']['rect']
-    if (w, h) != (rw, rh):
-        crop = cv2.resize(crop, (rw, rh), interpolation=cv2.INTER_NEAREST)
-    return bool(three_bars(crop) or close_cross(crop))
+    crop = _toggle_crop(frame)
+    return crop is not None and bool(three_bars(crop) or close_cross(crop))
+
+
+def side_menu_closed(frame: np.ndarray) -> bool:
+    """Positive evidence that the side menu is shut: the toggle shows its bars.
+    An X, a dimmed toggle or unknown geometry is not: the menu may be open."""
+    crop = _toggle_crop(frame)
+    return crop is not None and three_bars(crop)
