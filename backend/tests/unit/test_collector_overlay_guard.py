@@ -137,8 +137,34 @@ def test_real_ad_routine_rechecks_fresh_pixels_and_collector_keeps_observing(mon
         assert gems.ad_gems.last_outcome['reason'] == 'offer_disappeared'
     else:
         taps.assert_no_taps('overlay appeared after the initial offer frame')
-        assert gems.ad_gems.last_outcome['outcome'] == 'interrupted'
-        assert any(name == 'gem_collector_obscured' for name, _ in events)
+        # A covered HUD is a skip before input, not lost ownership.
+        assert (gems.ad_gems.last_outcome['outcome'], gems.ad_gems.last_outcome['reason']) == (
+            'skipped', 'fresh_frame_obscured')
+        assert gems.ad_gems.visibility_reason != 'ownership_lost'
+
+
+def test_panel_after_the_claim_tap_is_an_unconfirmed_claim(monkeypatch):
+    from flows.shard import GemWatch
+    from interactions import ad_gems
+    from tap_recorder import tap_recorder
+    monkeypatch.setattr(detect, '_tpl', no_template)
+    initial, fresh, after = battle_frame(), battle_frame(), battle_frame('perk_choice')
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame, **kw: (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems.overlays, 'windows',
+                        lambda serial, **kw: [ad_gems.overlays.GAME_PKG+'/Activity'])
+    taps = tap_recorder(monkeypatch, act)
+
+    def factory(gather, **kwargs):
+        gems = GemWatch({'gem_delay_sec': (0, 0)}, **kwargs)
+        monkeypatch.setattr(gems.orbit, 'poll', lambda frame, reads=None: frame)
+        return gems
+
+    _, _, returned, gems = run_world(
+        monkeypatch, [initial, fresh, after], gem_factory=factory,
+        screen=screen.identify, read_wave=lambda frame: 100, hud=menu_toggle_visible)
+    assert not returned and len(taps.calls) == 1
+    assert (gems.ad_gems.last_outcome['outcome'], gems.ad_gems.last_outcome['reason']) == (
+        'not_confirmed', 'post_claim_obscured')
 
 
 @pytest.mark.parametrize('block_at', ['fresh', 'motion', 'second_tap', None])

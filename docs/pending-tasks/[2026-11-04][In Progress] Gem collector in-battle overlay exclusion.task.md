@@ -143,3 +143,18 @@ until it is relaunched. This task stays In Progress until an authorized deployme
 live panel checks verify exclusion and normal ad/orbit success rates. In particular,
 verify the perk-choice panel and each other in-battle panel against the HUD invariant;
 synthetic fixtures establish the policy, not every game's rendering variant.
+
+An ad claim the guard refuses on its fresh frame is a skip before input
+(`fresh_frame_obscured`), like `fresh_frame_not_battle`, not lost ownership; a panel that
+appears after the claim tap makes the claim `not_confirmed` (`post_claim_obscured`).
+
+Still open from the post-merge review of #47:
+
+- The dashboard says "Collecting" while the collector waits for a clear HUD: the
+  `waiting_for_clear_battle` state reaches only the events log
+  (`gem_collector.py` publishes no runtime field for it; `control/harvest.py` derives
+  "Collecting gems in the battle on screen." from routine gates). Publish it and show the
+  wait with its age.
+- An open orbit attempt is not expired while the HUD is obscured (`flows/shard.py` runs
+  the guard before `_expire_attempt`), so it can close as `attempt_timeout` after the panel
+  goes. Low impact.

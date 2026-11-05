@@ -17,7 +17,7 @@ from vision.frame_reads import FrameReads
 from vision.hud import menu_toggle_visible
 from scheduling import runflag
 from flows.shard import GemWatch
-from interactions.tourney import Abort
+from interactions.ad_gems import InputObscured
 
 
 FENCE_RECHECK_SEC = 5
@@ -25,8 +25,9 @@ PASS_PERIOD_SEC = 1.0       # target time from the start of one pass to the star
 LEDGER_BUSY_LIMIT_SEC = 180
 
 
-class CollectionObscured(Abort):
-    """A collector frame no longer proves an unobscured battle; send no input."""
+class CollectionObscured(InputObscured):
+    """A collector frame no longer proves an unobscured battle; send no input. The ad claimer records it as a
+    skip or an unconfirmed claim; the orbit tapper lets it reach the collector loop, which keeps observing."""
 
 
 def collection_guard(frame: np.ndarray, expected: str) -> np.ndarray:
@@ -293,8 +294,8 @@ def main(instance, preset):
                     try:
                         gems.poll(frame, reads=reads)
                     except CollectionObscured as exc:
-                        # AdGemCollector propagates Abort unchanged; only this
-                        # collector's visual refusal resumes observation here.
+                        # The ad claimer records its own refusals; the orbit tapper's reach here. Only
+                        # this visual refusal resumes observation; any other Abort still propagates.
                         logger.event('gem_collector_obscured', reason=str(exc))
         elif session is not None and session.battle['status'] in ('prepared', 'active'):
             with clock.stage('ledger'):

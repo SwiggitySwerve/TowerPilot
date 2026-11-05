@@ -33,6 +33,11 @@ from player.gather_settings import AD_GEM_FIELDS, resolve_ad_gem_options
 from towerpilot_workflows.action_contract import StartToStart, effect_of
 import settings
 
+
+class InputObscured(Abort):
+    """A guard's refusal: the battle is on screen but a panel covers its HUD. Ownership is not lost; the
+    claim records it as a skip before input, or as an unconfirmed claim after it, and never re-raises."""
+
 TEMPLATE = 'buttons/ad_gems_claim.png'
 EDGE_INSET_PX = AD_GEM_FIELDS['edge_inset_px']['default']
 OBSERVATION_TIMEOUT_SEC = 2.0
@@ -665,7 +670,14 @@ class AdGemCollector:
         self._attempt_stage = 'fresh_capture'
         fresh=capture.grab()
         if self.guard is not None:
-            fresh = self.guard(fresh, 'battle')
+            try:
+                fresh = self.guard(fresh, 'battle')
+            except InputObscured:
+                self._attempt_latest_frame = fresh
+                self._skip('fresh_frame_obscured')
+                if time.monotonic() >= self.window_deadline:
+                    self._close_window()
+                return fresh
         self._attempt_latest_frame = fresh
         self._attempt_stage = 'fresh_recognition'
         current = self._observe(fresh, deadline=self.window_deadline)
@@ -729,17 +741,24 @@ class AdGemCollector:
         time.sleep(.35)
         self._attempt_stage = 'confirmation_capture'
         after=capture.grab()
+        obscured = False
         if self.guard is not None:
-            after = self.guard(after, "battle")
+            try:
+                after = self.guard(after, "battle")
+            except InputObscured:
+                obscured = True     # a panel covers the HUD: no evidence either way
         self._attempt_latest_frame = after
         # A menu/ad/death replacing the HUD is not evidence of a reward.
         self._attempt_stage = 'confirmation_recognition'
-        self._observe(after)
-        vanished = self.visibility == 'absent'
-        reason = ('offer_disappeared' if vanished else
-                  ('post_claim_not_battle' if self.visibility_reason == 'not_battle'
-                   else 'post_claim_recognition_incomplete')
-                  if self.visibility == 'unknown' else 'offer_still_visible')
+        if obscured:
+            vanished, reason = False, 'post_claim_obscured'
+        else:
+            self._observe(after)
+            vanished = self.visibility == 'absent'
+            reason = ('offer_disappeared' if vanished else
+                      ('post_claim_not_battle' if self.visibility_reason == 'not_battle'
+                       else 'post_claim_recognition_incomplete')
+                      if self.visibility == 'unknown' else 'offer_still_visible')
         logger.event('ad_gems_claim',confirmed=vanished, reason=reason, **self._context())
         self._finish_attempt('confirmed' if vanished else 'not_confirmed', reason)
         if vanished:
