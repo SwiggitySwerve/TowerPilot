@@ -2,7 +2,7 @@
 > **Status:** In Progress
 > **Type:** Task
 > **Created:** 2026-11-04
-> **Updated:** 2026-11-05 (Dashboard wait status)
+> **Updated:** 2026-11-05
 > **Priority:** Medium
 > **Tags:** gem-collector, recognition, safety
 
@@ -153,7 +153,8 @@ Done from the post-merge review of #47: the standalone collector publishes
 `waiting_for_clear_battle_since`, clearing it when the HUD clears or the battle is no
 longer observed. `control/harvest.py` reports `waiting_for_clear_battle` with its elapsed
 seconds, and the Dashboard Gem slot shows the panel-close wait and age using its existing
-Waiting presentation. Synthetic loop, runtime-publication and Dashboard tests cover this
+Waiting presentation; only while a gem routine is on, and never over paused or unreported
+routines or failing ad claims. Synthetic loop, runtime-publication and Dashboard tests cover this
 path. Deployment and live acceptance remain outstanding.
 
 Still open from the post-merge review of #47:
