@@ -34,7 +34,7 @@ def run(monkeypatch, frames, *, session=None, requested=None, fence=None, gems=N
     monkeypatch.setattr(worker, 'GemWatch', make_gems)
     # Loop tests use frame tokens; pixel regressions explicitly supply the
     # real detector. The seam mirrors the screen and wave readers below.
-    monkeypatch.setattr(worker, 'closed_menu_visible', hud or (lambda frame: True))
+    monkeypatch.setattr(worker, 'menu_toggle_visible', hud or (lambda frame: True))
     remaining = iter(frames)
 
     def grab():

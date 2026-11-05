@@ -32,13 +32,27 @@ def three_bars(crop):
     return max(heights) <= 2.5 * min(heights)
 
 
-def closed_menu_visible(frame: np.ndarray) -> bool:
+def close_cross(crop):
+    """The open side menu's close-X: white diagonals with a cyan/green glow
+    (the glow hue varies by theme), nothing white off the diagonals."""
+    hh, ww = crop.shape[:2]
+    inner = crop[int(hh*.2):int(hh*.8), int(ww*.2):int(ww*.8)]
+    white = inner.min(axis=2) > 210
+    yy, xx = np.indices(white.shape)
+    diagonal = ((abs(xx/white.shape[1]-yy/white.shape[0]) < .18)
+                | (abs(xx/white.shape[1]+yy/white.shape[0]-1) < .18))
+    return bool(white[diagonal].mean() > .55 and white[~diagonal].mean() < .35)
+
+
+def menu_toggle_visible(frame: np.ndarray) -> bool:
     """Positive, undimmed battle HUD evidence, without any stored template.
 
-    In-game modals dim/cover the HUD; the expanded side menu replaces the
-    hamburger with an X. Neither supplies the three bright bars. Unknown
-    geometry or an unreadable glyph refuses collection. The caller must also
-    verify battle and wave: this landmark alone is not a screen classifier.
+    The side-menu toggle shows three bright bars while the menu is closed and
+    a bright X while it is open; battles run with either (saved live frames
+    show the menu open). An in-game modal's scrim dims the toggle so it shows
+    neither. Unknown geometry or an unreadable glyph refuses collection. The
+    caller must also verify battle and wave: this landmark alone is not a
+    screen classifier.
     """
     layout = manifest()
     if frame.shape != (layout['layout']['height'], layout['layout']['width'], 3):
@@ -52,4 +66,4 @@ def closed_menu_visible(frame: np.ndarray) -> bool:
     _, _, rw, rh = reference_manifest()['side_menu']['toggle']['rect']
     if (w, h) != (rw, rh):
         crop = cv2.resize(crop, (rw, rh), interpolation=cv2.INTER_NEAREST)
-    return bool(three_bars(crop))
+    return bool(three_bars(crop) or close_cross(crop))

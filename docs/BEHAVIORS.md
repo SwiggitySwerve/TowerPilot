@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Knowledge
 > **Created:** 2026-08-24
-> **Updated:** 2026-11-04
+> **Updated:** 2026-11-05
 > **Tags:** orchestrator, behaviors, rules, policies, configuration
 
 Every click the autopilot makes during a live run, what triggers it, why it
@@ -298,11 +298,12 @@ code when the vocabulary genuinely cannot express it.
 
 ## Collector overlay guard
 
-The standalone gem collector additionally requires the undimmed, closed-menu hamburger
-from `vision/hud.py` before polling gems and on fresh frames before input. The guard
-reuses calibration's three-bar recognition without loading or writing a template, and
-reads display geometry from the manifest. An open menu, a modal scrim, or unreadable HUD
-makes the collector wait; a new clear battle frame resumes collection. The shared screen
+The standalone gem collector additionally requires an undimmed side-menu toggle from
+`vision/hud.py` before polling gems and on fresh frames before input: the three bars of
+the closed menu or the X of the open one (battles run with either). The guard reuses
+calibration's bar and close-X recognition without loading or writing a template, and
+reads display geometry from the manifest. A modal scrim that dims the toggle, or an
+unreadable HUD, makes the collector wait; a new clear battle frame resumes collection. The shared screen
 classifier and flows that own menus keep their existing behavior. See the
 [overlay exclusion task](pending-tasks/%5B2026-11-04%5D%5BIn%20Progress%5D%20Gem%20collector%20in-battle%20overlay%20exclusion.task.md)
 for coverage and live acceptance still owed.
