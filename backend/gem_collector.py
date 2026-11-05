@@ -289,14 +289,21 @@ def main(instance, preset):
                         wave_hwm = None
                 with clock.stage('ledger'):
                     ledger.run('observe', lambda: (session.observe(state, raw), session.checkpoint(state, battle_visible=True)))
+            polled = False
             if authorized and clear:
                 with clock.stage('poll'):
                     try:
                         gems.poll(frame, reads=reads)
+                        polled = True
                     except CollectionObscured as exc:
                         # The ad claimer records its own refusals; the orbit tapper's reach here. Only
                         # this visual refusal resumes observation; any other Abort still propagates.
                         logger.event('gem_collector_obscured', reason=str(exc))
+            if not polled:
+                # No routine finished on this frame (covered HUD or unread fence): an ad window or orbit attempt
+                # past its deadline closes now, as busy() does off the battle screen (no input, no capture),
+                # rather than whenever the HUD clears.
+                gems.busy()
         elif session is not None and session.battle['status'] in ('prepared', 'active'):
             with clock.stage('ledger'):
                 ledger.run('checkpoint', session.checkpoint, state, battle_visible=False)

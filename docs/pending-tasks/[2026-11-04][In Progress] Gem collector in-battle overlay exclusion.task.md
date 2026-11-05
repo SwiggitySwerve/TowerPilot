@@ -156,15 +156,19 @@ Still open from the post-merge review of #47:
   (`gem_collector.py` publishes no runtime field for it; `control/harvest.py` derives
   "Collecting gems in the battle on screen." from routine gates). Publish it and show the
   wait with its age.
-- An open orbit attempt is not expired while the HUD is obscured (`flows/shard.py` runs
-  the guard before `_expire_attempt`), so it can close as `attempt_timeout` after the panel
-  goes. Low impact.
 - Live acceptance: open each side-menu entry during a battle and confirm the toggle
   refuses. No saved real frame shows a modal over an open menu, so "a panel dims the X"
   rests on synthetic tests and a scrim probe (a uniform black scrim of 14-18% opacity
   already refuses every accepted saved X frame).
-- The open side menu covers roughly x 850-1080, y 0-740 (native) of the battlefield,
-  including EXIT BATTLE. The default 135° orbit arc (`flows/shard.py`) stays clear of it,
-  but a blueprint's `gem_orbit.angle_deg` can move taps there and `field_region` does not
-  exclude it. Exclude the open-menu area from orbit tap points, or refuse such angles.
-  (Existed before #47.)
+
+Done after the review: a pass that polls no routine (covered HUD or unread fence) still
+closes an ad window or orbit attempt past its deadline (`gems.busy()`, no input, no capture),
+and orbit taps skip the side-menu column (`side_menu.column`) unless the toggle shows the
+closed bars (`flows/shard.py` `_under_side_menu`, `vision/hud.py` `side_menu_closed`). The
+column is widened by `act.tap`'s jitter plus its hold drift, so the press stays out too.
+
+Follow-up: a blueprint whose `gem_orbit.angle_deg` and measured radius reach the column
+collects no orbit gems while the menu is open; each set is refused as `side_menu` and only
+one `gem_orbit_skip` line shows it. The default 135 degree arc never reaches it (rightmost
+point x=486 for radii 40-895, second review of the follow-up PR). Warn in Settings when an
+angle and radius can reach the column, or show a repeated refusal in the routine status.

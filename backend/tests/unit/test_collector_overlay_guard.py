@@ -205,3 +205,91 @@ def test_other_abort_still_propagates(monkeypatch):
     with pytest.raises(Abort, match='ownership lost'):
         run_world(monkeypatch, [battle_frame()], gems=gems,
                   screen=screen.identify, read_wave=lambda frame: 100, hud=menu_toggle_visible)
+
+
+@pytest.mark.parametrize('panel', [None, 'side_menu', 'perk_choice', 'side_menu_perk'])
+def test_side_menu_reads_closed_only_on_its_bars(panel):
+    from vision.hud import side_menu_closed
+    assert side_menu_closed(battle_frame(panel)) is (panel is None)
+
+
+def _in_menu_column(points):
+    x, y, w, h = manifest()['side_menu']['column']
+    return [x <= px < x+w and y <= py < y+h for px, py in points]
+
+
+def test_default_orbit_arc_stays_clear_of_the_side_menu(monkeypatch):
+    from flows import shard
+    monkeypatch.setattr(shard.capture, 'layout_offset', 0)
+    assert not any(_in_menu_column(shard.GemOrbitTapper(enabled=True, jitter=0).points()))
+
+
+@pytest.mark.parametrize('menu', ['open', 'closed'])
+def test_orbit_never_taps_under_the_open_side_menu(monkeypatch, menu):
+    import math
+    from flows import shard
+    from gem_collector import collection_guard
+    from tap_recorder import tap_recorder
+    frame = battle_frame('side_menu' if menu == 'open' else None)
+    monkeypatch.setattr(detect, '_tpl', no_template)
+    monkeypatch.setattr(shard.wave_reader, 'read_wave', lambda frame: 100)
+    monkeypatch.setattr(shard.capture, 'layout_offset', 0)
+    monkeypatch.setattr(shard, 'read_gem_balance', lambda frame: 200)
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kwargs:
+                        SimpleNamespace(center=(900., 700.), rect=(860, 660, 80, 80), score=.99))
+    monkeypatch.setattr(shard.capture, 'grab', lambda: frame)
+    monkeypatch.setattr(shard.act, 'wait_for_tap_slot', lambda: 0)
+    monkeypatch.setattr(shard, 'battlefield_observation', lambda *args, **kwargs: (True, 'live', frame))
+    taps = tap_recorder(monkeypatch, act)
+    # A blueprint's gem_orbit.angle_deg of 30 aims the whole arc into the menu column.
+    tapper = shard.GemOrbitTapper(enabled=True, center=(540, 900), angle=30, jitter=0, guard=collection_guard)
+    assert all(_in_menu_column(tapper.points(math.dist((900, 700), (540, 900)))))
+    tapper.poll(frame)
+    if menu == 'open':
+        taps.assert_no_taps('the open side menu covers every point of this arc')
+        assert tapper.last_refusal['reason'] == 'side_menu'
+    else:
+        assert len(taps.calls) == 3
+
+
+def test_covered_hud_still_expires_an_overdue_orbit_attempt(monkeypatch):
+    import time
+    from flows.shard import GemWatch
+    monkeypatch.setattr(detect, '_tpl', no_template)
+
+    def factory(gather, **kwargs):
+        gems = GemWatch({'gem_delay_sec': (0, 0)}, **kwargs)
+        gems.orbit.attempt_started = time.monotonic() - 100
+        gems.orbit.window_ends_at = time.monotonic() - 1
+        return gems
+
+    covered = battle_frame('perk_choice')
+    _, polled, _, gems = run_world(
+        monkeypatch, [covered, covered], gem_factory=factory,
+        screen=screen.identify, read_wave=lambda frame: 100, hud=menu_toggle_visible)
+    assert not polled
+    # Closed while the panel is still up, not when it goes.
+    assert gems.orbit.attempt_started is None
+    assert gems.orbit.last_outcome['reason'] == 'attempt_timeout'
+
+
+def test_side_menu_margin_keeps_the_jittered_press_out(monkeypatch):
+    # act.tap moves the press by its jitter and the hold's drift after the check.
+    from flows import shard
+    monkeypatch.setattr(detect, '_tpl', no_template)
+    opened = battle_frame('side_menu')
+    x, y, w, h = manifest()['side_menu']['column']
+    pad = act.CONFIG['tap']['jitter_px'] + act.TAP_DRIFT_PX
+    assert shard._under_side_menu([(x - pad, y + h // 2)], opened)
+    nearest = (x - pad - 1, y + h // 2)
+    assert not shard._under_side_menu([nearest], opened)
+    sent = []
+    monkeypatch.setattr(act, '_input', lambda *command, **kwargs: sent.append(command))
+    monkeypatch.setattr(act, 'instance', lambda: {'allow_taps': True})
+    monkeypatch.setattr(act, 'wait_for_tap_slot', lambda: 0)
+    monkeypatch.setattr(act.time, 'sleep', lambda seconds: None)
+    monkeypatch.setitem(act.CONFIG['loop'], 'dry_run', False)
+    monkeypatch.setattr(act.random, 'randint', lambda low, high: high)   # the furthest press toward the menu
+    act._tap(*nearest)
+    _, jx, _, ex, _, _ = sent[0]
+    assert max(jx, ex) < x
