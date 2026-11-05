@@ -183,7 +183,13 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
         <Harness />
       </main>,
     );
-    const from = screen.getByRole('spinbutton', { name: 'From wave: Health' });
+    const row = screen.getByRole('button', { name: /Move up.*Health/u }).closest('li');
+    if (row === null) throw new Error('missing Health queue row');
+    const from = within(row).getByRole('spinbutton', { name: 'From wave: Health' });
+    expect(
+      within(row).getByRole('spinbutton', { name: 'Until wave (exclusive): Health' }),
+    ).toBeVisible();
+    expect(screen.queryByText('Wave ranges')).toBeNull();
     fireEvent.change(from, { target: { value: '5' } });
     expect(
       reviewQueue(BASE, latest).entries.find((e) => e.id === 'health')?.fields.from_wave.raw,
@@ -214,6 +220,41 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
       'First affordable in priority order',
     );
     expect(textOutsideCatalogue(document.body)).toEqual([]);
+    expect(await axe(document.body)).toHaveNoViolations();
+  });
+
+  it('queue wave fields retain validation, error links and draft values when moved or left out', async () => {
+    renderRegion(
+      initialDashboardState(),
+      <main>
+        <Harness initial={{ 'entry:health:from_wave': '1.5e', 'entry:health:until_wave': '20' }} />
+      </main>,
+    );
+    const from = () => screen.getByRole('spinbutton', { name: 'From wave: Health' });
+    expect(from()).toHaveAttribute('aria-invalid', 'true');
+    expect(from()).toHaveAttribute('aria-describedby', 'test:problem:health:from_wave');
+    expect(document.getElementById('test:problem:health:from_wave')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: /Move up.*Health/u }));
+    expect(queued()[0]).toBe('Health');
+    expect(from()).toHaveValue(null);
+    expect(from()).toHaveAttribute('aria-invalid', 'true');
+    fireEvent.change(from(), { target: { value: '10' } });
+    expect(from()).not.toHaveAttribute('aria-invalid');
+    fireEvent.click(chip('Defense', 'Health'));
+    expect(screen.queryByRole('spinbutton', { name: 'From wave: Health' })).toBeNull();
+    expect(latest['entry:health:from_wave']).toBe('10');
+    expect(latest['entry:health:until_wave']).toBe('20');
+    fireEvent.click(chip('Defense', 'Health'));
+    expect(from()).toHaveValue(10);
+    expect(screen.getByRole('spinbutton', { name: 'Until wave (exclusive): Health' })).toHaveValue(
+      20,
+    );
+    fireEvent.change(screen.getByLabelText('Upgrade to keep out'), { target: { value: 'health' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Keep out' }));
+    expect(screen.queryByRole('spinbutton', { name: 'From wave: Health' })).toBeNull();
+    expect(latest['entry:health:from_wave']).toBe('10');
+    fireEvent.click(page('Never buy').getByRole('button', { name: 'Health' }));
+    expect(from()).toHaveValue(10);
     expect(await axe(document.body)).toHaveNoViolations();
   });
 

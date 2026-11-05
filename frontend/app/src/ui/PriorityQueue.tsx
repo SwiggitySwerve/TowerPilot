@@ -12,6 +12,8 @@ export interface QueueEntry {
   readonly id: string;
   readonly label: CopyNode;
   readonly tone?: ItemTone;
+  /** Inline fields, named using the id of this entry's name. */
+  readonly controls?: (nameId: string) => CopyNode;
 }
 
 export interface PriorityQueueProps {
@@ -137,38 +139,43 @@ export function PriorityQueue({
             <span id={nameId} className="tp-queue__name">
               {item.label}
             </span>
-            <span id={upId} className="tp-visually-hidden">
-              {copy.items.queue.moveUp.short}
+            {item.controls === undefined ? null : (
+              <span className="tp-queue__controls">{item.controls(nameId)}</span>
+            )}
+            <span className="tp-queue__moves">
+              <span id={upId} className="tp-visually-hidden">
+                {copy.items.queue.moveUp.short}
+              </span>
+              <button
+                type="button"
+                className="tp-item-button"
+                data-move-id={item.id}
+                data-direction="up"
+                aria-labelledby={`${upId} ${nameId}`}
+                aria-disabled={disabled || index === 0 ? true : undefined}
+                onClick={() => {
+                  if (!disabled) move(item.id, 'up');
+                }}
+              >
+                <Glyph kind="up" />
+              </button>
+              <span id={downId} className="tp-visually-hidden">
+                {copy.items.queue.moveDown.short}
+              </span>
+              <button
+                type="button"
+                className="tp-item-button"
+                data-move-id={item.id}
+                data-direction="down"
+                aria-labelledby={`${downId} ${nameId}`}
+                aria-disabled={disabled || index === items.length - 1 ? true : undefined}
+                onClick={() => {
+                  if (!disabled) move(item.id, 'down');
+                }}
+              >
+                <Glyph kind="down" />
+              </button>
             </span>
-            <button
-              type="button"
-              className="tp-item-button"
-              data-move-id={item.id}
-              data-direction="up"
-              aria-labelledby={`${upId} ${nameId}`}
-              aria-disabled={disabled || index === 0 ? true : undefined}
-              onClick={() => {
-                if (!disabled) move(item.id, 'up');
-              }}
-            >
-              <Glyph kind="up" />
-            </button>
-            <span id={downId} className="tp-visually-hidden">
-              {copy.items.queue.moveDown.short}
-            </span>
-            <button
-              type="button"
-              className="tp-item-button"
-              data-move-id={item.id}
-              data-direction="down"
-              aria-labelledby={`${downId} ${nameId}`}
-              aria-disabled={disabled || index === items.length - 1 ? true : undefined}
-              onClick={() => {
-                if (!disabled) move(item.id, 'down');
-              }}
-            >
-              <Glyph kind="down" />
-            </button>
           </li>
         );
       })}

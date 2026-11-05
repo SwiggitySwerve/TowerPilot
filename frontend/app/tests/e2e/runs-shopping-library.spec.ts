@@ -43,10 +43,6 @@ async function weighted(page: Page) {
   await form.getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
   await showShopPage(form, 'defense');
   await form.getByRole('spinbutton', { name: 'Weight: Health', exact: true }).fill('3');
-  // Wave ranges open by themselves once a queue has entries; make sure they are open.
-  await form.locator('details:not(:has(details)):has(.tp-shop__waves)').evaluate((element) => {
-    if (element instanceof HTMLDetailsElement) element.open = true;
-  });
   await form
     .getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true })
     .fill('20');

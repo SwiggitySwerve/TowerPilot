@@ -30,11 +30,8 @@ async function onItsPage(editor: Locator, key: string) {
     await showShopPage(editor, section);
 }
 
-/** The wave ranges fold away and the weight shows only in Weighted split: open both for `act`. */
+/** Weight shows only in Weighted split; wave fields are always on queued rows. */
 async function revealed(editor: Locator, act: () => Promise<void>) {
-  await editor.locator('details:not(:has(details)):has(.tp-shop__waves)').evaluate((element) => {
-    if (element instanceof HTMLDetailsElement) element.open = true;
-  });
   const mode = editor.getByLabel('Purchase pattern', { exact: true });
   const before = await mode.inputValue();
   if (before !== 'weighted_split') await mode.selectOption('weighted_split');

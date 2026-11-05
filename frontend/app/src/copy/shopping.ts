@@ -50,14 +50,12 @@ export const shopping = {
     'Confirmed single purchases per weighted turn.',
   ),
   fromWave: entry('From wave'),
+  fromWaveShort: entry('From'),
   fromWaveHint: entry('Blank uses the server default.'),
   untilWave: entry('Until wave (exclusive)'),
+  untilWaveShort: entry('Until'),
   untilWaveHint: entry('Blank means no last wave.'),
   waves: entry('Waves and weight'),
-  waveRanges: entry('Wave ranges'),
-  waveRangesHint: entry(
-    'Blank from wave uses the server default; blank until wave means no last wave.',
-  ),
   unlimited: entry('∞'),
   times: entry('×'),
   problemLine: (item: CopyText, field: CopyText, problem: CopyText) =>

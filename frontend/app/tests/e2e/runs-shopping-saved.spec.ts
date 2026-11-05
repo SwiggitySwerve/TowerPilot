@@ -2,7 +2,14 @@ import { fillBoundsDraft, expectBoundsDraft } from './helpers/shopping-bounds.ts
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page, type Locator } from '@playwright/test';
-import { axeIds, bodiesTo, posts, showShopPage, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import {
+  axeIds,
+  bodiesTo,
+  expectSaveUnderQueue,
+  posts,
+  showShopPage,
+  WCAG_AA_TAGS,
+} from './helpers/helpers.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
 import { bounds } from '../support/shoppingBounds.ts';
 import { own } from '../../src/core/read.ts';
@@ -148,12 +155,6 @@ async function weighted(page: Page) {
   );
   await showShopPage(root(page), 'defense');
   await fill(root(page).getByRole('spinbutton', { name: 'Weight: Health', exact: true }), '3');
-  // Wave ranges open by themselves once a queue has entries; make sure they are open.
-  await root(page)
-    .locator('details:not(:has(details)):has(.tp-shop__waves)')
-    .evaluate((element) => {
-      if (element instanceof HTMLDetailsElement) element.open = true;
-    });
   await fill(
     root(page).getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true }),
     '20',
@@ -164,6 +165,77 @@ async function weighted(page: Page) {
   await expect(root(page).getByRole('button', { name: /^Move up.*Health/u })).toBeFocused();
   await expect(root(page).locator('.tp-queue__item .tp-queue__name').first()).toHaveText('Health');
 }
+
+for (const width of [1360, 390, 320]) {
+  test(`inline wave fields stay on queue rows at ${width}, with validation and reordering`, async ({
+    page,
+  }) => {
+    await open(page, 'edit', width);
+    const editor = root(page);
+    const rows = editor.locator('.tp-queue__item');
+    const health = rows.filter({ has: page.locator('.tp-queue__name', { hasText: /^Health$/u }) });
+    const from = health.getByRole('spinbutton', { name: 'From wave: Health', exact: true });
+    const until = health.getByRole('spinbutton', {
+      name: 'Until wave (exclusive): Health',
+      exact: true,
+    });
+    await expect(from).toHaveValue('5');
+    await expect(until).toHaveValue('');
+    await expect(editor.getByText('Wave ranges', { exact: true })).toHaveCount(0);
+    await expectSaveUnderQueue(editor);
+    await editor.locator('.tp-shop__layout').evaluate((element) => {
+      element.scrollIntoView({ block: 'start' });
+    });
+    await page.screenshot({ path: path.join(OUT, `shopping-inline-waves-${width}.png`) });
+
+    await from.fill('1e2');
+    await expect(from).toHaveAttribute('aria-invalid', 'true');
+    await expect(from).toHaveAccessibleDescription(/Health From wave/u);
+    await expect(
+      page.getByRole('button', { name: /^Shopping queue Needs attention/u }),
+    ).toBeVisible();
+    await from.fill('10');
+    await until.fill('20');
+    await expect(from).not.toHaveAttribute('aria-invalid');
+    await expect(page.getByRole('button', { name: 'Shopping queue', exact: true })).toBeVisible();
+    await health.getByRole('button', { name: 'Move up Health', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(rows.first().locator('.tp-queue__name')).toHaveText('Health');
+    await expect(health.getByRole('button', { name: 'Move up Health', exact: true })).toBeFocused();
+    await expect(from).toHaveValue('10');
+    await health.locator('.tp-queue__grip').dragTo(rows.filter({ hasText: 'Damage' }));
+    await expect(rows.last().locator('.tp-queue__name')).toHaveText('Health');
+    await expect(until).toHaveValue('20');
+
+    await showShopPage(editor, 'utility');
+    await editor.getByRole('button', { name: 'Enemy Health Level Skip', exact: true }).click();
+    for (const row of await rows.all()) {
+      expect(await row.getByRole('spinbutton').count()).toBe(2);
+      expect(await row.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+        true,
+      );
+      const name = await row.locator('.tp-queue__name').boundingBox();
+      for (const input of await row.getByRole('spinbutton').all()) {
+        const box = await input.boundingBox();
+        expect(box?.x ?? 0).toBeGreaterThanOrEqual((name?.x ?? 0) + (name?.width ?? 0));
+        expect(box?.y ?? 0).toBeLessThan((name?.y ?? 0) + (name?.height ?? 0));
+        expect((box?.y ?? 0) + (box?.height ?? 0)).toBeGreaterThan(name?.y ?? 0);
+        if (width <= 390) {
+          expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+          expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+        }
+      }
+    }
+    await expectSaveUnderQueue(editor);
+    expect(await axeIds(page, WCAG_AA_TAGS)).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBe(0);
+  });
+}
+
 for (const width of [1360, 1054, 390]) {
   test(`SQ1 create queue at ${width}: choices, one exact Save, axe and targets`, async ({
     page,
