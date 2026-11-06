@@ -2,7 +2,7 @@
 > **Status:** In Progress
 > **Type:** Task
 > **Created:** 2026-10-30
-> **Updated:** 2026-10-30
+> **Updated:** 2026-11-05
 > **Priority:** High
 > **Tags:** dashboard, ui, regression, parity, needs-person
 
@@ -116,3 +116,25 @@ guard because captures hold real account data and cannot ship; text and geometry
 (column counts per width, element presence, no fold, badge text, a computed colour from a
 token) run offline and catch the same regressions. Recognition goes last because its
 "What we know" grid needs a contract change first.
+
+
+---
+
+## Inline shop wave fields (2026-11-05)
+
+The requested shop follow-up moves each queued upgrade's wave bounds into its
+priority row and removes the separate Wave ranges disclosure. The shared
+`PriorityQueue` accepts inline controls; `QueueEditor` keeps the same `ChipField`
+edit keys and error links. Disabled and excluded entries retain their plan values
+without showing queue fields. This is folded into this task's shop UI scope.
+
+The regression in `frontend/app/tests/unit/features/shopping/queueEditor.test.tsx`
+failed on the original UI because Health's queue row contained no wave field.
+Browser coverage in `frontend/app/tests/e2e/runs-shopping-saved.spec.ts` checks
+row placement, long upgrade names, touch targets, validation, keyboard moves and
+drag reordering at desktop and phone widths. Before/after captures use the
+synthetic `shopping_saved_edit` scenario from the repository's fake backend;
+these captures can be attached to the PR under the person's explicit instruction.
+They contain no legacy account fixture or live account data. Evidence is kept
+under `frontend/app/test-results/`, outside git. Deployment and live-service
+checks are explicitly outside this follow-up's authorized scope.

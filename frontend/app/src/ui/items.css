@@ -247,6 +247,24 @@
   padding: 0.15rem 0.35rem;
   font-size: 0.8rem;
 }
+/* Inline fields keep their labels beside the name; the move buttons share one column. */
+.tp-queue:has(.tp-queue__controls) {
+  grid-auto-rows: minmax(var(--tp-queue-item-height), auto);
+}
+.tp-queue__controls,
+.tp-queue__moves {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 0.3rem;
+}
+.tp-queue__item:has(.tp-queue__controls) .tp-queue__moves {
+  flex-direction: column;
+}
+.tp-queue__item:has(.tp-queue__controls) .tp-queue__name {
+  display: block;
+  overflow: visible;
+}
 .tp-queue__item[draggable='true'] {
   cursor: grab;
 }

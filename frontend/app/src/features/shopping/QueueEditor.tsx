@@ -11,7 +11,6 @@ import type {
 import { Button } from '../../ui/Button.tsx';
 import { ChipField } from '../../ui/ChipField.tsx';
 import { ChipGrid } from '../../ui/ChipGrid.tsx';
-import { Disclosure } from '../../ui/Disclosure.tsx';
 import { HelpTip } from '../../ui/HelpTip.tsx';
 import { Mark } from '../../ui/ItemGlyph.tsx';
 import { PriorityQueue } from '../../ui/PriorityQueue.tsx';
@@ -452,43 +451,6 @@ function Pages({ narrow, ...parts }: Parts & { readonly narrow: boolean }) {
   );
 }
 
-/** The wave range of each upgrade of the plan: kept from the earlier editor, folded as few use it. */
-function WaveRanges({ vm, idBase, actions }: Parts) {
-  return (
-    <Disclosure
-      label={t.waveRanges.short}
-      count={vm.entries.length}
-      focusKey={`${idBase}:waves`}
-      initiallyOpen={vm.entries.length > 0}
-    >
-      <p className="tp-shop__hint">{t.waveRangesHint.short}</p>
-      <ul className="tp-shop__waves">
-        {vm.entries.map((entry) => (
-          <li key={entry.id} className="tp-shop__wave" data-upgrade={entry.id}>
-            <strong id={`${idBase}:wave:${entry.id}`}>{nameOf(entry.label)}</strong>
-            {(['from_wave', 'until_wave'] as const).map((field) => (
-              <span key={field} className="tp-shop__wave-field">
-                <span aria-hidden="true">{FIELD_LABELS[field].short}</span>
-                <ChipField
-                  label={FIELD_LABELS[field].short}
-                  itemId={`${idBase}:wave:${entry.id}`}
-                  value={entry.fields[field].raw}
-                  min={1}
-                  invalid={entry.fields[field].problem !== null}
-                  errorId={problemId(idBase, entry.id, field)}
-                  onChange={(value) => {
-                    actions.onEdit(entryKey(entry.id, field), value);
-                  }}
-                />
-              </span>
-            ))}
-          </li>
-        ))}
-      </ul>
-    </Disclosure>
-  );
-}
-
 /**
  * The one shopping queue editor (brief SQ3 to SQ6): purchase rules, the priority queue on the
  * left and the workshop pages as grids of chips beside it. Selecting a chip puts its upgrade in
@@ -580,6 +542,29 @@ export function QueueEditor(props: QueueEditorProps) {
                 id: entry.id,
                 label: nameOf(entry.label),
                 tone: toneOf(sections.get(entry.id)),
+                controls: (nameId) =>
+                  (['from_wave', 'until_wave'] as const).map((field) => (
+                    <span
+                      key={field}
+                      className="tp-shop__queue-field"
+                      title={FIELD_LABELS[field].short}
+                    >
+                      <span aria-hidden="true">
+                        {field === 'from_wave' ? t.fromWaveShort.short : t.untilWaveShort.short}
+                      </span>
+                      <ChipField
+                        label={FIELD_LABELS[field].short}
+                        itemId={nameId}
+                        value={entry.fields[field].raw}
+                        min={1}
+                        invalid={entry.fields[field].problem !== null}
+                        errorId={problemId(idBase, entry.id, field)}
+                        onChange={(value) => {
+                          props.onEdit(entryKey(entry.id, field), value);
+                        }}
+                      />
+                    </span>
+                  )),
               }))}
               onMove={(upgrade, toIndex) => {
                 const target = queued[toIndex];
@@ -588,7 +573,6 @@ export function QueueEditor(props: QueueEditorProps) {
               }}
               onAdd={props.onAppend}
             />
-            <WaveRanges {...parts} />
           </Tile>
           {props.footer === undefined ? null : (
             <div className="tp-shop__footer">{props.footer}</div>

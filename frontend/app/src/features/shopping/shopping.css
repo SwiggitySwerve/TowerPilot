@@ -29,8 +29,7 @@
   min-width: 0;
 }
 .tp-shop__reasons,
-.tp-shop__problems,
-.tp-shop__waves {
+.tp-shop__problems {
   display: flex;
   flex-direction: column;
   gap: var(--tp-space-2);
@@ -38,31 +37,16 @@
   padding: 0;
   list-style: none;
 }
-/* One upgrade's range: its name, then each bound as a label and its box on one line. */
 /* A list that follows a grid or a note sits a step away from it. */
-.tp-shop__reasons,
-.tp-shop__waves {
+.tp-shop__reasons {
   margin-block-start: var(--tp-space-2);
 }
-.tp-shop__wave {
-  display: grid;
-  /* Each box right after the longest bound label, not across the column from it. */
-  grid-template-columns: minmax(0, max-content) auto;
-  justify-content: start;
-  align-items: center;
-  gap: var(--tp-space-1) var(--tp-space-2);
-}
-.tp-shop__wave > strong {
-  grid-column: 1 / -1;
+.tp-shop__queue-field {
+  display: inline-flex;
+  flex-direction: column;
   min-width: 0;
-}
-.tp-shop__wave-field {
-  display: contents;
-  font-size: var(--tp-font-size-13);
-}
-.tp-shop__wave-field > span[aria-hidden='true'] {
   color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-13);
+  font-size: var(--tp-font-size-12);
 }
 .tp-shop__label {
   display: flex;

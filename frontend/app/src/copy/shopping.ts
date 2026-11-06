@@ -38,7 +38,10 @@ export const shopping = {
   },
   unknownChoice: entry('Not a known choice; shown as the server sent it'),
   queue: entry('Queue (priority order)'),
-  queueHint: entry('Leaving an upgrade out keeps its limits and place.'),
+  queueHint: entry(
+    'Leaving an upgrade out keeps its limits and place.',
+    'From and Until limit each upgrade to a wave range. A blank From uses the server default; Until is exclusive, and a blank Until means no last wave.',
+  ),
   emptyQueue: entry('No upgrades in the queue. Include upgrades from the shop pages.'),
   included: entry('Included in queue'),
   added: entry('Added in this draft'),
@@ -50,14 +53,12 @@ export const shopping = {
     'Confirmed single purchases per weighted turn.',
   ),
   fromWave: entry('From wave'),
+  fromWaveShort: entry('From'),
   fromWaveHint: entry('Blank uses the server default.'),
   untilWave: entry('Until wave (exclusive)'),
+  untilWaveShort: entry('Until'),
   untilWaveHint: entry('Blank means no last wave.'),
   waves: entry('Waves and weight'),
-  waveRanges: entry('Wave ranges'),
-  waveRangesHint: entry(
-    'Blank from wave uses the server default; blank until wave means no last wave.',
-  ),
   unlimited: entry('∞'),
   times: entry('×'),
   problemLine: (item: CopyText, field: CopyText, problem: CopyText) =>

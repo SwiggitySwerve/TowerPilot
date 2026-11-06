@@ -134,10 +134,6 @@ async function edit(page: Page) {
   await editor.getByRole('button', { name: /Move up.*Health/ }).click();
   await showShopPage(editor, 'defense');
   await editor.getByRole('spinbutton', { name: 'Weight: Health', exact: true }).fill('3');
-  // Wave ranges open by themselves once a queue has entries; make sure they are open.
-  await editor.locator('details:not(:has(details)):has(.tp-shop__waves)').evaluate((element) => {
-    if (element instanceof HTMLDetailsElement) element.open = true;
-  });
   await editor
     .getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true })
     .fill('20');
