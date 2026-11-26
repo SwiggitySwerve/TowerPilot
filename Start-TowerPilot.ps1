@@ -16,6 +16,21 @@ if (-not (Test-Path -LiteralPath $stamp) -or (Get-Content -LiteralPath $stamp -R
     Set-Content -LiteralPath $stamp -Value $hash
 }
 $port = if ($env:TOWER_PILOT_PORT) { $env:TOWER_PILOT_PORT } else { '8620' }
-Write-Host "Starting Tower Pilot on http://127.0.0.1:$port/"
-Start-Process "http://127.0.0.1:$port/"
-& $python -u (Join-Path $PSScriptRoot 'app.py') --port $port
+Write-Host "Starting Tower Pilot in the system tray (http://127.0.0.1:$port/)..."
+$trayArgs = @('-u', '-m', 'towerpilot.tray', '--port', $port)
+if ($args.Count -gt 0) {
+    $trayArgs += $args
+}
+$escapedArgs = ($trayArgs | ForEach-Object {
+    if ($_ -match '\s|"') { '"' + ($_ -replace '"', '\"') + '"' } else { $_ }
+}) -join ' '
+$start = New-Object System.Diagnostics.ProcessStartInfo
+$start.FileName = $python
+$start.Arguments = $escapedArgs
+$start.WorkingDirectory = $PSScriptRoot
+$start.UseShellExecute = $false
+$start.CreateNoWindow = $true
+$start.EnvironmentVariables['TOWER_PILOT_WINDOWLESS'] = '1'
+$start.EnvironmentVariables['TOWER_PILOT_PORT'] = $port
+$process = [System.Diagnostics.Process]::Start($start)
+$process.Dispose()

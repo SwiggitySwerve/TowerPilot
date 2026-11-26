@@ -1,46 +1,57 @@
 # Tower Pilot
 
 Minimal emulator stream viewer and gem collector for **The Tower** (Android emulator on Windows).
-Built as a clean, zero-bloat foundation to rebuild from the ground up.
+Built as a clean, zero-bloat foundation.
 
 ## What it does
 
 - **Live emulator stream** (`/api/stream.mjpg`): fast MuMu native DLL capture (isolated helper process) with automatic fallback to socket-only ADB raw screencap.
-- **Ad Gems (left HUD)**: selectable **OCR** (Windows built-in WinRT OCR scanning the left HUD rail for `CLAIM`), **Timer**, **OCR + Timer**, or **Off**, with configurable human-like delay and cooldown.
-- **Floating / Orbiting Gems**: selectable **Vision** (zero-template pink-square + HUD diamond glyph detector), **Timer** (safe top-left orbit arc burst), **Vision + Timer**, or **Off**.
-- **Battle-only safety guard**: checks foreground window (`com.TechTreeGames.TheTower` in front via ADB socket `dumpsys window windows`) and undimmed battle HUD (side-menu toggle visible), and excludes the ability row and open side menu. Never starts, navigates, or ends a run.
+- **Gem harvesting ON/OFF** with individual toggles for **Ad Gems** and **Floating Gems**.
+- **One mode switch — OCR vs Timer**:
+  - **OCR** (`"ocr"`): scans the left HUD rail for `CLAIM` via Windows built-in WinRT OCR for Ad Gems, and uses the zero-template vision detector for Floating Gems.
+  - **Timer** (`"timer"`): taps each enabled gem type periodically using its configured `timer_interval_sec`.
+- **Battle-only safety guard**: every tap verifies a fresh ADB screencap showing an undimmed battle HUD (`detectors.menu_toggle_visible`), unobstructed `com.TechTreeGames.TheTower` foreground window (`adb.foreground_blocker`), and excludes the ability row and open side menu. Never starts, navigates, or ends a run.
+- **Persistent Windows tray app**: runs windowlessly in the notification area (`towerpilot/tray.py`) so harvesting keeps running when you close the browser tab.
 - **Single-page dashboard** (`towerpilot/static/index.html`): vanilla HTML/CSS/JS served directly by Flask — no Node.js, npm, React, or Vite build step.
 
 ## Quick start
 
+Double-click `Start Tower Pilot.cmd` or run:
+
 ```powershell
-# Optional custom port (default 8620)
-$env:TOWER_PILOT_PORT = "8620"
 .\Start-TowerPilot.ps1
 ```
 
-Or run directly with your existing `.venv`:
+Or run the Flask server directly in the foreground:
 
 ```powershell
 .\.venv\Scripts\python.exe app.py --port 8620
 ```
 
-Open `http://127.0.0.1:8620/`. On first launch, `config.yaml` (git-ignored) is created from defaults (and automatically copies your ADB serial / MuMu path if a legacy `backend/config.yaml` exists locally).
+Open `http://127.0.0.1:8620/`. On first launch, `config.yaml` (git-ignored) is created from defaults (and automatically seeds ADB serial, ADB path, MuMu directory, and screen size if a legacy `backend/config.yaml` exists locally).
+
+## API
+
+- `GET /` — serves `towerpilot/static/index.html`
+- `GET /api/stream.mjpg` — live MJPEG stream from `FrameSource`
+- `GET /api/status` — current harvesting state, mode, per-gem status/counts/timers, stream status, battle guard state, and recent activity
+- `POST /api/harvest` — partial update of `running`, `mode`, `ad_gems` (`enabled`, `timer_interval_sec`), and `floating_gems` (`enabled`, `timer_interval_sec`); persists to `config.yaml` and returns updated status
 
 ## Layout
 
 | Path | Role |
 |---|---|
-| `app.py` | Flask server, MJPEG stream, JSON API |
-| `towerpilot/config.py` | YAML config defaults, validation, atomic save |
+| `app.py` | Minimal Flask server, MJPEG stream, `/api/status`, `/api/harvest` |
+| `towerpilot/tray.py` | Windowless Windows system-tray launcher hosting `app.create_app()` |
+| `towerpilot/config.py` | Minimal YAML config defaults, validation, legacy seeding, atomic save |
 | `towerpilot/adb.py` | Socket-only ADB client (`127.0.0.1:5037`), MuMu display discovery, foreground window check |
 | `towerpilot/capture.py` | Unified `FrameSource` (MuMu native stream + ADB raw screencap fallback) |
 | `towerpilot/mumu_worker.py` | Isolated MuMu renderer DLL helper subprocess |
-| `towerpilot/input.py` | Human-like ADB socket tapper (jitter, press duration, rate cap, `allow_taps`, `dry_run`) |
+| `towerpilot/input.py` | Human-like ADB socket tapper (jitter, press duration, rate cap) |
 | `towerpilot/ocr.py` + `winocr.ps1` | Persistent hidden Windows WinRT OCR reader |
 | `towerpilot/detectors.py` | Zero-template battle HUD guard, Ad Gem OCR detector, Floating Gem vision detector |
-| `towerpilot/collector.py` | Background `GemCollector` loop (OCR/vision + timers + safety guard + event log) |
-| `towerpilot/static/index.html` | Single-file dashboard UI with SVG detection overlays and click-to-pick coordinates |
+| `towerpilot/collector.py` | Background `GemCollector` loop (OCR/vision vs timer + safety guard) |
+| `towerpilot/static/index.html` | Minimal single-file dark dashboard UI |
 | `tests/` | Offline unit and route tests (`python -m pytest`) |
 
 ## Verification

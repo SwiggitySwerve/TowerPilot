@@ -1,4 +1,4 @@
-"""Unit tests for socket ADB helpers, raw screencap decoding, and config loading."""
+"""Unit tests for socket ADB helpers, raw screencap decoding, and minimal config loading."""
 from __future__ import annotations
 
 import struct
@@ -57,19 +57,52 @@ def test_decode_raw_screencap_with_warning_prefix():
     assert tuple(int(v) for v in bgr[0, 0]) == (30, 20, 10)
 
 
-def test_config_roundtrip_and_legacy_seeding(tmp_path: Path):
+def test_config_roundtrip_legacy_seeding_and_validation(tmp_path: Path):
     legacy = tmp_path / "legacy.yaml"
     legacy.write_text(
-        "adb:\n  exe: 'C:\\\\MuMu\\\\nx_main\\\\adb.exe'\n"
+        "adb:\n  exe: 'C:\\MuMu\\nx_main\\adb.exe'\n"
+        "screen:\n  width: 720\n  height: 1600\n"
         "active_instance: main\n"
-        "instances:\n  main:\n    serial: '127.0.0.1:16416'\n    allow_taps: true\n",
+        "instances:\n"
+        "  main:\n"
+        "    serial: '127.0.0.1:16416'\n"
+        "    allow_taps: true\n"
+        "    preview:\n"
+        "      mumu:\n"
+        "        install_dir: 'C:\\MuMu'\n"
+        "        index: 1\n",
         encoding="utf-8",
     )
     cfg_path = tmp_path / "config.yaml"
     loaded = config.load_config(cfg_path, legacy_path=legacy)
-    assert loaded["adb"]["serial"] == "127.0.0.1:16416"
-    assert loaded["safety"]["allow_taps"] is True
+    assert loaded["mode"] == "ocr"
+    assert loaded["ad_gems"] == {"enabled": True, "timer_interval_sec": 900.0}
+    assert loaded["floating_gems"] == {"enabled": True, "timer_interval_sec": 300.0}
+    assert loaded["safety"] == {"battle_only": True}
+    assert loaded["adb"] == {"serial": "127.0.0.1:16416", "exe": "C:\\MuMu\\nx_main\\adb.exe"}
+    assert loaded["stream"]["mumu_install_dir"] == "C:\\MuMu"
+    assert loaded["stream"]["mumu_index"] == 1
+    assert loaded["screen"] == {"width": 720, "height": 1600}
+    assert "allow_taps" not in loaded["safety"]
     assert cfg_path.is_file()
 
+    # Stale/bloated keys from older config.yaml are stripped cleanly on load
+    cfg_path.write_text(
+        "mode: timer\n"
+        "safety:\n  allow_taps: false\n  dry_run: true\n  battle_only: true\n"
+        "ad_gems:\n  mode: both\n  enabled: false\n  timer_interval_sec: 120\n",
+        encoding="utf-8",
+    )
+    cleaned = config.load_config(cfg_path)
+    assert cleaned["mode"] == "timer"
+    assert cleaned["ad_gems"] == {"enabled": False, "timer_interval_sec": 120.0}
+    assert cleaned["safety"] == {"battle_only": True}
+
     with pytest.raises(ValueError):
-        config.validate_config({"ad_gems": {"mode": "invalid"}})
+        config.validate_config({"mode": "both"})
+    with pytest.raises(ValueError):
+        config.validate_config({"ad_gems": {"enabled": "yes"}})
+    with pytest.raises(ValueError):
+        config.validate_config({"ad_gems": {"timer_interval_sec": 2}})
+    with pytest.raises(ValueError):
+        config.validate_config({"floating_gems": {"timer_interval_sec": True}})

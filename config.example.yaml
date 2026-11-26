@@ -1,4 +1,13 @@
 # Copy to config.yaml (git-ignored) or let Tower Pilot generate it on first start.
+mode: "ocr"                 # ocr | timer
+ad_gems:
+  enabled: true
+  timer_interval_sec: 900.0
+floating_gems:
+  enabled: true
+  timer_interval_sec: 300.0
+safety:
+  battle_only: true
 adb:
   serial: "127.0.0.1:16384"
   exe: ""
@@ -11,30 +20,3 @@ stream:
 screen:
   width: 1080
   height: 2560
-safety:
-  allow_taps: false
-  dry_run: false
-  battle_only: true
-  jitter_px: 5
-  press_ms: [65, 130]
-  max_taps_per_sec: 3.0
-ad_gems:
-  mode: "both"              # off | detect | timer | both
-  scan_interval_sec: 2.0
-  timer_interval_sec: 900.0
-  delay_sec: [2.0, 6.0]
-  cooldown_sec: 60.0
-  tap_point: [120, 680]
-  search_roi: [0, 200, 320, 2200]
-floating_gems:
-  mode: "both"              # off | detect | timer | both
-  scan_interval_sec: 1.5
-  timer_interval_sec: 300.0
-  cooldown_sec: 45.0
-  taps_per_burst: 3
-  orbit_center: [510, 805]
-  orbit_radius: 170.0
-  orbit_angle_deg: 135.0
-  orbit_spread_deg: 6.0
-  orbit_jitter: 0.03
-  tap_detected_directly: true
