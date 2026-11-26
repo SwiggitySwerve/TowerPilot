@@ -1,0 +1,1162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tower Pilot — Gem Collector</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --surface: #121826;
+      --surface-2: #182133;
+      --border: #243047;
+      --border-strong: #324363;
+      --text: #e6edf7;
+      --muted: #8b9bb4;
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.14);
+      --pink: #f472b6;
+      --pink-dim: rgba(244, 114, 182, 0.15);
+      --green: #34d399;
+      --green-dim: rgba(52, 211, 153, 0.15);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251, 191, 36, 0.15);
+      --red: #f87171;
+      --red-dim: rgba(248, 113, 113, 0.15);
+      --radius: 12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.4;
+      min-height: 100vh;
+    }
+    button, input, select {
+      font: inherit;
+      color: inherit;
+    }
+    /* Header */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 18px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 3px rgba(139, 155, 180, 0.2);
+    }
+    .brand-dot.live { background: var(--green); box-shadow: 0 0 10px var(--green); }
+    .brand-dot.warn { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+    .brand-dot.err { background: var(--red); box-shadow: 0 0 10px var(--red); }
+    .brand h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .version {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 999px;
+    }
+    .status-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--muted);
+    }
+    .pill.green { color: var(--green); border-color: rgba(52, 211, 153, 0.35); background: var(--green-dim); }
+    .pill.amber { color: var(--amber); border-color: rgba(251, 191, 36, 0.35); background: var(--amber-dim); }
+    .pill.red { color: var(--red); border-color: rgba(248, 113, 113, 0.35); background: var(--red-dim); }
+    .pill.cyan { color: var(--cyan); border-color: rgba(34, 211, 238, 0.35); background: var(--cyan-dim); }
+    .master-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    /* Buttons & toggles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, transform 0.06s;
+    }
+    .btn:hover { background: #212e47; border-color: #465d88; }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: #0e7490; border-color: #22d3ee; color: #ecfeff; }
+    .btn.primary:hover { background: #155e75; }
+    .btn.danger { background: #7f1d1d; border-color: #f87171; color: #fef2f2; }
+    .btn.danger:hover { background: #991b1b; }
+    .btn.small { padding: 4px 9px; font-size: 12px; border-radius: 6px; }
+    .btn.active { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+    .switch-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .switch-label input { accent-color: var(--green); width: 15px; height: 15px; cursor: pointer; }
+    .switch-label.armed { color: var(--green); border-color: rgba(52, 211, 153, 0.4); background: var(--green-dim); }
+    .switch-label.dry { color: var(--amber); border-color: rgba(251, 191, 36, 0.4); background: var(--amber-dim); }
+
+    /* Main workspace */
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+      gap: 16px;
+      padding: 16px 18px 24px;
+      max-width: 1560px;
+      margin: 0 auto;
+      align-items: start;
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* Stream column */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-body { padding: 14px; }
+
+    .stream-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1080 / 2560;
+      max-height: calc(100vh - 175px);
+      margin: 0 auto;
+      background: #05070c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .stream-stage.picking { cursor: crosshair; }
+    .stream-wrap {
+      position: relative;
+      height: 100%;
+      max-width: 100%;
+      aspect-ratio: 1080 / 2560;
+    }
+    #streamImg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    #overlaySvg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .pick-banner {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      padding: 7px 10px;
+      background: rgba(14, 116, 144, 0.92);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+      z-index: 5;
+    }
+    .pick-banner.show { display: block; }
+    .stream-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .stream-toolbar .group { display: flex; align-items: center; gap: 6px; }
+    select, input[type="number"], input[type="text"] {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 12px;
+      color: var(--text);
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--cyan);
+    }
+
+    /* Right column */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 0;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 640px) {
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+    .kpi-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: var(--mono);
+      margin-top: 2px;
+    }
+    .kpi.cyan .kpi-value { color: var(--cyan); }
+    .kpi.pink .kpi-value { color: var(--pink); }
+    .kpi.green .kpi-value { color: var(--green); }
+    .kpi.amber .kpi-value { color: var(--amber); }
+
+    .routines-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 1180px) {
+      .routines-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Segmented mode picker */
+    .seg {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+      margin-bottom: 12px;
+    }
+    .seg button {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 4px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .seg button.active.cyan { background: var(--cyan-dim); color: var(--cyan); }
+    .seg button.active.pink { background: var(--pink-dim); color: var(--pink); }
+    .seg button.active.off { background: var(--surface-2); color: var(--text); }
+
+    .status-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px 10px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .field-row { display: flex; gap: 6px; align-items: center; }
+    .field-row input { width: 100%; min-width: 0; }
+    .card-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    /* Collapsible connection card */
+    details.card summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, 0.015);
+    }
+    details.card summary::-webkit-details-marker { display: none; }
+    details.card[open] summary { border-bottom: 1px solid var(--border); }
+
+    /* Event log */
+    .log-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+    .log-list {
+      max-height: 260px;
+      overflow-y: auto;
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 6px 0;
+    }
+    .log-row {
+      display: grid;
+      grid-template-columns: 68px 66px minmax(0, 1fr);
+      gap: 8px;
+      padding: 4px 14px;
+      border-bottom: 1px solid rgba(36, 48, 71, 0.45);
+      align-items: baseline;
+    }
+    .log-row:last-child { border-bottom: none; }
+    .log-ts { color: var(--muted); }
+    .log-cat { font-weight: 700; text-transform: uppercase; font-size: 10px; }
+    .log-cat.collect { color: var(--green); }
+    .log-cat.detect { color: var(--cyan); }
+    .log-cat.guard { color: var(--amber); }
+    .log-cat.error { color: var(--red); }
+    .log-cat.system { color: var(--muted); }
+    .log-msg { color: var(--text); word-break: break-word; }
+    .log-empty { padding: 18px; text-align: center; color: var(--muted); }
+    .toast {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      padding: 9px 14px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--cyan);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 50;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span id="liveDot" class="brand-dot"></span>
+      <h1>Tower Pilot</h1>
+      <span id="versionTag" class="version">v2</span>
+    </div>
+
+    <div class="status-pills">
+      <span id="streamPill" class="pill">Stream: --</span>
+      <span id="battlePill" class="pill">Battle: --</span>
+      <span id="wavePill" class="pill" style="display:none;">Wave --</span>
+    </div>
+
+    <div class="master-controls">
+      <label id="allowTapsWrap" class="switch-label" title="Master switch allowing taps to be sent over ADB">
+        <input id="allowTapsToggle" type="checkbox" />
+        <span>Allow Taps</span>
+      </label>
+      <label id="dryRunWrap" class="switch-label" title="Log taps without dispatching them to the emulator">
+        <input id="dryRunToggle" type="checkbox" />
+        <span>Dry Run</span>
+      </label>
+      <button id="toggleCollectorBtn" class="btn primary">Start Collector</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Left: Emulator live stream -->
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title">
+          <span class="dot" style="background: var(--cyan);"></span>
+          Emulator Stream
+        </span>
+        <span id="streamMeta" style="font-family:var(--mono);font-size:11px;color:var(--muted);">1080×2560</span>
+      </div>
+
+      <div id="streamStage" class="stream-stage">
+        <div id="pickBanner" class="pick-banner">Click anywhere on the stream to set coordinate (Esc to cancel)</div>
+        <div class="stream-wrap" id="streamWrap">
+          <img id="streamImg" src="/api/stream.mjpg" alt="Emulator live stream" />
+          <svg id="overlaySvg" viewBox="0 0 1080 2560" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+      </div>
+
+      <div class="stream-toolbar">
+        <div class="group">
+          <button id="pauseStreamBtn" class="btn small">Pause</button>
+          <button id="overlayToggleBtn" class="btn small active">Overlays</button>
+          <a class="btn small" href="/api/snapshot.jpg" target="_blank" style="text-decoration:none;">Snap</a>
+        </div>
+        <div class="group">
+          <select id="backendSelect" title="Capture backend">
+            <option value="auto">Auto</option>
+            <option value="mumu">MuMu</option>
+            <option value="adb">ADB</option>
+          </select>
+          <select id="fpsSelect" title="Target stream FPS">
+            <option value="2">2 fps</option>
+            <option value="5">5 fps</option>
+            <option value="10">10 fps</option>
+            <option value="15">15 fps</option>
+            <option value="30">30 fps</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Gem collector controls + logs -->
+    <div class="right-col">
+      <section class="kpi-grid">
+        <div class="kpi cyan">
+          <div class="kpi-label">Ad Gems</div>
+          <div id="kpiAd" class="kpi-value">0</div>
+        </div>
+        <div class="kpi pink">
+          <div class="kpi-label">Floating Gems</div>
+          <div id="kpiFloating" class="kpi-value">0</div>
+        </div>
+        <div class="kpi green">
+          <div class="kpi-label">Taps Sent</div>
+          <div id="kpiTaps" class="kpi-value">0</div>
+        </div>
+        <div class="kpi amber">
+          <div class="kpi-label">Guarded Skips</div>
+          <div id="kpiSkips" class="kpi-value">0</div>
+        </div>
+      </section>
+
+      <section class="routines-grid">
+        <!-- Ad Gems card -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <span class="dot" style="background: var(--cyan);"></span>
+              Ad Gems (Left HUD)
+            </span>
+            <button id="tapAdNowBtn" class="btn small">Tap Now</button>
+          </div>
+          <div class="card-body">
+            <div class="seg" id="adModeSeg">
+              <button data-mode="off">Off</button>
+              <button data-mode="detect">OCR</button>
+              <button data-mode="timer">Timer</button>
+              <button data-mode="both">OCR + Timer</button>
+            </div>
+            <div class="status-strip">
+              <span id="adStatusText">idle</span>
+              <span id="adTimerText" style="color:var(--cyan);">--</span>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>OCR Scan Every (s)</label>
+                <input id="adScanSec" type="number" step="0.5" min="0.5" max="300" />
+              </div>
+              <div class="field">
+                <label>Timer Interval (s)</label>
+                <input id="adTimerSec" type="number" step="10" min="10" max="86400" />
+              </div>
+              <div class="field">
+                <label>Human Delay Min / Max (s)</label>
+                <div class="field-row">
+                  <input id="adDelayMin" type="number" step="0.5" min="0" max="60" />
+                  <input id="adDelayMax" type="number" step="0.5" min="0" max="60" />
+                </div>
+              </div>
+              <div class="field">
+                <label>Cooldown After Tap (s)</label>
+                <input id="adCooldownSec" type="number" step="5" min="1" max="3600" />
+              </div>
+              <div class="field full">
+                <label>Timer / Fallback Tap Point (X, Y)</label>
+                <div class="field-row">
+                  <input id="adTapX" type="number" min="0" max="8192" />
+                  <input id="adTapY" type="number" min="0" max="8192" />
+                  <button id="pickAdPointBtn" class="btn small" type="button">Pick</button>
+                </div>
+              </div>
+            </div>
+            <div class="card-actions">
+              <span id="adLastOcr" style="font-size:11px;font-family:var(--mono);color:var(--muted);">Last OCR: --</span>
+              <button id="saveAdBtn" class="btn small primary">Save Ad Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Gems card -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <span class="dot" style="background: var(--pink);"></span>
+              Floating Gems (Orbit)
+            </span>
+            <button id="tapFloatingNowBtn" class="btn small">Tap Now</button>
+          </div>
+          <div class="card-body">
+            <div class="seg" id="fgModeSeg">
+              <button data-mode="off">Off</button>
+              <button data-mode="detect">Vision</button>
+              <button data-mode="timer">Timer</button>
+              <button data-mode="both">Vision + Timer</button>
+            </div>
+            <div class="status-strip">
+              <span id="fgStatusText">idle</span>
+              <span id="fgTimerText" style="color:var(--pink);">--</span>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Vision Scan Every (s)</label>
+                <input id="fgScanSec" type="number" step="0.5" min="0.5" max="300" />
+              </div>
+              <div class="field">
+                <label>Timer Interval (s)</label>
+                <input id="fgTimerSec" type="number" step="10" min="10" max="86400" />
+              </div>
+              <div class="field">
+                <label>Cooldown (s)</label>
+                <input id="fgCooldownSec" type="number" step="5" min="1" max="3600" />
+              </div>
+              <div class="field">
+                <label>Taps per Burst</label>
+                <input id="fgTaps" type="number" step="1" min="1" max="8" />
+              </div>
+              <div class="field">
+                <label>Orbit Center (X, Y)</label>
+                <div class="field-row">
+                  <input id="fgCenterX" type="number" min="0" max="8192" />
+                  <input id="fgCenterY" type="number" min="0" max="8192" />
+                  <button id="pickCenterBtn" class="btn small" type="button">Pick</button>
+                </div>
+              </div>
+              <div class="field">
+                <label>Radius (px) / Angle (°)</label>
+                <div class="field-row">
+                  <input id="fgRadius" type="number" step="5" min="20" max="1000" />
+                  <input id="fgAngle" type="number" step="5" min="0" max="359" />
+                </div>
+              </div>
+            </div>
+            <div class="card-actions">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;">
+                <input id="fgTapDirect" type="checkbox" style="accent-color:var(--pink);" />
+                Tap spotted gem directly
+              </label>
+              <button id="saveFgBtn" class="btn small primary">Save Floating Settings</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Connection & Safety -->
+      <details class="card">
+        <summary>
+          <span class="card-title">
+            <span class="dot" style="background: var(--muted);"></span>
+            Connection &amp; Safety Settings
+          </span>
+          <span id="serialSummary" style="font-family:var(--mono);font-size:12px;color:var(--muted);">--</span>
+        </summary>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field">
+              <label>ADB Serial</label>
+              <div class="field-row">
+                <input id="adbSerial" type="text" placeholder="127.0.0.1:16384" />
+                <button id="scanAdbBtn" class="btn small" type="button">Scan</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>MuMu Install Folder (optional)</label>
+              <input id="mumuDir" type="text" placeholder="Auto-detected" />
+            </div>
+            <div class="field">
+              <label>Tap Jitter (px) / Max Taps/sec</label>
+              <div class="field-row">
+                <input id="jitterPx" type="number" min="0" max="40" />
+                <input id="maxRate" type="number" step="0.5" min="0.2" max="10" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Safety Guard</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);padding-top:4px;cursor:pointer;">
+                <input id="battleOnlyToggle" type="checkbox" style="accent-color:var(--green);" />
+                Battle-only guard (foreground game + undimmed HUD)
+              </label>
+            </div>
+          </div>
+          <div id="adbDevicesOut" style="margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--muted);"></div>
+          <div class="card-actions">
+            <span style="font-size:11px;color:var(--muted);">Saved to local git-ignored config.yaml</span>
+            <button id="saveConnBtn" class="btn small primary">Save Connection &amp; Safety</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- Activity Log -->
+      <section class="card">
+        <div class="card-header">
+          <span class="card-title">
+            <span class="dot" style="background: var(--green);"></span>
+            Activity Log
+          </span>
+          <div class="log-filters" id="logFilters">
+            <button class="btn small active" data-cat="all">All</button>
+            <button class="btn small" data-cat="collect">Collect</button>
+            <button class="btn small" data-cat="detect">Detect</button>
+            <button class="btn small" data-cat="guard">Guard</button>
+            <button class="btn small" data-cat="error">Error</button>
+            <button id="clearLogBtn" class="btn small">Clear</button>
+          </div>
+        </div>
+        <div id="logList" class="log-list">
+          <div class="log-empty">No events yet.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast">Saved</div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    let state = {
+      config: null,
+      collector: null,
+      hydrated: false,
+      streamPaused: false,
+      showOverlays: true,
+      logFilter: "all",
+      pickTarget: null, // "ad" | "center" | null
+    };
+
+    function toast(msg) {
+      const el = $("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 2000);
+    }
+
+    async function api(url, opts = {}) {
+      const res = await fetch(url, {
+        headers: { "Content-Type": "application/json" },
+        ...opts,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    }
+
+    async function saveConfigPatch(patch, label = "Saved") {
+      try {
+        const saved = await api("/api/config", { method: "POST", body: JSON.stringify(patch) });
+        state.config = saved;
+        hydrateInputs(saved);
+        toast(label);
+        await pollStatus();
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    function fmtSec(sec) {
+      if (sec === null || sec === undefined) return "--";
+      const s = Math.max(0, Math.round(sec));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return m > 0 ? `${m}m ${String(r).padStart(2, "0")}s` : `${r}s`;
+    }
+
+    function fmtTime(ts) {
+      const d = new Date(ts * 1000);
+      return d.toTimeString().slice(0, 8);
+    }
+
+    function hydrateInputs(cfg) {
+      if (!cfg) return;
+      $("allowTapsToggle").checked = cfg.safety.allow_taps;
+      $("allowTapsWrap").className = "switch-label" + (cfg.safety.allow_taps ? " armed" : "");
+      $("dryRunToggle").checked = cfg.safety.dry_run;
+      $("dryRunWrap").className = "switch-label" + (cfg.safety.dry_run ? " dry" : "");
+
+      $("backendSelect").value = cfg.stream.backend;
+      const fpsVal = String(Math.round(cfg.stream.fps));
+      if ([...$("fpsSelect").options].some((o) => o.value === fpsVal)) {
+        $("fpsSelect").value = fpsVal;
+      }
+
+      // Ad gems
+      [...$("adModeSeg").querySelectorAll("button")].forEach((b) => {
+        const active = b.dataset.mode === cfg.ad_gems.mode;
+        b.className = active ? (cfg.ad_gems.mode === "off" ? "active off" : "active cyan") : "";
+      });
+      $("adScanSec").value = cfg.ad_gems.scan_interval_sec;
+      $("adTimerSec").value = cfg.ad_gems.timer_interval_sec;
+      $("adDelayMin").value = cfg.ad_gems.delay_sec[0];
+      $("adDelayMax").value = cfg.ad_gems.delay_sec[1];
+      $("adCooldownSec").value = cfg.ad_gems.cooldown_sec;
+      $("adTapX").value = cfg.ad_gems.tap_point[0];
+      $("adTapY").value = cfg.ad_gems.tap_point[1];
+
+      // Floating gems
+      [...$("fgModeSeg").querySelectorAll("button")].forEach((b) => {
+        const active = b.dataset.mode === cfg.floating_gems.mode;
+        b.className = active ? (cfg.floating_gems.mode === "off" ? "active off" : "active pink") : "";
+      });
+      $("fgScanSec").value = cfg.floating_gems.scan_interval_sec;
+      $("fgTimerSec").value = cfg.floating_gems.timer_interval_sec;
+      $("fgCooldownSec").value = cfg.floating_gems.cooldown_sec;
+      $("fgTaps").value = cfg.floating_gems.taps_per_burst;
+      $("fgCenterX").value = cfg.floating_gems.orbit_center[0];
+      $("fgCenterY").value = cfg.floating_gems.orbit_center[1];
+      $("fgRadius").value = cfg.floating_gems.orbit_radius;
+      $("fgAngle").value = cfg.floating_gems.orbit_angle_deg;
+      $("fgTapDirect").checked = cfg.floating_gems.tap_detected_directly;
+
+      // Connection
+      $("adbSerial").value = cfg.adb.serial;
+      $("mumuDir").value = cfg.stream.mumu_install_dir;
+      $("jitterPx").value = cfg.safety.jitter_px;
+      $("maxRate").value = cfg.safety.max_taps_per_sec;
+      $("battleOnlyToggle").checked = cfg.safety.battle_only;
+      $("serialSummary").textContent = cfg.adb.serial || "unconfigured";
+    }
+
+    function renderOverlays(ov, battleLive) {
+      const svg = $("overlaySvg");
+      if (!state.showOverlays || !ov) {
+        svg.innerHTML = "";
+        return;
+      }
+      const [fw, fh] = ov.frame_size || [1080, 2560];
+      svg.setAttribute("viewBox", `0 0 ${fw} ${fh}`);
+      const parts = [];
+
+      // Ad Gem OCR search rail
+      if (ov.ad_rail) {
+        const [x, y, w, h] = ov.ad_rail;
+        parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="rgba(34,211,238,0.35)" stroke-width="4" stroke-dasharray="14 10" />`);
+      }
+      // Configured Ad tap crosshair
+      if (ov.ad_tap) {
+        const [x, y] = ov.ad_tap;
+        parts.push(`<circle cx="${x}" cy="${y}" r="18" fill="rgba(34,211,238,0.18)" stroke="#22d3ee" stroke-width="4" />`);
+        parts.push(`<line x1="${x - 26}" y1="${y}" x2="${x + 26}" y2="${y}" stroke="#22d3ee" stroke-width="3" />`);
+        parts.push(`<line x1="${x}" y1="${y - 26}" x2="${x}" y2="${y + 26}" stroke="#22d3ee" stroke-width="3" />`);
+      }
+      // Detected Ad Gem CLAIM box
+      if (ov.ad_hit) {
+        const [x, y, w, h] = ov.ad_hit;
+        parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(34,211,238,0.22)" stroke="#22d3ee" stroke-width="6" rx="8" />`);
+      }
+      // Orbit tap arc points
+      if (ov.orbit_points) {
+        ov.orbit_points.forEach(([x, y]) => {
+          parts.push(`<circle cx="${x}" cy="${y}" r="14" fill="rgba(244,114,182,0.24)" stroke="#f472b6" stroke-width="4" />`);
+        });
+      }
+      // Spotted floating gem
+      if (ov.floating_hit) {
+        const [x, y, w, h] = ov.floating_hit;
+        parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(244,114,182,0.25)" stroke="#f472b6" stroke-width="6" rx="8" />`);
+      }
+      // Ability row safety exclusion
+      if (ov.ability_row) {
+        const [x, y, w, h] = ov.ability_row;
+        parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(248,113,113,0.10)" stroke="rgba(248,113,113,0.55)" stroke-width="3" stroke-dasharray="10 8" />`);
+      }
+      // Side menu toggle HUD guard box
+      if (ov.menu_toggle) {
+        const [x, y, w, h] = ov.menu_toggle;
+        const color = battleLive ? "#34d399" : "#fbbf24";
+        parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${color}" stroke-width="4" rx="8" />`);
+      }
+      svg.innerHTML = parts.join("");
+    }
+
+    function renderLogs(events) {
+      const list = $("logList");
+      const filtered = (events || []).filter((e) => state.logFilter === "all" || e.category === state.logFilter);
+      if (!filtered.length) {
+        list.innerHTML = `<div class="log-empty">No matching events.</div>`;
+        return;
+      }
+      list.innerHTML = filtered.map((e) => {
+        const detailStr = e.details && Object.keys(e.details).length
+          ? " " + Object.entries(e.details).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(" ")
+          : "";
+        return `<div class="log-row">
+          <span class="log-ts">${fmtTime(e.ts)}</span>
+          <span class="log-cat ${e.category}">${e.category}</span>
+          <span class="log-msg">${escapeHtml(e.message)}<span style="color:var(--muted)">${escapeHtml(detailStr)}</span></span>
+        </div>`;
+      }).join("");
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function renderStatus(data) {
+      state.collector = data.collector;
+      state.config = data.config;
+      $("versionTag").textContent = "v" + data.version;
+
+      if (!state.hydrated) {
+        hydrateInputs(data.config);
+        state.hydrated = true;
+      } else {
+        // Keep header toggles + mode pills synced
+        $("allowTapsToggle").checked = data.config.safety.allow_taps;
+        $("allowTapsWrap").className = "switch-label" + (data.config.safety.allow_taps ? " armed" : "");
+        $("dryRunToggle").checked = data.config.safety.dry_run;
+        $("dryRunWrap").className = "switch-label" + (data.config.safety.dry_run ? " dry" : "");
+      }
+
+      const c = data.collector;
+      const btn = $("toggleCollectorBtn");
+      btn.textContent = c.running ? "Stop Collector" : "Start Collector";
+      btn.className = c.running ? "btn danger" : "btn primary";
+
+      const dot = $("liveDot");
+      dot.className = "brand-dot" + (c.battle.last_error ? " err" : c.running ? (c.battle.live ? " live" : " warn") : "");
+
+      const sp = $("streamPill");
+      const backend = c.stream.backend || "none";
+      sp.textContent = backend === "none" ? "Stream: idle" : `Stream: ${backend.toUpperCase()} (${c.stream.fps} fps)`;
+      sp.className = "pill" + (backend === "mumu" ? " cyan" : backend === "adb" ? " green" : "");
+      if (c.stream.frame_size) {
+        $("streamMeta").textContent = `${c.stream.frame_size[0]}×${c.stream.frame_size[1]} · ${backend.toUpperCase()}`;
+      }
+
+      const bp = $("battlePill");
+      if (c.battle.last_error) {
+        bp.textContent = "Battle: offline";
+        bp.className = "pill red";
+      } else if (c.battle.live) {
+        bp.textContent = `Battle: LIVE (menu ${c.battle.menu_state})`;
+        bp.className = "pill green";
+      } else if (c.battle.foreground_blocker) {
+        bp.textContent = `Blocked: ${c.battle.foreground_blocker}`;
+        bp.className = "pill amber";
+      } else {
+        bp.textContent = `Waiting (${c.battle.menu_state})`;
+        bp.className = "pill amber";
+      }
+
+      const wp = $("wavePill");
+      if (c.battle.wave !== null && c.battle.wave !== undefined) {
+        wp.style.display = "inline-flex";
+        wp.textContent = `Wave ${c.battle.wave}`;
+        wp.className = "pill cyan";
+      } else {
+        wp.style.display = "none";
+      }
+
+      $("kpiAd").textContent = c.stats.ad_gems;
+      $("kpiFloating").textContent = c.stats.floating_gems;
+      $("kpiTaps").textContent = c.stats.taps + (c.stats.dry_taps ? ` (+${c.stats.dry_taps}d)` : "");
+      $("kpiSkips").textContent = c.stats.skips;
+
+      $("adStatusText").textContent = c.ad_gems.status;
+      $("adTimerText").textContent = c.ad_gems.next_timer_sec !== null ? `timer ${fmtSec(c.ad_gems.next_timer_sec)}` : c.ad_gems.mode;
+      $("adLastOcr").textContent = "Last OCR: " + (c.ad_gems.last_ocr_text || "--");
+
+      $("fgStatusText").textContent = c.floating_gems.status;
+      $("fgTimerText").textContent = c.floating_gems.next_timer_sec !== null ? `timer ${fmtSec(c.floating_gems.next_timer_sec)}` : c.floating_gems.mode;
+
+      renderOverlays(c.overlays, c.battle.live);
+      renderLogs(c.events);
+    }
+
+    async function pollStatus() {
+      try {
+        const data = await api("/api/status");
+        renderStatus(data);
+      } catch (err) {
+        $("liveDot").className = "brand-dot err";
+      }
+    }
+
+    function reconnectStream() {
+      if (state.streamPaused) return;
+      const fps = $("fpsSelect").value;
+      $("streamImg").src = `/api/stream.mjpg?fps=${encodeURIComponent(fps)}&t=${Date.now()}`;
+    }
+
+    // --- Event bindings ---
+    $("toggleCollectorBtn").addEventListener("click", async () => {
+      const url = state.collector && state.collector.running ? "/api/collector/stop" : "/api/collector/start";
+      await api(url, { method: "POST" });
+      await pollStatus();
+    });
+
+    $("allowTapsToggle").addEventListener("change", (e) => {
+      saveConfigPatch({ safety: { allow_taps: e.target.checked } }, e.target.checked ? "Taps ARMED" : "Taps disabled");
+    });
+    $("dryRunToggle").addEventListener("change", (e) => {
+      saveConfigPatch({ safety: { dry_run: e.target.checked } }, e.target.checked ? "Dry Run ON" : "Dry Run OFF");
+    });
+
+    $("pauseStreamBtn").addEventListener("click", () => {
+      state.streamPaused = !state.streamPaused;
+      $("pauseStreamBtn").textContent = state.streamPaused ? "Resume" : "Pause";
+      if (state.streamPaused) {
+        $("streamImg").src = "/api/snapshot.jpg?t=" + Date.now();
+      } else {
+        reconnectStream();
+      }
+    });
+
+    $("overlayToggleBtn").addEventListener("click", () => {
+      state.showOverlays = !state.showOverlays;
+      $("overlayToggleBtn").classList.toggle("active", state.showOverlays);
+      if (state.collector) renderOverlays(state.collector.overlays, state.collector.battle.live);
+    });
+
+    $("backendSelect").addEventListener("change", async (e) => {
+      await saveConfigPatch({ stream: { backend: e.target.value } }, "Backend updated");
+      reconnectStream();
+    });
+
+    $("fpsSelect").addEventListener("change", async (e) => {
+      await saveConfigPatch({ stream: { fps: Number(e.target.value) } }, "FPS updated");
+      reconnectStream();
+    });
+
+    $("adModeSeg").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-mode]");
+      if (!btn) return;
+      saveConfigPatch({ ad_gems: { mode: btn.dataset.mode } }, `Ad Gems: ${btn.dataset.mode}`);
+    });
+
+    $("fgModeSeg").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-mode]");
+      if (!btn) return;
+      saveConfigPatch({ floating_gems: { mode: btn.dataset.mode } }, `Floating Gems: ${btn.dataset.mode}`);
+    });
+
+    $("saveAdBtn").addEventListener("click", () => {
+      saveConfigPatch({
+        ad_gems: {
+          scan_interval_sec: Number($("adScanSec").value),
+          timer_interval_sec: Number($("adTimerSec").value),
+          delay_sec: [Number($("adDelayMin").value), Number($("adDelayMax").value)],
+          cooldown_sec: Number($("adCooldownSec").value),
+          tap_point: [Number($("adTapX").value), Number($("adTapY").value)],
+        },
+      }, "Ad Gem settings saved");
+    });
+
+    $("saveFgBtn").addEventListener("click", () => {
+      saveConfigPatch({
+        floating_gems: {
+          scan_interval_sec: Number($("fgScanSec").value),
+          timer_interval_sec: Number($("fgTimerSec").value),
+          cooldown_sec: Number($("fgCooldownSec").value),
+          taps_per_burst: Number($("fgTaps").value),
+          orbit_center: [Number($("fgCenterX").value), Number($("fgCenterY").value)],
+          orbit_radius: Number($("fgRadius").value),
+          orbit_angle_deg: Number($("fgAngle").value),
+          tap_detected_directly: $("fgTapDirect").checked,
+        },
+      }, "Floating Gem settings saved");
+    });
+
+    $("saveConnBtn").addEventListener("click", async () => {
+      await saveConfigPatch({
+        adb: { serial: $("adbSerial").value.trim() },
+        stream: { mumu_install_dir: $("mumuDir").value.trim() },
+        safety: {
+          jitter_px: Number($("jitterPx").value),
+          max_taps_per_sec: Number($("maxRate").value),
+          battle_only: $("battleOnlyToggle").checked,
+        },
+      }, "Connection & safety saved");
+      reconnectStream();
+    });
+
+    $("tapAdNowBtn").addEventListener("click", async () => {
+      const res = await api("/api/collector/tap/ad", { method: "POST" });
+      toast(`Ad Gem: ${res.status}`);
+      await pollStatus();
+    });
+
+    $("tapFloatingNowBtn").addEventListener("click", async () => {
+      const res = await api("/api/collector/tap/floating", { method: "POST" });
+      toast(`Floating Gem: ${res.status}`);
+      await pollStatus();
+    });
+
+    $("scanAdbBtn").addEventListener("click", async () => {
+      const res = await api("/api/adb/devices");
+      const out = $("adbDevicesOut");
+      if (!res.ok) {
+        out.textContent = "ADB error: " + (res.error || "no server");
+        return;
+      }
+      if (!res.devices.length) {
+        out.textContent = `No online ADB devices found (current ${res.serial}: ${res.state})`;
+        return;
+      }
+      out.innerHTML = "Online devices: " + res.devices.map(
+        (d) => `<button class="btn small" type="button" style="margin-left:6px;" onclick="document.getElementById('adbSerial').value='${d}'">${d}</button>`
+      ).join("");
+    });
+
+    // Coordinate picker on stream
+    function setPickMode(target) {
+      state.pickTarget = target;
+      $("streamStage").classList.toggle("picking", !!target);
+      $("pickBanner").classList.toggle("show", !!target);
+      if (target === "ad") {
+        $("pickBanner").textContent = "Click the Ad Gem button on the stream (Esc to cancel)";
+      } else if (target === "center") {
+        $("pickBanner").textContent = "Click the Tower center on the stream (Esc to cancel)";
+      }
+    }
+    $("pickAdPointBtn").addEventListener("click", () => setPickMode(state.pickTarget === "ad" ? null : "ad"));
+    $("pickCenterBtn").addEventListener("click", () => setPickMode(state.pickTarget === "center" ? null : "center"));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") setPickMode(null); });
+
+    $("streamWrap").addEventListener("click", (e) => {
+      if (!state.pickTarget) return;
+      const rect = $("streamImg").getBoundingClientRect();
+      const [fw, fh] = (state.collector && state.collector.stream.frame_size) || [1080, 2560];
+      const rx = Math.max(0, Math.min(fw - 1, Math.round(((e.clientX - rect.left) / rect.width) * fw)));
+      const ry = Math.max(0, Math.min(fh - 1, Math.round(((e.clientY - rect.top) / rect.height) * fh)));
+      const target = state.pickTarget;
+      setPickMode(null);
+      if (target === "ad") {
+        $("adTapX").value = rx;
+        $("adTapY").value = ry;
+        saveConfigPatch({ ad_gems: { tap_point: [rx, ry] } }, `Ad tap set to (${rx}, ${ry})`);
+      } else if (target === "center") {
+        $("fgCenterX").value = rx;
+        $("fgCenterY").value = ry;
+        saveConfigPatch({ floating_gems: { orbit_center: [rx, ry] } }, `Orbit center set to (${rx}, ${ry})`);
+      }
+    });
+
+    $("logFilters").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-cat]");
+      if (!btn) return;
+      state.logFilter = btn.dataset.cat;
+      [...$("logFilters").querySelectorAll("button[data-cat]")].forEach((b) => b.classList.toggle("active", b === btn));
+      if (state.collector) renderLogs(state.collector.events);
+    });
+
+    $("clearLogBtn").addEventListener("click", async () => {
+      await api("/api/events/clear", { method: "POST" });
+      await pollStatus();
+    });
+
+    // Boot polling
+    pollStatus();
+    setInterval(pollStatus, 1000);
+  </script>
+</body>
+</html>

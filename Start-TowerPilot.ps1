@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
 $python = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
 if (-not (Test-Path -LiteralPath $python)) {
-    Write-Host 'Creating Tower Pilot environment (requires Python 3.12)...'
+    Write-Host 'Creating Tower Pilot virtual environment (Python 3.12)...'
     & py -3.12 -m venv .venv
     if ($LASTEXITCODE -ne 0) { throw 'Install Python 3.12, then run Start Tower Pilot again.' }
 }
@@ -10,22 +10,12 @@ $requirements = Join-Path $PSScriptRoot 'requirements.txt'
 $stamp = Join-Path $PSScriptRoot '.venv\requirements.sha256'
 $hash = (Get-FileHash -LiteralPath $requirements -Algorithm SHA256).Hash
 if (-not (Test-Path -LiteralPath $stamp) -or (Get-Content -LiteralPath $stamp -Raw).Trim() -ne $hash) {
-    Write-Host 'Installing dependencies. First launch requires internet access...'
+    Write-Host 'Installing dependencies...'
     & $python -m pip install -r $requirements
-    if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed. Check the output and retry.' }
+    if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
     Set-Content -LiteralPath $stamp -Value $hash
 }
 $port = if ($env:TOWER_PILOT_PORT) { $env:TOWER_PILOT_PORT } else { '8620' }
-# Create no console at all. WindowStyle Hidden can still register a visible
-# Windows Terminal tab, and a venv's pythonw redirector may run python.exe.
-$launcher = Join-Path $PSScriptRoot 'tools\portable_launcher.py'
-Write-Host "Starting Tower Pilot. Its icon appears in the notification area; the dashboard is http://127.0.0.1:$port/ui/app/#emulators."
-$start = New-Object System.Diagnostics.ProcessStartInfo
-$start.FileName = $python
-$start.Arguments = '-u "' + $launcher + '"'
-$start.WorkingDirectory = $PSScriptRoot
-$start.UseShellExecute = $false
-$start.CreateNoWindow = $true
-$start.EnvironmentVariables['TOWER_PILOT_WINDOWLESS'] = '1'
-$process = [System.Diagnostics.Process]::Start($start)
-$process.Dispose()
+Write-Host "Starting Tower Pilot on http://127.0.0.1:$port/"
+Start-Process "http://127.0.0.1:$port/"
+& $python -u (Join-Path $PSScriptRoot 'app.py') --port $port
