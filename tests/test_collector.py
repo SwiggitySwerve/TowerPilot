@@ -230,3 +230,49 @@ def test_collector_status_matches_minimal_contract():
     st_after = collector.status()
     assert st_after["battle"] == {"live": True, "menu_state": "closed", "blocker": None}
     assert collector.foreground_blocker is None
+
+
+def test_collector_persists_structured_trigger_events_to_jsonl(tmp_path, monkeypatch):
+    import json
+
+    log_file = tmp_path / "events.jsonl"
+    cfg = copy.deepcopy(DEFAULT_CONFIG)
+    cfg["mode"] = "ocr"
+
+    frames = FakeFrames(_battle_frame())
+    ad_hit = detectors.AdGemHit(rect=(40, 620, 180, 100), center=(130, 670), text="CLAIM 6")
+    fg_hit = detectors.FloatingGemHit(rect=(350, 650, 60, 60), center=(380, 680), score=0.91)
+    monkeypatch.setattr(detectors, "detect_ad_gem", lambda *a, **kw: ad_hit)
+    monkeypatch.setattr(detectors, "detect_floating_gem", lambda frame: fg_hit)
+    monkeypatch.setattr(adb, "visible_windows", lambda *a, **kw: [f"{adb.GAME_PKG}/Activity"])
+    monkeypatch.setattr(adb, "shell", lambda serial, cmd, **kw: b"")
+
+    collector = GemCollector(
+        frames,
+        cfg,
+        ad_delay_sec=(0.0, 0.0),
+        max_taps_per_sec=100.0,
+        event_log_path=log_file,
+    )
+    collector.step_once()
+
+    # Transition to obscured HUD and verify battle_waiting is logged once
+    frames.frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    collector.step_once()
+    collector.step_once()
+
+    lines = [json.loads(line) for line in log_file.read_text(encoding="utf-8").splitlines()]
+    events = [row["event"] for row in lines]
+    assert events == [
+        "battle_live",
+        "ad_gem_spotted",
+        "ad_gem_collected",
+        "floating_gem_spotted",
+        "floating_gem_collected",
+        "battle_waiting",
+    ]
+    ad_collected = next(row for row in lines if row["event"] == "ad_gem_collected")
+    assert ad_collected["trigger"] == "ocr"
+    assert ad_collected["count"] == 1
+    assert "iso" in ad_collected and "ts" in ad_collected
+

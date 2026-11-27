@@ -103,7 +103,12 @@ def create_app(
     state: dict[str, Any] = {"cfg": load_config(config_path)}
 
     frames = frame_source if frame_source is not None else FrameSource(state["cfg"])
-    gem_collector = collector if collector is not None else GemCollector(frames, state["cfg"])
+    event_log_path = config_path.parent / "logs" / "events.jsonl"
+    gem_collector = (
+        collector
+        if collector is not None
+        else GemCollector(frames, state["cfg"], event_log_path=event_log_path)
+    )
 
     def status_payload() -> dict[str, Any]:
         return {"version": __version__, **gem_collector.status()}

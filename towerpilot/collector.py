@@ -5,11 +5,13 @@ guarded by foreground window + undimmed battle HUD checks when safety.battle_onl
 """
 from __future__ import annotations
 
+import json
 import math
 import random
 import threading
 import time
 from collections import deque
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -17,6 +19,8 @@ import numpy as np
 from towerpilot import adb, detectors
 from towerpilot.capture import FrameSource
 from towerpilot.input import TapRefused, Tapper
+
+DEFAULT_EVENT_LOG_PATH = Path(__file__).resolve().parents[1] / "logs" / "events.jsonl"
 
 # Built-in humanization & geometry defaults (kept out of config bloat)
 _TAP_JITTER_PX = 5
@@ -53,6 +57,7 @@ class GemCollector:
         ad_delay_sec: tuple[float, float] = _AD_DELAY_SEC,
         fg_taps_per_burst: int = _FG_TAPS_PER_BURST,
         max_taps_per_sec: float = _TAP_MAX_PER_SEC,
+        event_log_path: Path | None = None,
     ) -> None:
         self._frames = frame_source
         self._cfg = cfg
@@ -61,6 +66,7 @@ class GemCollector:
         self._ad_delay_sec = ad_delay_sec
         self._fg_taps_per_burst = fg_taps_per_burst
         self._max_taps_per_sec = max_taps_per_sec
+        self._event_log_path = event_log_path
 
         self._lock = threading.RLock()
         self._stop_event = threading.Event()
@@ -72,6 +78,7 @@ class GemCollector:
         self.battle_live = False
         self.menu_state = "unknown"
         self.foreground_blocker: str | None = None
+        self._last_battle_state: tuple[bool, str] | None = None
 
         # Ad Gem routine state
         self.ad_last_scan = 0.0
@@ -109,9 +116,25 @@ class GemCollector:
             },
         }
 
-    def log(self, msg: str) -> None:
+    def log(self, msg: str, *, event: str = "info", **data: Any) -> None:
+        now = time.time()
+        entry: dict[str, Any] = {
+            "ts": round(now, 3),
+            "iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(now)),
+            "event": event,
+            "msg": msg,
+        }
+        if data:
+            entry.update(data)
         with self._lock:
-            self._recent.appendleft({"ts": round(time.time(), 3), "msg": msg})
+            self._recent.appendleft({"ts": entry["ts"], "event": event, "msg": msg})
+            if self._event_log_path is not None:
+                try:
+                    self._event_log_path.parent.mkdir(parents=True, exist_ok=True)
+                    with open(self._event_log_path, "a", encoding="utf-8") as fh:
+                        fh.write(json.dumps(entry, separators=(",", ":")) + "\n")
+                except OSError:
+                    pass
 
     def reconfigure(self, cfg: dict[str, Any]) -> None:
         with self._lock:
@@ -126,7 +149,11 @@ class GemCollector:
                 self.ad_visible_hit = None
                 if cfg["mode"] == "timer":
                     self._reset_timers(now)
-                self.log(f"Mode switched to {cfg['mode'].upper()}")
+                self.log(
+                    f"Mode switched to {cfg['mode'].upper()}",
+                    event="mode_changed",
+                    mode=cfg["mode"],
+                )
 
             if (
                 float(cfg["ad_gems"]["timer_interval_sec"]) != float(old_ad["timer_interval_sec"])
@@ -158,13 +185,20 @@ class GemCollector:
             self.running = True
             self._reset_timers(time.monotonic())
             self.foreground_blocker = None
+            self._last_battle_state = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
             self.ad_status = "starting" if self._cfg["ad_gems"]["enabled"] else "off"
             self.fg_status = "starting" if self._cfg["floating_gems"]["enabled"] else "off"
             self._thread = threading.Thread(target=self._run_loop, name="gem-collector", daemon=True)
             self._thread.start()
-            self.log(f"Harvesting ON ({self._cfg['mode'].upper()})")
+            self.log(
+                f"Harvesting ON ({self._cfg['mode'].upper()})",
+                event="harvest_started",
+                mode=self._cfg["mode"],
+                ad_gems=bool(self._cfg["ad_gems"]["enabled"]),
+                floating_gems=bool(self._cfg["floating_gems"]["enabled"]),
+            )
             return True
 
     def stop(self) -> bool:
@@ -179,11 +213,17 @@ class GemCollector:
             self.running = False
             self._thread = None
             self.foreground_blocker = None
+            self._last_battle_state = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
             self.ad_status = "stopped" if self._cfg["ad_gems"]["enabled"] else "off"
             self.fg_status = "stopped" if self._cfg["floating_gems"]["enabled"] else "off"
-            self.log("Harvesting OFF")
+            self.log(
+                "Harvesting OFF",
+                event="harvest_stopped",
+                ad_count=self.ad_count,
+                floating_count=self.fg_count,
+            )
             return True
 
     def _check_safety_guard(self, frame: np.ndarray, *, check_foreground: bool = True) -> tuple[bool, str]:
@@ -226,7 +266,7 @@ class GemCollector:
     def _dispatch_tap(self, pt: tuple[int, int], frame: np.ndarray, reason: str) -> dict[str, Any] | None:
         ok, why = self._safe_tap_point(pt, frame)
         if not ok:
-            self.log(f"Skipped {reason}: {why}")
+            self.log(f"Skipped {reason}: {why}", event="tap_skipped", reason=reason, why=why, point=list(pt))
             return None
         try:
             return self._tapper.tap(
@@ -239,7 +279,7 @@ class GemCollector:
                 frame_size=(int(frame.shape[1]), int(frame.shape[0])),
             )
         except TapRefused as exc:
-            self.log(f"Tap refused ({reason}): {exc}")
+            self.log(f"Tap refused ({reason}): {exc}", event="tap_refused", reason=reason, error=str(exc), point=list(pt))
             return None
 
     def _collect_ad_gem(self, *, trigger: str, rect: tuple[int, int, int, int] | None = None) -> bool:
@@ -248,13 +288,13 @@ class GemCollector:
             fresh = self._frames.grab_adb()
         except Exception as exc:
             self.ad_status = "capture error"
-            self.log(f"Ad Gem capture failed: {exc}")
+            self.log(f"Ad Gem capture failed: {exc}", event="ad_gem_error", trigger=trigger, error=str(exc))
             return False
 
         ok, why = self._check_safety_guard(fresh, check_foreground=True)
         if not ok:
             self.ad_status = f"skipped ({why})"
-            self.log(f"Ad Gem skipped ({trigger}): {why}")
+            self.log(f"Ad Gem skipped ({trigger}): {why}", event="ad_gem_skipped", trigger=trigger, reason=why)
             if trigger == "timer":
                 self.ad_next_timer_at = time.monotonic() + _TIMER_SKIP_BACKOFF_SEC
             return False
@@ -265,13 +305,13 @@ class GemCollector:
                 confirmed = detectors.detect_ad_gem(fresh)
             except Exception as exc:
                 self.ad_status = "ocr error"
-                self.log(f"Ad Gem OCR recheck failed: {exc}")
+                self.log(f"Ad Gem OCR recheck failed: {exc}", event="ad_gem_error", trigger=trigger, error=str(exc))
                 return False
             if confirmed is None:
                 self.ad_visible_hit = None
                 self.ad_pending_due_at = None
                 self.ad_status = "offer gone"
-                self.log("Ad Gem disappeared before tap")
+                self.log("Ad Gem disappeared before tap", event="ad_gem_gone", trigger=trigger)
                 return False
             target_rect = confirmed.rect
             self.ad_visible_hit = confirmed
@@ -293,7 +333,14 @@ class GemCollector:
         self.ad_pending_due_at = None
         self.ad_visible_hit = None
         self.ad_status = "collected"
-        self.log(f"Ad Gem collected ({trigger}) at {res['x']},{res['y']}")
+        self.log(
+            f"Ad Gem collected ({trigger}) at {res['x']},{res['y']}",
+            event="ad_gem_collected",
+            trigger=trigger,
+            x=res["x"],
+            y=res["y"],
+            count=self.ad_count,
+        )
         return True
 
     def _collect_floating_gem(
@@ -307,13 +354,13 @@ class GemCollector:
             fresh = self._frames.grab_adb()
         except Exception as exc:
             self.fg_status = "capture error"
-            self.log(f"Floating Gem capture failed: {exc}")
+            self.log(f"Floating Gem capture failed: {exc}", event="floating_gem_error", trigger=trigger, error=str(exc))
             return False
 
         ok, why = self._check_safety_guard(fresh, check_foreground=True)
         if not ok:
             self.fg_status = f"skipped ({why})"
-            self.log(f"Floating Gem skipped ({trigger}): {why}")
+            self.log(f"Floating Gem skipped ({trigger}): {why}", event="floating_gem_skipped", trigger=trigger, reason=why)
             if trigger == "timer":
                 self.fg_next_timer_at = time.monotonic() + _TIMER_SKIP_BACKOFF_SEC
             return False
@@ -362,7 +409,13 @@ class GemCollector:
         self.fg_cooldown_until = now + _FG_COOLDOWN_SEC
         self.fg_next_timer_at = now + float(self._cfg["floating_gems"]["timer_interval_sec"])
         self.fg_status = "collected"
-        self.log(f"Floating Gem collected ({trigger}, {len(tapped)} tap{'s' if len(tapped) != 1 else ''})")
+        self.log(
+            f"Floating Gem collected ({trigger}, {len(tapped)} tap{'s' if len(tapped) != 1 else ''})",
+            event="floating_gem_collected",
+            trigger=trigger,
+            points=[[r["x"], r["y"]] for r in tapped],
+            count=self.fg_count,
+        )
         return True
 
     def step_once(self) -> None:
@@ -372,10 +425,17 @@ class GemCollector:
             frame, _backend = self._frames.latest_or_grab(max_age_sec=1.2)
         except Exception as exc:
             self.battle_live = False
-            self.log(f"Capture error: {exc}")
+            self.log(f"Capture error: {exc}", event="capture_error", error=str(exc))
             return
 
         ok, why = self._check_safety_guard(frame, check_foreground=False)
+        battle_state = (ok, why)
+        if battle_state != self._last_battle_state:
+            self._last_battle_state = battle_state
+            if ok:
+                self.log(f"Battle live (menu {self.menu_state})", event="battle_live", menu_state=self.menu_state)
+            else:
+                self.log(f"Waiting for battle ({why})", event="battle_waiting", reason=why, menu_state=self.menu_state)
         if not ok:
             if self._cfg["ad_gems"]["enabled"]:
                 self.ad_status = f"waiting ({why})"
@@ -416,7 +476,7 @@ class GemCollector:
                     hit = detectors.detect_ad_gem(frame)
                 except Exception as exc:
                     self.ad_status = "ocr error"
-                    self.log(f"Ad Gem OCR failed: {exc}")
+                    self.log(f"Ad Gem OCR failed: {exc}", event="ad_gem_error", trigger="ocr", error=str(exc))
                     hit = None
                 if hit is not None:
                     self.ad_visible_hit = hit
@@ -424,7 +484,13 @@ class GemCollector:
                     delay = self._rng.uniform(float(dmin), float(dmax))
                     self.ad_pending_due_at = now + delay
                     self.ad_status = f"tapping in {delay:.1f}s"
-                    self.log(f"Ad Gem spotted ({hit.text}), tapping in {delay:.1f}s")
+                    self.log(
+                        f"Ad Gem spotted ({hit.text}), tapping in {delay:.1f}s",
+                        event="ad_gem_spotted",
+                        ocr_text=hit.text,
+                        rect=list(hit.rect),
+                        delay_sec=round(delay, 2),
+                    )
                     if delay <= 0.05:
                         self._collect_ad_gem(trigger="ocr", rect=hit.rect)
                     return
@@ -454,7 +520,12 @@ class GemCollector:
                 self.fg_last_scan = now
                 hit = detectors.detect_floating_gem(frame)
                 if hit is not None:
-                    self.log(f"Floating Gem spotted (score {hit.score})")
+                    self.log(
+                        f"Floating Gem spotted (score {hit.score})",
+                        event="floating_gem_spotted",
+                        score=hit.score,
+                        center=list(hit.center),
+                    )
                     self._collect_floating_gem(trigger="vision", detected=hit)
                     return
             self.fg_status = "watching"
@@ -473,7 +544,7 @@ class GemCollector:
                 with self._lock:
                     self.step_once()
             except Exception as exc:
-                self.log(f"Collector error: {exc}")
+                self.log(f"Collector error: {exc}", event="collector_error", error=str(exc))
             elapsed = time.monotonic() - started
             self._stop_event.wait(max(0.05, 0.5 - elapsed))
 
