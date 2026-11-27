@@ -18,6 +18,7 @@ from typing import Any, Callable
 import numpy as np
 
 from towerpilot import adb, detectors, run_rules
+from towerpilot.battle_menu import VALID_TASKS as BATTLE_MENU_TASKS, BattleHistoryStore, BattleMenuRoutine
 from towerpilot.capture import CaptureError, FrameSource
 from towerpilot.input import TapRefused, Tapper
 from towerpilot.loadouts import AccountStore
@@ -92,6 +93,20 @@ class _MemoryAccountStore(AccountStore):
         self._mem_data = copy.deepcopy(data)
 
 
+class _MemoryBattleHistoryStore(BattleHistoryStore):
+    """In-memory BattleHistoryStore used when GemCollector is constructed without an explicit store."""
+
+    def __init__(self) -> None:
+        super().__init__(path=Path("__memory_history__.json"))
+        self._mem_data: dict[str, Any] | None = None
+
+    def _read_unlocked(self) -> dict[str, Any]:
+        return copy.deepcopy(self._mem_data) if self._mem_data is not None else self._empty()
+
+    def _write_unlocked(self, data: dict[str, Any]) -> None:
+        self._mem_data = copy.deepcopy(data)
+
+
 class GemCollector:
     """Owns the background gem-collection thread, timers, detection state, and telemetry."""
 
@@ -113,6 +128,7 @@ class GemCollector:
         profile_store: ProfileStore | None = None,
         telemetry: Telemetry | None = None,
         account_store: AccountStore | None = None,
+        history_store: BattleHistoryStore | None = None,
         scan_step_delay_sec: tuple[float, float] = (0.6, 1.0),
     ) -> None:
         self._frames = frame_source
@@ -229,6 +245,25 @@ class GemCollector:
             stop_event=self._stop_event,
         )
 
+        # In-battle Side Menu routine controller & Battle History store (0 extra threads)
+        self._history_store = history_store if history_store is not None else _MemoryBattleHistoryStore()
+        self._battle_menu = BattleMenuRoutine(
+            grab_verified_frame=self._grab_verified_frame,
+            check_foreground=self._check_foreground,
+            tap=self._dispatch_menu_tap,
+            swipe=self._dispatch_menu_swipe,
+            log=self.log,
+            history_store=self._history_store,
+            account_store=self._account_store,
+            notify=self._notify,
+            stop_event=self._stop_event,
+        )
+        self._auto_routine_next_at: dict[str, float] = {
+            "history": now_mono + 60.0,
+            "daily_quests": now_mono + 90.0,
+            "guild_rewards": now_mono + 120.0,
+        }
+
         self._reset_timers(now_mono)
 
     # --- Compatibility properties delegating to MenuNavigator / Telemetry ---
@@ -244,6 +279,44 @@ class GemCollector:
     @property
     def account_store(self) -> AccountStore:
         return self._account_store
+
+    @property
+    def history_store(self) -> BattleHistoryStore:
+        return self._history_store
+
+    @property
+    def battle_menu(self) -> BattleMenuRoutine:
+        return self._battle_menu
+
+    def battle_menu_status(self) -> dict[str, Any]:
+        with self._lock:
+            st = self._battle_menu.status()
+            hsnap = self._history_store.snapshot()
+            st["history_synced_at"] = hsnap.get("synced_at")
+            st["history_count"] = len(hsnap.get("runs") or [])
+            return st
+
+    def request_battle_menu(self, task: str, *, trigger: str = "manual", require_running: bool = True) -> dict[str, Any]:
+        if task not in BATTLE_MENU_TASKS:
+            raise ValueError(f"task must be one of {BATTLE_MENU_TASKS}")
+        with self._lock:
+            if require_running and not self.running:
+                raise RuntimeError("Turn Gem Harvesting ON before running a Battle Menu routine")
+            if self._setup_tester.active:
+                raise RuntimeError("Cannot run Battle Menu routine while a Setup Test is active")
+            st = self._battle_menu.start(task, battle_live=self._effective_battle_live(), trigger=trigger)
+            hsnap = self._history_store.snapshot()
+            st["history_synced_at"] = hsnap.get("synced_at")
+            st["history_count"] = len(hsnap.get("runs") or [])
+            return st
+
+    def cancel_battle_menu(self) -> dict[str, Any]:
+        with self._lock:
+            st = self._battle_menu.cancel()
+            hsnap = self._history_store.snapshot()
+            st["history_synced_at"] = hsnap.get("synced_at")
+            st["history_count"] = len(hsnap.get("runs") or [])
+            return st
 
     @property
     def navigator(self) -> MenuNavigator:
@@ -418,7 +491,16 @@ class GemCollector:
             self.log("Run counter reset to 0", event="run_count_reset")
 
     def runs_ledger(self, limit: int = 50) -> dict[str, Any]:
-        return self._telemetry.runs_ledger(limit=limit)
+        with self._lock:
+            base = self._telemetry.runs_ledger(limit=max(limit, 100))
+            hist = self._history_store.snapshot().get("runs") or []
+            if not hist:
+                return {"runs": base["runs"][:limit], "by_tier": base["by_tier"]}
+            merged = run_rules.merge_battle_history_runs(base["runs"], hist)
+            return {
+                "runs": merged[:limit],
+                "by_tier": run_rules.summarize_by_tier(merged),
+            }
 
     @staticmethod
     def _flow_any_enabled(flow_cfg: dict[str, Any]) -> bool:
@@ -460,8 +542,18 @@ class GemCollector:
             old_fg = self._cfg["floating_gems"]
             old_flow = self._cfg.get("run_flow")
             old_rules = self._cfg.get("run_rules")
+            old_routines = self._cfg.get("routines") or {}
             self._cfg = cfg
             now = time.monotonic()
+
+            new_routines = cfg.get("routines") or {}
+            for key, task in (
+                ("auto_sync_history", "history"),
+                ("auto_claim_daily", "daily_quests"),
+                ("auto_claim_guild", "guild_rewards"),
+            ):
+                if new_routines.get(key) and not old_routines.get(key):
+                    self._auto_routine_next_at[task] = now + 2.0
 
             if cfg["mode"] != old_mode:
                 self.ad_pending_due_at = None
@@ -596,6 +688,8 @@ class GemCollector:
                 self._scanner.cancel()
             if self._setup_tester.active:
                 self._setup_tester.cancel()
+            if self._battle_menu.active:
+                self._battle_menu.cancel()
             self.frozen = False
             self._freeze_notified = False
             self.ad_status = "stopped" if self._cfg["ad_gems"]["enabled"] else "off"
@@ -1024,6 +1118,10 @@ class GemCollector:
             if self._setup_tester.step(frame, now, known_wave=self.current_wave):
                 return
 
+        if self._battle_menu.active:
+            if self._battle_menu.step(frame, now):
+                return
+
         ok, why = self._check_safety_guard(frame, check_foreground=False)
         in_battle_hud = self.menu_state in ("closed", "open")
         battle_state = (ok, why)
@@ -1099,6 +1197,40 @@ class GemCollector:
 
         self._step_ad_gems(frame, now)
         self._step_floating_gems(frame, now)
+        self._step_auto_routines(now)
+
+    def _routines_cfg(self) -> dict[str, Any]:
+        raw = self._cfg.get("routines")
+        return raw if isinstance(raw, dict) else {}
+
+    def _step_auto_routines(self, now: float) -> None:
+        """Periodically trigger auto-enabled Battle Menu routines when battle is live and calm."""
+        if (
+            not self.running
+            or not self.battle_live
+            or self.ad_pending_due_at is not None
+            or self._battle_menu.active
+            or self._setup_tester.active
+            or self._scanner.running
+        ):
+            return
+        rcfg = self._routines_cfg()
+        schedule = (
+            ("history", bool(rcfg.get("auto_sync_history", False)), max(5, int(rcfg.get("history_interval_min", 60) or 60)) * 60.0),
+            ("daily_quests", bool(rcfg.get("auto_claim_daily", False)), max(5, int(rcfg.get("daily_interval_min", 30) or 30)) * 60.0),
+            ("guild_rewards", bool(rcfg.get("auto_claim_guild", False)), max(5, int(rcfg.get("guild_interval_min", 60) or 60)) * 60.0),
+        )
+        for task, enabled, interval_sec in schedule:
+            if not enabled:
+                continue
+            due_at = self._auto_routine_next_at.get(task, 0.0)
+            if now >= due_at:
+                self._auto_routine_next_at[task] = now + interval_sec
+                try:
+                    self._battle_menu.start(task, battle_live=True, trigger="auto")
+                except Exception:
+                    pass
+                return
 
     def _step_wave_watch(self, frame: np.ndarray, now: float) -> None:
         """Passively read current wave every ~5s and alert if the emulator freezes."""
@@ -1491,5 +1623,14 @@ class GemCollector:
                 },
                 "scan": self._scanner.status(),
                 "setup_test": self._setup_tester.status(),
+                "routines": {
+                    "auto_sync_history": bool(self._routines_cfg().get("auto_sync_history", False)),
+                    "auto_claim_daily": bool(self._routines_cfg().get("auto_claim_daily", False)),
+                    "auto_claim_guild": bool(self._routines_cfg().get("auto_claim_guild", False)),
+                    "history_interval_min": int(self._routines_cfg().get("history_interval_min", 60) or 60),
+                    "daily_interval_min": int(self._routines_cfg().get("daily_interval_min", 30) or 30),
+                    "guild_interval_min": int(self._routines_cfg().get("guild_interval_min", 60) or 60),
+                },
+                "battle_menu": self.battle_menu_status(),
                 "recent": self._telemetry.recent(limit=20),
             }

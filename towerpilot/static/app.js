@@ -19,6 +19,8 @@ let activeWikiCategory = "";
 let lastAccountSnap = null;
 let lastScanState = null;
 let lastScanRunning = false;
+let lastBattleMenuActive = false;
+let lastBattleMenuTask = null;
 let scanRequestBusy = false;
 let loadoutOwnerFilter = "all";
 let loadoutPresetFilter = "";
@@ -891,7 +893,13 @@ function renderLedger(payload) {
       const left = document.createElement("div");
       left.className = "tier-row-left";
 
-      left.appendChild(makeInlineWikiButton(`T${row.tier}`, `tier:${row.tier}`, "inline-link tier-tag"));
+      left.appendChild(
+        makeInlineWikiButton(
+          `T${row.tier}${row.tournament ? "+" : ""}`,
+          `tier:${row.tier}`,
+          "inline-link tier-tag",
+        ),
+      );
 
       if (row.profile) {
         const chip = document.createElement("span");
@@ -936,7 +944,9 @@ function renderLedger(payload) {
     const head = document.createElement("span");
     head.style.fontWeight = "700";
     if (run.tier !== null && run.tier !== undefined) {
-      head.appendChild(makeInlineWikiButton(`T${run.tier}`, `tier:${run.tier}`));
+      head.appendChild(
+        makeInlineWikiButton(`T${run.tier}${run.tournament ? "+" : ""}`, `tier:${run.tier}`),
+      );
     } else {
       head.appendChild(document.createTextNode("T?"));
     }
@@ -967,7 +977,19 @@ function renderLedger(payload) {
     const leftMeta = document.createElement("span");
     let hasPart = false;
     if (run.duration_sec) {
-      leftMeta.appendChild(document.createTextNode(fmtDuration(run.duration_sec)));
+      const durSpan = document.createElement("span");
+      const exact = run.duration_exact !== false;
+      durSpan.textContent = (exact ? "" : "~") + fmtDuration(run.duration_sec);
+      if (!exact) {
+        durSpan.style.color = "var(--amber)";
+        durSpan.title = "Approximate (clipped by restart) \u2014 sync Battle History for exact timing";
+      }
+      leftMeta.appendChild(durSpan);
+      hasPart = true;
+    }
+    if (run.cells_raw) {
+      if (hasPart) leftMeta.appendChild(document.createTextNode(" \u00b7 "));
+      leftMeta.appendChild(document.createTextNode(`${run.cells_raw} cells`));
       hasPart = true;
     }
     if (run.killed_by) {
@@ -984,7 +1006,15 @@ function renderLedger(payload) {
     if (!hasPart) leftMeta.textContent = "\u2014";
 
     const timeMeta = document.createElement("span");
-    timeMeta.textContent = fmtTime(run.ts ?? run.ended_at);
+    if (run.ts !== undefined && run.ts !== null) {
+      timeMeta.textContent = fmtTime(run.ts);
+    } else if (run.ended_at) {
+      timeMeta.textContent = fmtTime(run.ended_at);
+    } else if (run.date) {
+      timeMeta.textContent = String(run.date);
+    } else {
+      timeMeta.textContent = "";
+    }
 
     meta.appendChild(leftMeta);
     meta.appendChild(timeMeta);
@@ -2045,6 +2075,66 @@ function render(data) {
     renderScanState(null);
   }
 
+  // Live Battle Menu routines (auto toggles + on-demand status)
+  const routinesCfg = data.routines || {};
+  if ($("autoSyncHistoryBtn")) {
+    setToggle($("autoSyncHistoryBtn"), Boolean(routinesCfg.auto_sync_history), "flow");
+  }
+  if ($("autoClaimDailyBtn")) {
+    setToggle($("autoClaimDailyBtn"), Boolean(routinesCfg.auto_claim_daily), "flow");
+  }
+  if ($("autoClaimGuildBtn")) {
+    setToggle($("autoClaimGuildBtn"), Boolean(routinesCfg.auto_claim_guild), "flow");
+  }
+  const bm = data.battle_menu || {};
+  const bmActive = Boolean(bm.active);
+  const bmPill = $("battleMenuPill");
+  const bmBanner = $("battleMenuBanner");
+  if (bmPill) {
+    if (bmActive) {
+      setPill(bmPill, bm.task ? String(bm.task).replace(/_/g, " ") : "Running", "cyan");
+    } else if (bm.error) {
+      setPill(bmPill, "Error", "amber");
+    } else {
+      setPill(bmPill, "Idle", "");
+    }
+  }
+  if (bmBanner) {
+    if (bmActive) {
+      $("battleMenuBannerText").textContent = bm.detail ? String(bm.detail) : "Running Battle Menu routine\u2026";
+      bmBanner.hidden = false;
+    } else {
+      bmBanner.hidden = true;
+    }
+  }
+  if ($("historySyncMeta")) {
+    const hCount = Number(bm.history_count || 0);
+    $("historySyncMeta").textContent = hCount > 0
+      ? `${hCount} runs synced \u00b7 exact timings & Coins/hr`
+      : "Authoritative timings & Coins/hr";
+  }
+  for (const id of ["syncHistoryBtn", "runHistoryBtn", "runDailyBtn", "runGuildBtn", "runCardsBtn", "runModulesBtn", "inBattleCardsBtn", "inBattleModulesBtn"]) {
+    const b = $(id);
+    if (b) b.disabled = bmActive;
+  }
+  if (lastBattleMenuActive && !bmActive) {
+    if (bm.error) {
+      showToast(String(bm.error), true);
+    } else if (bm.last_result && bm.last_result.summary) {
+      showToast(String(bm.last_result.summary));
+    }
+    if (lastBattleMenuTask === "history") {
+      fetchRuns();
+      fetchMetrics();
+    } else if (lastBattleMenuTask === "cards" || lastBattleMenuTask === "modules") {
+      fetchAccount();
+    }
+  }
+  lastBattleMenuActive = bmActive;
+  if (bmActive) {
+    lastBattleMenuTask = bm.task || null;
+  }
+
   renderActivity(data.recent);
 }
 
@@ -2076,6 +2166,29 @@ function updateHarvest(payload, toastLabel) {
 
 function updateRunRules(payload, toastLabel) {
   return postJson("/api/run-rules", payload, toastLabel);
+}
+
+function updateRoutines(payload, toastLabel) {
+  return postJson("/api/routines", payload, toastLabel);
+}
+
+async function runBattleMenuRoutine(task, label) {
+  inFlight += 1;
+  try {
+    const res = await fetch("/api/routines", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "run", task }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (data.status) render(data.status);
+    showToast(`Started ${label}`);
+  } catch (err) {
+    showToast(err.message || `Failed to start ${label}`, true);
+  } finally {
+    inFlight = Math.max(0, inFlight - 1);
+  }
 }
 
 async function pollStatus() {
@@ -2254,9 +2367,66 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Loadout bindings
+// Loadout & Battle Menu routine bindings
 $("scanInventoryBtn").addEventListener("click", scanInventory);
 $("cancelScanBtn").addEventListener("click", cancelInventoryScan);
+if ($("inBattleCardsBtn")) {
+  $("inBattleCardsBtn").addEventListener("click", () => runBattleMenuRoutine("cards", "Cards scan"));
+}
+if ($("inBattleModulesBtn")) {
+  $("inBattleModulesBtn").addEventListener("click", () => runBattleMenuRoutine("modules", "Modules scan"));
+}
+if ($("syncHistoryBtn")) {
+  $("syncHistoryBtn").addEventListener("click", () => runBattleMenuRoutine("history", "Battle History sync"));
+}
+if ($("runHistoryBtn")) {
+  $("runHistoryBtn").addEventListener("click", () => runBattleMenuRoutine("history", "Battle History sync"));
+}
+if ($("runDailyBtn")) {
+  $("runDailyBtn").addEventListener("click", () => runBattleMenuRoutine("daily_quests", "Daily Quests check"));
+}
+if ($("runGuildBtn")) {
+  $("runGuildBtn").addEventListener("click", () => runBattleMenuRoutine("guild_rewards", "Guild Rewards check"));
+}
+if ($("runCardsBtn")) {
+  $("runCardsBtn").addEventListener("click", () => runBattleMenuRoutine("cards", "Cards scan"));
+}
+if ($("runModulesBtn")) {
+  $("runModulesBtn").addEventListener("click", () => runBattleMenuRoutine("modules", "Modules scan"));
+}
+if ($("cancelBattleMenuBtn")) {
+  $("cancelBattleMenuBtn").addEventListener("click", () => {
+    fetch("/api/routines", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "cancel" }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && d.status) render(d.status);
+        showToast("Battle Menu routine cancelled");
+      })
+      .catch(() => showToast("Cancel failed", true));
+  });
+}
+if ($("autoSyncHistoryBtn")) {
+  $("autoSyncHistoryBtn").addEventListener("click", () => {
+    const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_sync_history);
+    updateRoutines({ auto_sync_history: next }, next ? "Auto Sync History ON" : "Auto Sync History OFF");
+  });
+}
+if ($("autoClaimDailyBtn")) {
+  $("autoClaimDailyBtn").addEventListener("click", () => {
+    const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_claim_daily);
+    updateRoutines({ auto_claim_daily: next }, next ? "Auto Claim Daily Quests ON" : "Auto Claim Daily Quests OFF");
+  });
+}
+if ($("autoClaimGuildBtn")) {
+  $("autoClaimGuildBtn").addEventListener("click", () => {
+    const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_claim_guild);
+    updateRoutines({ auto_claim_guild: next }, next ? "Auto Claim Guild Rewards ON" : "Auto Claim Guild Rewards OFF");
+  });
+}
 if ($("cancelSetupTestBtn")) {
   $("cancelSetupTestBtn").addEventListener("click", () => {
     postJson("/api/setup-test", { action: "cancel" }, "Setup test cancelled");

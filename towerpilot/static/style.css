@@ -876,6 +876,25 @@
     .alert-banner.amber { background: var(--amber-dim); color: var(--amber); }
     .alert-banner.red { background: var(--red-dim); color: var(--red); }
 
+    .routine-row {
+      padding: 10px 14px;
+    }
+
+    .routine-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+    }
+
+    .routine-manual-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .sidebar-section {
       padding: 10px 12px;
       border-bottom: 1px solid var(--border);

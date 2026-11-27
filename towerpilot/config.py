@@ -45,6 +45,14 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "freeze_timeout_min": 10,
         "notify_on_death": True,
     },
+    "routines": {
+        "auto_sync_history": False,
+        "auto_claim_daily": False,
+        "auto_claim_guild": False,
+        "history_interval_min": 60,
+        "daily_interval_min": 30,
+        "guild_interval_min": 60,
+    },
     "safety": {
         "battle_only": True,
     },
@@ -163,6 +171,7 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
     fg_raw = _section(cfg, "floating_gems")
     flow_raw = _section(cfg, "run_flow")
     rules_raw = _section(cfg, "run_rules")
+    routines_raw = _section(cfg, "routines")
     safety_raw = _section(cfg, "safety")
     adb_raw = _section(cfg, "adb")
     stream_raw = _section(cfg, "stream")
@@ -267,6 +276,38 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
             "notify_on_death": _require_bool(
                 rules_raw.get("notify_on_death", DEFAULT_CONFIG["run_rules"]["notify_on_death"]),
                 "run_rules.notify_on_death",
+            ),
+        },
+        "routines": {
+            "auto_sync_history": _require_bool(
+                routines_raw.get("auto_sync_history", DEFAULT_CONFIG["routines"]["auto_sync_history"]),
+                "routines.auto_sync_history",
+            ),
+            "auto_claim_daily": _require_bool(
+                routines_raw.get("auto_claim_daily", DEFAULT_CONFIG["routines"]["auto_claim_daily"]),
+                "routines.auto_claim_daily",
+            ),
+            "auto_claim_guild": _require_bool(
+                routines_raw.get("auto_claim_guild", DEFAULT_CONFIG["routines"]["auto_claim_guild"]),
+                "routines.auto_claim_guild",
+            ),
+            "history_interval_min": _require_int(
+                routines_raw.get("history_interval_min", DEFAULT_CONFIG["routines"]["history_interval_min"]),
+                "routines.history_interval_min",
+                5,
+                1440,
+            ),
+            "daily_interval_min": _require_int(
+                routines_raw.get("daily_interval_min", DEFAULT_CONFIG["routines"]["daily_interval_min"]),
+                "routines.daily_interval_min",
+                5,
+                1440,
+            ),
+            "guild_interval_min": _require_int(
+                routines_raw.get("guild_interval_min", DEFAULT_CONFIG["routines"]["guild_interval_min"]),
+                "routines.guild_interval_min",
+                5,
+                1440,
             ),
         },
         "safety": {

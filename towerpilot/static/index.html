@@ -244,7 +244,10 @@
             <div class="sidebar-section">
               <div class="section-heading">
                 <span>Run Ledger</span>
-                <span id="ledgerCount" class="gem-count">0</span>
+                <span class="section-heading-right">
+                  <button id="syncHistoryBtn" class="mini-btn cyan" type="button" title="Open Battle History in-battle and sync exact timings">Sync</button>
+                  <span id="ledgerCount" class="gem-count">0</span>
+                </span>
               </div>
               <ul id="runLedgerList" class="ledger-list">
                 <li class="ledger-empty">No completed runs logged yet.</li>
@@ -256,7 +259,9 @@
           <div id="tabLoadout" class="tab-panel" role="tabpanel" hidden>
             <div class="sidebar-section">
               <div class="loadout-actions">
-                <button id="scanInventoryBtn" class="primary-btn" type="button" title="Automated inventory scan across Cards and Modules">Scan Inventory</button>
+                <button id="scanInventoryBtn" class="primary-btn" type="button" title="Automated inventory scan across Cards and Modules">Scan Presets</button>
+                <button id="inBattleCardsBtn" class="mini-btn cyan" type="button" title="View Cards via Battle Menu (works in battle)">Cards</button>
+                <button id="inBattleModulesBtn" class="mini-btn cyan" type="button" title="View Modules via Battle Menu (works in battle)">Mods</button>
                 <button id="observeBtn" class="mini-btn" type="button" title="Quick zero-tap single-screen read">Observe</button>
                 <button id="resetAccountBtn" class="mini-btn" type="button" title="Clear observed loadout">Clear</button>
               </div>
@@ -408,6 +413,64 @@
               <input id="floatingTimerInput" class="timer-input" type="number" min="5" max="86400" step="1" inputmode="numeric" />
               <span class="timer-unit">sec</span>
               <span id="floatingTimerHuman" class="timer-human"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-label="Battle Menu Routines">
+          <div class="card-header">
+            <span class="title">Battle Menu Routines</span>
+            <span id="battleMenuPill" class="pill"><span class="dot"></span>Idle</span>
+          </div>
+          <div id="battleMenuBanner" class="alert-banner cyan" hidden>
+            <span id="battleMenuBannerText">Running routine&hellip;</span>
+            <button id="cancelBattleMenuBtn" class="mini-btn" type="button">Cancel</button>
+          </div>
+          <div class="gem-list">
+            <div class="gem-row routine-row">
+              <div class="gem-top">
+                <div class="gem-info">
+                  <div class="gem-name">Auto Sync History</div>
+                  <div id="historySyncMeta" class="gem-status">Authoritative timings &amp; Coins/hr</div>
+                </div>
+                <div class="routine-controls">
+                  <button id="runHistoryBtn" class="mini-btn cyan" type="button" title="Open Battle History now">Run</button>
+                  <button id="autoSyncHistoryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+                </div>
+              </div>
+            </div>
+            <div class="gem-row routine-row">
+              <div class="gem-top">
+                <div class="gem-info">
+                  <div class="gem-name">Auto Claim Daily Quests</div>
+                  <div class="gem-status">Claim finished missions &amp; weekly chests</div>
+                </div>
+                <div class="routine-controls">
+                  <button id="runDailyBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Daily Quests now">Run</button>
+                  <button id="autoClaimDailyBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+                </div>
+              </div>
+            </div>
+            <div class="gem-row routine-row">
+              <div class="gem-top">
+                <div class="gem-info">
+                  <div class="gem-name">Auto Claim Guild Rewards</div>
+                  <div class="gem-status">Claim unlocked 100/250/500/750 chests</div>
+                </div>
+                <div class="routine-controls">
+                  <button id="runGuildBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Guild Rewards now">Run</button>
+                  <button id="autoClaimGuildBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+                </div>
+              </div>
+            </div>
+            <div class="gem-row routine-row">
+              <div class="routine-manual-row">
+                <span class="stat-label">On-Demand Inspect</span>
+                <div class="routine-controls">
+                  <button id="runCardsBtn" class="mini-btn" type="button" title="Open Cards from Battle Menu &amp; inventory">View Cards</button>
+                  <button id="runModulesBtn" class="mini-btn" type="button" title="Open Modules from Battle Menu &amp; inventory">View Modules</button>
+                </div>
+              </div>
             </div>
           </div>
         </section>

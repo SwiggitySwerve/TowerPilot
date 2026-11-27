@@ -15,6 +15,7 @@ import numpy as np
 from flask import Flask, Response, jsonify, request, send_from_directory
 
 from towerpilot import __version__, loadouts, ocr, wiki
+from towerpilot.battle_menu import BattleHistoryStore
 from towerpilot.capture import FrameSource
 from towerpilot.collector import GemCollector
 from towerpilot.config import CONFIG_PATH, VALID_MODES, deep_merge, load_config, save_config
@@ -37,6 +38,16 @@ _RUN_RULES_KEYS = frozenset(
         "no_start_until",
         "freeze_timeout_min",
         "notify_on_death",
+    }
+)
+_ROUTINES_KEYS = frozenset(
+    {
+        "auto_sync_history",
+        "auto_claim_daily",
+        "auto_claim_guild",
+        "history_interval_min",
+        "daily_interval_min",
+        "guild_interval_min",
     }
 )
 _LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
@@ -218,6 +229,7 @@ def create_app(
     frames = frame_source if frame_source is not None else FrameSource(state["cfg"])
     data_dir = config_path.parent / "data"
     account_store = loadouts.AccountStore(data_dir / "account.json")
+    history_store = BattleHistoryStore(data_dir / "battle_history.json")
     wiki_cache_path = data_dir / "wiki_cache.json"
     event_log_path = config_path.parent / "logs" / "events.jsonl"
     profile_store = ProfileStore(data_dir / "profiles.json")
@@ -231,6 +243,8 @@ def create_app(
             telemetry = collector.telemetry
         if hasattr(collector, "account_store"):
             account_store = collector.account_store
+        if hasattr(collector, "history_store"):
+            history_store = collector.history_store
     else:
         gem_collector = GemCollector(
             frames,
@@ -239,6 +253,7 @@ def create_app(
             profile_store=profile_store,
             telemetry=telemetry,
             account_store=account_store,
+            history_store=history_store,
         )
 
     def status_payload() -> dict[str, Any]:
@@ -486,6 +501,52 @@ def create_app(
             return jsonify({"error": str(exc)}), 400
         except RuntimeError as exc:
             return jsonify({"error": str(exc)}), 409
+
+    @app.route("/api/routines", methods=["GET", "POST"])
+    def api_routines() -> tuple[Response, int] | Response:
+        if request.method == "GET":
+            with cfg_lock:
+                rcfg = dict(state["cfg"].get("routines") or {})
+            return jsonify({"routines": rcfg, "battle_menu": gem_collector.battle_menu_status()})
+
+        payload = request.get_json(silent=True)
+        if not isinstance(payload, dict):
+            return jsonify({"error": "JSON object expected"}), 400
+
+        action = payload.get("action")
+        if action is not None:
+            if action == "cancel":
+                bm = gem_collector.cancel_battle_menu()
+                return jsonify({"battle_menu": bm, "status": status_payload()})
+            if action == "run":
+                task = payload.get("task")
+                if not isinstance(task, str):
+                    return jsonify({"error": "task must be a string"}), 400
+                try:
+                    bm = gem_collector.request_battle_menu(task, trigger="manual")
+                    return jsonify({"battle_menu": bm, "status": status_payload()})
+                except ValueError as exc:
+                    return jsonify({"error": str(exc)}), 400
+                except RuntimeError as exc:
+                    return jsonify({"error": str(exc)}), 409
+            return jsonify({"error": f"Unknown action: {action}"}), 400
+
+        # Otherwise update automatic routine toggles / intervals
+        sub = payload.get("routines") if "routines" in payload else payload
+        if not isinstance(sub, dict):
+            return jsonify({"error": "routines must be a JSON object"}), 400
+        bad = set(sub) - _ROUTINES_KEYS
+        if bad:
+            return jsonify({"error": f"Unknown routines fields: {', '.join(sorted(bad))}"}), 400
+        try:
+            with cfg_lock:
+                merged = deep_merge(state["cfg"], {"routines": dict(sub)})
+                saved = save_config(merged, config_path)
+                state["cfg"] = saved
+                gem_collector.reconfigure(saved)
+            return jsonify(status_payload())
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
 
     @app.route("/api/wiki")
     def api_wiki() -> tuple[Response, int] | Response:

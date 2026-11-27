@@ -336,21 +336,95 @@ def load_run_ledger(event_log_path: Path | None, *, limit: int = 100) -> list[di
     return records[:limit]
 
 
+def merge_battle_history_runs(
+    live_runs: list[dict[str, Any]],
+    history_runs: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Reconcile GAME STATS `run_ended` records with authoritative Battle History rows.
+
+    - When a `run_ended` row matches a Battle History row on (tier, wave) and compatible
+      coins (within 5% when both present), enrich it with the game's true `coins_per_hour`,
+      exact `duration_sec`, `cells`, and `duration_exact=True` so restart-clipped timings
+      are repaired automatically.
+    - Non-matching Battle History entries are appended so historical runs & Measured Coins/hr
+      populate immediately even for runs completed before TowerPilot was watching.
+    """
+    matched_hist_indices: set[int] = set()
+    merged: list[dict[str, Any]] = []
+
+    for run in live_runs:
+        item = dict(run)
+        r_tier = item.get("tier")
+        r_wave = item.get("wave")
+        r_coins = item.get("total_coins")
+        best_idx: int | None = None
+        for idx, h in enumerate(history_runs):
+            if idx in matched_hist_indices:
+                continue
+            if h.get("tier") != r_tier or h.get("wave") != r_wave:
+                continue
+            h_coins = h.get("total_coins")
+            if (
+                isinstance(r_coins, (int, float))
+                and isinstance(h_coins, (int, float))
+                and r_coins > 0
+                and h_coins > 0
+            ):
+                if abs(float(r_coins) - float(h_coins)) / max(float(r_coins), float(h_coins)) > 0.05:
+                    continue
+            best_idx = idx
+            break
+
+        if best_idx is not None:
+            matched_hist_indices.add(best_idx)
+            h = history_runs[best_idx]
+            if h.get("cells_raw") is not None:
+                item["cells_raw"] = h["cells_raw"]
+                item["cells"] = h.get("cells")
+            if h.get("date") and not item.get("date"):
+                item["date"] = h["date"]
+            if h.get("tournament"):
+                item["tournament"] = True
+            # Repair inexact/missing duration & Coins/hr from authoritative Battle History
+            if (not item.get("duration_exact", True) or item.get("coins_per_hour") is None) and h.get("duration_sec"):
+                item["duration_sec"] = h["duration_sec"]
+                item["duration_exact"] = True
+                if h.get("coins_per_hour") is not None:
+                    item["coins_per_hour"] = h["coins_per_hour"]
+                    item["coins_per_hour_fmt"] = h.get("coins_per_hour_fmt") or format_coins(h["coins_per_hour"])
+                item["reconciled_from_history"] = True
+        merged.append(item)
+
+    # Append unmatched Battle History rows (already newest-first)
+    for idx, h in enumerate(history_runs):
+        if idx not in matched_hist_indices:
+            merged.append(dict(h))
+
+    return merged
+
+
 def summarize_by_tier(runs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Aggregate completed runs by (tier, profile) to measure real Coins/hr."""
-    buckets: dict[tuple[int, str], list[dict[str, Any]]] = {}
+    buckets: dict[tuple[int, bool, str], list[dict[str, Any]]] = {}
     for run in runs:
         tier = run.get("tier")
         if not isinstance(tier, int) or isinstance(tier, bool):
             continue
-        profile = str(run.get("profile") or "").strip()
-        buckets.setdefault((tier, profile), []).append(run)
+        tournament = bool(run.get("tournament", False))
+        profile = str(run.get("profile") or ("Tournament" if tournament else "")).strip()
+        buckets.setdefault((tier, tournament, profile), []).append(run)
 
     summary: list[dict[str, Any]] = []
-    for (tier, profile), items in sorted(buckets.items(), key=lambda kv: (-kv[0][0], kv[0][1])):
+    for (tier, tournament, profile), items in sorted(buckets.items(), key=lambda kv: (-kv[0][0], kv[0][1], kv[0][2])):
         waves = [r["wave"] for r in items if isinstance(r.get("wave"), int)]
-        durs = [float(r["duration_sec"]) for r in items if isinstance(r.get("duration_sec"), (int, float)) and r["duration_sec"] > 0]
-        # Sum total coins and duration across runs that have both verified coins & positive duration
+        durs = [
+            float(r["duration_sec"])
+            for r in items
+            if r.get("duration_exact", True)
+            and isinstance(r.get("duration_sec"), (int, float))
+            and r["duration_sec"] > 0
+        ]
+        # Sum total coins and duration across runs that have both verified coins & exact duration
         cph_coins = 0.0
         cph_sec = 0.0
         for r in items:
@@ -371,6 +445,7 @@ def summarize_by_tier(runs: list[dict[str, Any]]) -> list[dict[str, Any]]:
         summary.append(
             {
                 "tier": tier,
+                "tournament": tournament,
                 "profile": profile,
                 "runs": len(items),
                 "avg_wave": int(round(sum(waves) / len(waves))) if waves else None,

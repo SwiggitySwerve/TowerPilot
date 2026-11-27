@@ -220,6 +220,8 @@ def test_collector_status_matches_minimal_contract():
         "battle",
         "scan",
         "setup_test",
+        "routines",
+        "battle_menu",
         "recent",
     }
     assert set(st["profile"].keys()) == {

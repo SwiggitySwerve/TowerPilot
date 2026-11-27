@@ -62,6 +62,8 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             "battle",
             "scan",
             "setup_test",
+            "routines",
+            "battle_menu",
             "recent",
         }
         assert status["profile"]["active_id"] == "farm-default"
