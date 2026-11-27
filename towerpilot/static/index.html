@@ -9,14 +9,17 @@
 <body>
   <main class="shell">
     <div id="layoutGrid" class="layout">
-      <!-- Left column: Collapsible Runs & Restart Rules sidebar -->
-      <aside id="runsSidebar" class="card sidebar" aria-label="Runs and Restart Rules">
+      <!-- Left column: Collapsible Runs & Loadout sidebar -->
+      <aside id="runsSidebar" class="card sidebar" aria-label="Runs and Loadout">
         <div class="card-header sidebar-header">
           <div class="header-left">
-            <span class="title sidebar-title">Runs</span>
+            <span class="title sidebar-title">Farming</span>
             <span id="sidebarStatePill" class="pill"><span class="dot"></span>Off</span>
           </div>
-          <button id="collapseSidebarBtn" class="icon-btn" type="button" title="Collapse Runs panel" aria-expanded="true" aria-controls="sidebarBody">&laquo;</button>
+          <div class="sidebar-header-actions">
+            <button id="openWikiBtn" class="mini-btn sidebar-wiki-btn" type="button" title="Open Wiki Drawer">Wiki</button>
+            <button id="collapseSidebarBtn" class="icon-btn" type="button" title="Collapse panel" aria-expanded="true" aria-controls="sidebarBody">&laquo;</button>
+          </div>
         </div>
 
         <div class="sidebar-rail" aria-hidden="true">
@@ -24,123 +27,203 @@
         </div>
 
         <div id="sidebarBody" class="sidebar-body">
-          <!-- Live run telemetry -->
-          <div class="run-telemetry" aria-label="Current Run">
-            <div class="stat-cell">
-              <span class="stat-label">Tier</span>
-              <span id="liveTier" class="stat-value">&mdash;</span>
-            </div>
-            <div class="stat-cell">
-              <span class="stat-label">Wave</span>
-              <span id="liveWave" class="stat-value">&mdash;</span>
-            </div>
-            <div class="stat-cell">
-              <span class="stat-label">Elapsed</span>
-              <span id="liveElapsed" class="stat-value">&mdash;</span>
-            </div>
+          <!-- 2-tab bar: Runs | Loadout -->
+          <div id="sidebarTabs" class="sidebar-tabs" role="tablist" aria-label="Sidebar Panels">
+            <button type="button" role="tab" data-tab="runs" aria-selected="true" class="active">Runs</button>
+            <button type="button" role="tab" data-tab="loadout" aria-selected="false">Loadout</button>
           </div>
 
-          <div id="freezeBanner" class="alert-banner red" hidden>
-            <span>Battle wave appears frozen</span>
-          </div>
+          <!-- TAB 1: RUNS -->
+          <div id="tabRuns" class="tab-panel" role="tabpanel">
+            <div class="run-telemetry" aria-label="Current Run">
+              <div class="stat-cell">
+                <span class="stat-label">Tier</span>
+                <button id="liveTierBtn" class="stat-value stat-link" type="button" disabled>&mdash;</button>
+              </div>
+              <div class="stat-cell">
+                <span class="stat-label">Wave</span>
+                <span id="liveWave" class="stat-value">&mdash;</span>
+              </div>
+              <div class="stat-cell">
+                <span class="stat-label">Elapsed</span>
+                <span id="liveElapsed" class="stat-value">&mdash;</span>
+              </div>
+            </div>
 
-          <div id="holdBanner" class="alert-banner amber" hidden>
-            <span id="holdBannerText">Holding at Home</span>
-            <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
-          </div>
+            <div id="freezeBanner" class="alert-banner red" hidden>
+              <span>Battle wave appears frozen</span>
+            </div>
 
-          <!-- Restart toggles & conditions -->
-          <div class="sidebar-section">
-            <div class="section-heading">Auto-Restart</div>
+            <div id="holdBanner" class="alert-banner amber" hidden>
+              <span id="holdBannerText">Holding at Home</span>
+              <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
+            </div>
 
-            <div class="rule-row">
-              <div class="rule-info">
-                <div class="gem-name-line">
-                  <span class="gem-dot flow" aria-hidden="true"></span>
-                  <span class="rule-name">End Stats &rarr; Home</span>
+            <div class="sidebar-section">
+              <div class="section-heading">Auto-Restart</div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="rule-name">End Stats &rarr; Home</span>
+                  </div>
+                  <div id="flowStatus" class="gem-status">off</div>
                 </div>
-                <div id="flowStatus" class="gem-status">off</div>
+                <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
               </div>
-              <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-            </div>
 
-            <div class="rule-row">
-              <div class="rule-info">
-                <div class="gem-name-line">
-                  <span class="gem-dot flow" aria-hidden="true"></span>
-                  <span class="rule-name">Auto Re-Battle</span>
-                  <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
-                  <button id="resetRunsBtn" class="mini-btn" type="button" title="Reset session run counter">Reset</button>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="rule-name">Direct Retry</span>
+                  </div>
+                  <div class="gem-status">Tap RETRY on Game Stats</div>
                 </div>
-                <div class="gem-status">Tap BATTLE on main menu</div>
+                <button id="autoRetryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
               </div>
-              <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-            </div>
 
-            <div class="rule-row">
-              <div class="rule-info">
-                <div class="rule-name">Finish Run &amp; Hold</div>
-                <div class="gem-status">Park at Home after this run</div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="rule-name">Auto Re-Battle</span>
+                    <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
+                    <button id="resetRunsBtn" class="mini-btn" type="button" title="Reset session run counter">Reset</button>
+                  </div>
+                  <div class="gem-status">Tap BATTLE on main menu</div>
+                </div>
+                <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
               </div>
-              <button id="finishStopBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
-            </div>
 
-            <div class="rule-field-row">
-              <label for="maxRunsInput">Max runs <span class="hint">(0 = unlimited)</span></label>
-              <input id="maxRunsInput" class="compact-input num" type="number" min="0" max="9999" step="1" inputmode="numeric" />
-            </div>
-
-            <div class="rule-row">
-              <div class="rule-info">
-                <div class="rule-name">Quiet Window</div>
-                <div class="gem-status">Don&rsquo;t start new runs during hours</div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="rule-name">Crash Auto-Resume</span>
+                  </div>
+                  <div class="gem-status">Tap RESUME if run was interrupted</div>
+                </div>
+                <button id="autoResumeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
               </div>
-              <button id="noStartBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
-            </div>
 
-            <div id="noStartTimesRow" class="time-window-row" hidden>
-              <label for="noStartFrom">From</label>
-              <input id="noStartFrom" class="compact-input time" type="time" />
-              <label for="noStartUntil">Until</label>
-              <input id="noStartUntil" class="compact-input time" type="time" />
-            </div>
-
-            <div class="rule-field-row stacked">
-              <label for="profileInput">Profile / Build Tag</label>
-              <input id="profileInput" class="compact-input text" type="text" maxlength="40" placeholder="e.g. T9 eHP Farm" />
-            </div>
-
-            <div class="rule-field-row">
-              <label for="freezeMinInput">Freeze alert <span class="hint">(min, 0 = off)</span></label>
-              <input id="freezeMinInput" class="compact-input num" type="number" min="0" max="180" step="1" inputmode="numeric" />
-            </div>
-
-            <div class="rule-row">
-              <div class="rule-info">
-                <div class="rule-name">Death Toast</div>
-                <div class="gem-status">Tray alert with run summary</div>
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="rule-name">Finish Run &amp; Hold</div>
+                  <div class="gem-status">Park at Home after this run</div>
+                </div>
+                <button id="finishStopBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
               </div>
-              <button id="notifyDeathBtn" class="toggle-btn flow" type="button" aria-pressed="true">ON</button>
+
+              <div class="rule-field-row">
+                <label for="expectedTierInput">Expected tier <span class="hint">(0 = any)</span></label>
+                <input id="expectedTierInput" class="compact-input num" type="number" min="0" max="24" step="1" inputmode="numeric" />
+              </div>
+
+              <div class="rule-field-row">
+                <label for="maxRunsInput">Max runs <span class="hint">(0 = unlimited)</span></label>
+                <input id="maxRunsInput" class="compact-input num" type="number" min="0" max="9999" step="1" inputmode="numeric" />
+              </div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="rule-name">Quiet Window</div>
+                  <div class="gem-status">Don&rsquo;t start new runs during hours</div>
+                </div>
+                <button id="noStartBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
+              </div>
+
+              <div id="noStartTimesRow" class="time-window-row" hidden>
+                <label for="noStartFrom">From</label>
+                <input id="noStartFrom" class="compact-input time" type="time" />
+                <label for="noStartUntil">Until</label>
+                <input id="noStartUntil" class="compact-input time" type="time" />
+              </div>
+
+              <div class="rule-field-row stacked">
+                <label for="profileInput">Profile / Build Tag</label>
+                <input id="profileInput" class="compact-input text" type="text" maxlength="40" placeholder="e.g. T9 eHP Farm" />
+              </div>
+
+              <div class="rule-field-row">
+                <label for="freezeMinInput">Freeze alert <span class="hint">(min, 0 = off)</span></label>
+                <input id="freezeMinInput" class="compact-input num" type="number" min="0" max="180" step="1" inputmode="numeric" />
+              </div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="rule-name">Death Toast</div>
+                  <div class="gem-status">Tray alert with run summary</div>
+                </div>
+                <button id="notifyDeathBtn" class="toggle-btn flow" type="button" aria-pressed="true">ON</button>
+              </div>
+            </div>
+
+            <div class="sidebar-section">
+              <div class="section-heading">Measured Coins / hr</div>
+              <div id="tierSummaryList" class="tier-summary-list">
+                <div class="ledger-empty">Complete a run to measure Coins/hr.</div>
+              </div>
+            </div>
+
+            <div class="sidebar-section">
+              <div class="section-heading">
+                <span>Run Ledger</span>
+                <span id="ledgerCount" class="gem-count">0</span>
+              </div>
+              <ul id="runLedgerList" class="ledger-list">
+                <li class="ledger-empty">No completed runs logged yet.</li>
+              </ul>
             </div>
           </div>
 
-          <!-- Measured Coins/hr by Tier -->
-          <div class="sidebar-section">
-            <div class="section-heading">Measured Coins / hr</div>
-            <div id="tierSummaryList" class="tier-summary-list">
-              <div class="ledger-empty">Complete a run to measure Coins/hr.</div>
+          <!-- TAB 2: LOADOUT (Zero-tap OCR observer) -->
+          <div id="tabLoadout" class="tab-panel" role="tabpanel" hidden>
+            <div class="sidebar-section">
+              <div class="loadout-actions">
+                <button id="observeBtn" class="primary-btn" type="button">Observe Screen</button>
+                <button id="resetAccountBtn" class="mini-btn" type="button" title="Clear observed loadout">Clear</button>
+              </div>
+              <div id="observeMeta" class="gem-status">Open Cards, Modules, or UWs in-game and click Observe (zero taps).</div>
             </div>
-          </div>
 
-          <!-- Run Ledger -->
-          <div class="sidebar-section">
-            <div class="section-heading">
-              <span>Run Ledger</span>
-              <span id="ledgerCount" class="gem-count">0</span>
+            <div class="sidebar-section">
+              <div class="section-heading">
+                <span>Cards</span>
+                <span id="cardsCount" class="gem-count">0</span>
+              </div>
+              <div id="loadoutCards" class="chip-grid">
+                <span class="ledger-empty">None observed yet.</span>
+              </div>
             </div>
-            <ul id="runLedgerList" class="ledger-list">
-              <li class="ledger-empty">No completed runs logged yet.</li>
-            </ul>
+
+            <div class="sidebar-section">
+              <div class="section-heading">
+                <span>Modules</span>
+                <span id="modulesCount" class="gem-count">0</span>
+              </div>
+              <div id="loadoutModules" class="chip-grid">
+                <span class="ledger-empty">None observed yet.</span>
+              </div>
+            </div>
+
+            <div class="sidebar-section">
+              <div class="section-heading">
+                <span>Ultimate Weapons</span>
+                <span id="uwsCount" class="gem-count">0</span>
+              </div>
+              <div id="loadoutUws" class="chip-grid">
+                <span class="ledger-empty">None observed yet.</span>
+              </div>
+            </div>
+
+            <div class="sidebar-section">
+              <div class="section-heading">Presets Seen</div>
+              <div id="loadoutPresets" class="chip-grid">
+                <span class="ledger-empty">None observed yet.</span>
+              </div>
+            </div>
           </div>
         </div>
       </aside>
@@ -243,6 +326,46 @@
       </div>
     </div>
   </main>
+
+  <!-- Contextual On-Demand Wiki Drawer -->
+  <div id="wikiBackdrop" class="drawer-backdrop" hidden></div>
+  <aside id="wikiDrawer" class="wiki-drawer" aria-label="Game Wiki Drawer" hidden>
+    <div class="card-header">
+      <div class="header-left">
+        <span class="title">Wiki</span>
+        <span id="wikiCachePill" class="pill" hidden></span>
+      </div>
+      <div class="sidebar-header-actions">
+        <button id="wikiRefreshBtn" class="mini-btn" type="button" hidden>Refresh</button>
+        <a id="wikiExternalLink" class="mini-btn" href="#" target="_blank" rel="noopener noreferrer" hidden>Fandom &nearr;</a>
+        <button id="closeWikiBtn" class="icon-btn" type="button" title="Close Wiki">&times;</button>
+      </div>
+    </div>
+
+    <div class="wiki-search-bar">
+      <input id="wikiSearchInput" class="compact-input text" type="search" placeholder="Search cards, modules, UWs, enemies, tiers..." autocomplete="off" />
+      <div id="wikiCats" class="wiki-cats" role="group" aria-label="Category filter">
+        <button type="button" data-cat="" class="active">All</button>
+        <button type="button" data-cat="card">Cards</button>
+        <button type="button" data-cat="module">Modules</button>
+        <button type="button" data-cat="uw">UWs</button>
+        <button type="button" data-cat="enemy">Enemies</button>
+        <button type="button" data-cat="tier">Tiers</button>
+      </div>
+    </div>
+
+    <div class="wiki-drawer-body">
+      <div id="wikiResults" class="wiki-results"></div>
+      <article id="wikiArticle" class="wiki-article" hidden>
+        <div class="wiki-article-head">
+          <h2 id="wikiTitle"></h2>
+          <div id="wikiMeta" class="wiki-meta"></div>
+        </div>
+        <div id="wikiError" class="alert-banner amber" hidden></div>
+        <div id="wikiContent" class="wiki-content"></div>
+      </article>
+    </div>
+  </aside>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 

@@ -548,19 +548,40 @@ def read_home_tier(
     return parse_tier_from_text(texts[0])
 
 
-def detect_home_battle(
+def detect_end_stats_retry(
     frame: np.ndarray,
     *,
     ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
     timeout: float = 2.5,
 ) -> ButtonHit | None:
-    """Detect the Home screen BATTLE button via triple-anchored OCR.
+    """Detect the green RETRY button on a normal GAME STATS modal (requires HOME sibling too)."""
+    home_hit = detect_end_stats_home(frame, ocr_fn=ocr_fn, timeout=timeout)
+    if home_hit is None or home_hit.retry_rect is None:
+        return None
+    x, y, w, h = home_hit.retry_rect
+    return ButtonHit(
+        rect=(x, y, w, h),
+        center=(x + w // 2, y + h // 2),
+        label="RETRY",
+        screen="game_stats",
+        retry_rect=home_hit.retry_rect,
+    )
+
+
+def detect_home_battle(
+    frame: np.ndarray,
+    *,
+    allow_resume: bool = False,
+    ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+    timeout: float = 2.5,
+) -> ButtonHit | None:
+    """Detect the Home screen BATTLE (or optionally RESUME) button via triple-anchored OCR.
 
     Requires:
     - Not in an active battle (side-menu toggle not visible)
     - Top header reads BATTLE (not TOURNAMENT)
     - Center difficulty region reads DIFFICULTY or TIER
-    - Lower BATTLE button region reads BATTLE (not TOURNAMENT / RESUME)
+    - Lower button region reads BATTLE (or RESUME when `allow_resume=True`), never TOURNAMENT
     """
     if frame is None or frame.ndim != 3:
         return None
@@ -580,20 +601,29 @@ def detect_home_battle(
         return None
 
     hdr_text, diff_text, btn_text = (t.upper() for t in texts)
-    if "TOURNAMENT" in hdr_text or "TOURNAMENT" in btn_text or "RESUME" in btn_text:
+    if "TOURNAMENT" in hdr_text or "TOURNAMENT" in btn_text:
         return None
     if not re.search(r"\bBATTLE\b", hdr_text):
         return None
     if not (re.search(r"\bDIFFICULTY\b", diff_text) or re.search(r"\bTIER\b", diff_text)):
         return None
-    if not re.search(r"\bBATTLE\b", btn_text):
+
+    is_resume = bool(re.search(r"\bRESUME\b", btn_text))
+    is_battle = bool(re.search(r"\bBATTLE\b", btn_text))
+    if is_resume:
+        if not allow_resume:
+            return None
+        label = "RESUME"
+    elif is_battle:
+        label = "BATTLE"
+    else:
         return None
 
     bx, by, bw, bh = btn_rect
     return ButtonHit(
         rect=btn_rect,
         center=(bx + bw // 2, by + bh // 2),
-        label="BATTLE",
+        label=label,
         screen="home",
         tier=parse_tier_from_text(texts[1]),
     )

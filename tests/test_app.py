@@ -63,6 +63,8 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
         assert status["run_flow"] == {
             "auto_home": False,
             "auto_battle": False,
+            "auto_retry": False,
+            "auto_resume": False,
             "status": "off",
             "runs_restarted": 0,
             "holding": False,
@@ -122,7 +124,12 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
         assert saved["mode"] == "timer"
         assert saved["ad_gems"] == {"enabled": True, "timer_interval_sec": 600.0}
         assert saved["floating_gems"] == {"enabled": False, "timer_interval_sec": 180.0}
-        assert saved["run_flow"] == {"auto_home": True, "auto_battle": True}
+        assert saved["run_flow"] == {
+            "auto_home": True,
+            "auto_battle": True,
+            "auto_retry": False,
+            "auto_resume": False,
+        }
 
         # Stop harvesting via partial payload (persists running: false)
         stopped = client.post("/api/harvest", json={"running": False})

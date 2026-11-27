@@ -14,7 +14,7 @@ import cv2
 import numpy as np
 from flask import Flask, Response, jsonify, request, send_from_directory
 
-from towerpilot import __version__, ocr
+from towerpilot import __version__, loadouts, ocr, wiki
 from towerpilot.capture import FrameSource
 from towerpilot.collector import GemCollector
 from towerpilot.config import CONFIG_PATH, VALID_MODES, deep_merge, load_config, save_config
@@ -23,12 +23,13 @@ STATIC_DIR = Path(__file__).resolve().parent / "towerpilot" / "static"
 
 _HARVEST_TOP_KEYS = frozenset({"running", "mode", "ad_gems", "floating_gems", "run_flow", "run_rules"})
 _HARVEST_GEM_KEYS = frozenset({"enabled", "timer_interval_sec"})
-_HARVEST_FLOW_KEYS = frozenset({"auto_home", "auto_battle"})
+_HARVEST_FLOW_KEYS = frozenset({"auto_home", "auto_battle", "auto_retry", "auto_resume"})
 _RUN_RULES_KEYS = frozenset(
     {
         "profile_name",
         "finish_and_stop",
         "max_runs",
+        "expected_tier",
         "no_start_enabled",
         "no_start_from",
         "no_start_until",
@@ -213,6 +214,9 @@ def create_app(
     state: dict[str, Any] = {"cfg": load_config(config_path)}
 
     frames = frame_source if frame_source is not None else FrameSource(state["cfg"])
+    data_dir = config_path.parent / "data"
+    account_store = loadouts.AccountStore(data_dir / "account.json")
+    wiki_cache_path = data_dir / "wiki_cache.json"
     event_log_path = config_path.parent / "logs" / "events.jsonl"
     gem_collector = (
         collector
@@ -256,6 +260,8 @@ def create_app(
         "state": state,
         "frames": frames,
         "collector": gem_collector,
+        "account_store": account_store,
+        "wiki_cache_path": wiki_cache_path,
         "shutdown": shutdown,
         "update_harvest": update_harvest,
     }
@@ -311,6 +317,41 @@ def create_app(
                 gem_collector.reset_runs_restarted()
             return jsonify(status_payload())
         except (ValueError, TypeError) as exc:
+            return jsonify({"error": str(exc)}), 400
+
+    @app.route("/api/account", methods=["GET", "POST"])
+    def api_account() -> tuple[Response, int] | Response:
+        if request.method == "GET":
+            return jsonify(account_store.snapshot())
+        payload = request.get_json(silent=True)
+        if not isinstance(payload, dict):
+            return jsonify({"error": "JSON object expected"}), 400
+        action = payload.get("action")
+        if action == "reset":
+            return jsonify({"account": account_store.reset()})
+        if action == "observe":
+            try:
+                frame, _backend = frames.latest_or_grab(max_age_sec=1.5)
+                obs = loadouts.observe_frame(frame)
+                snap = account_store.merge_observation(obs)
+                return jsonify({"observed": obs, "account": snap})
+            except Exception as exc:
+                return jsonify({"error": str(exc)}), 502
+        return jsonify({"error": "action must be 'observe' or 'reset'"}), 400
+
+    @app.route("/api/wiki")
+    def api_wiki() -> tuple[Response, int] | Response:
+        mode = (request.args.get("mode") or "entry").strip().lower()
+        q = (request.args.get("q") or request.args.get("slug") or "").strip()
+        cat = (request.args.get("category") or "").strip().lower() or None
+        if mode == "search":
+            return jsonify({"results": wiki.search_index(q, category=cat)})
+        if not q:
+            return jsonify({"error": "q or slug is required"}), 400
+        refresh = request.args.get("refresh") in ("1", "true", "yes")
+        try:
+            return jsonify(wiki.fetch_entry(q, refresh=refresh, cache_path=wiki_cache_path))
+        except ValueError as exc:
             return jsonify({"error": str(exc)}), 400
 
     @app.route("/api/stream.mjpg")

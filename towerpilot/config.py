@@ -31,11 +31,14 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "run_flow": {
         "auto_home": False,
         "auto_battle": False,
+        "auto_retry": False,
+        "auto_resume": False,
     },
     "run_rules": {
         "profile_name": "",
         "finish_and_stop": False,
         "max_runs": 0,
+        "expected_tier": 0,
         "no_start_enabled": False,
         "no_start_from": "23:00",
         "no_start_until": "07:00",
@@ -222,6 +225,14 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
                 flow_raw.get("auto_battle", DEFAULT_CONFIG["run_flow"]["auto_battle"]),
                 "run_flow.auto_battle",
             ),
+            "auto_retry": _require_bool(
+                flow_raw.get("auto_retry", DEFAULT_CONFIG["run_flow"]["auto_retry"]),
+                "run_flow.auto_retry",
+            ),
+            "auto_resume": _require_bool(
+                flow_raw.get("auto_resume", DEFAULT_CONFIG["run_flow"]["auto_resume"]),
+                "run_flow.auto_resume",
+            ),
         },
         "run_rules": {
             "profile_name": profile_name,
@@ -234,6 +245,12 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
                 "run_rules.max_runs",
                 0,
                 9999,
+            ),
+            "expected_tier": _require_int(
+                rules_raw.get("expected_tier", DEFAULT_CONFIG["run_rules"]["expected_tier"]),
+                "run_rules.expected_tier",
+                0,
+                24,
             ),
             "no_start_enabled": _require_bool(
                 rules_raw.get("no_start_enabled", DEFAULT_CONFIG["run_rules"]["no_start_enabled"]),

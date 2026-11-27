@@ -6,7 +6,7 @@ ADB socket / MuMu native frames in, human-like ADB socket taps out. No memory re
 ## Hard rules
 
 1. **ADB via socket only.** Every screencap, tap, and `dumpsys` command goes through `towerpilot/adb.py` (socket client to `127.0.0.1:5037`). Never spawn `adb.exe` per command: spawning `adb.exe` repeatedly flashes console windows and exhausts Windows socket buffers on long runs.
-2. **Never end, surrender, or cancel a live run.** This app only collects gems during active battles and, when `run_flow` is explicitly enabled, performs OCR-verified `GAME STATS -> HOME` and `Home -> BATTLE` transitions outside battles (rejecting tournaments). It never surrenders, exits battles, or enters tournaments.
+2. **Never end, surrender, or cancel a live run.** This app only collects gems during active battles and, when `run_flow` is explicitly enabled, performs OCR-verified boundary transitions outside battles: `GAME STATS -> HOME` or `GAME STATS -> RETRY`, `Home -> BATTLE` (optionally gated by `expected_tier`), and crash-recovery `Home -> RESUME` — always rejecting tournaments. It never surrenders, exits battles, or enters tournaments.
 3. **Tower on screen or hands off.** When `safety.battle_only` is enabled, every tap requires:
    - `safety.allow_taps` enabled (unless `dry_run`),
    - a fresh ADB screencap showing an undimmed battle HUD (`detectors.menu_toggle_visible`),

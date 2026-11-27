@@ -236,8 +236,10 @@ def decide_home_action(
     *,
     runs_restarted: int,
     rules: dict[str, Any],
+    detected_tier: int | None = None,
+    check_tier: bool = False,
 ) -> tuple[str, str]:
-    """Pure decision for Home -> BATTLE: returns ('battle', 'ok') or ('hold', reason_code)."""
+    """Pure decision for starting a new run (BATTLE or RETRY): ('battle', 'ok') or ('hold', reason)."""
     if bool(rules.get("finish_and_stop", False)):
         return "hold", "finish_and_stop"
 
@@ -251,10 +253,21 @@ def decide_home_action(
         if in_time_window(now_local, start, end):
             return "hold", "no_start_window"
 
+    if check_tier:
+        expected_tier = int(rules.get("expected_tier", 0) or 0)
+        if expected_tier > 0 and detected_tier != expected_tier:
+            return "hold", "tier_mismatch"
+
     return "battle", "ok"
 
 
-def hold_label(reason: str | None, rules: dict[str, Any], runs_restarted: int) -> str:
+def hold_label(
+    reason: str | None,
+    rules: dict[str, Any],
+    runs_restarted: int,
+    *,
+    detected_tier: int | None = None,
+) -> str:
     if reason == "finish_and_stop":
         return "holding (finish & stop)"
     if reason == "max_runs":
@@ -264,6 +277,10 @@ def hold_label(reason: str | None, rules: dict[str, Any], runs_restarted: int) -
         start = str(rules.get("no_start_from", "") or "")
         end = str(rules.get("no_start_until", "") or "")
         return f"holding (quiet {start}-{end})"
+    if reason == "tier_mismatch":
+        expected_tier = int(rules.get("expected_tier", 0) or 0)
+        got = f"T{detected_tier}" if detected_tier is not None else "T?"
+        return f"holding (tier {got} != T{expected_tier})"
     return f"holding ({reason})" if reason else ""
 
 

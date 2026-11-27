@@ -409,6 +409,7 @@ def test_api_run_rules_and_runs_endpoints(tmp_path: Path):
             "profile_name": "Overnight T9",
             "finish_and_stop": True,
             "max_runs": 4,
+            "expected_tier": 0,
             "no_start_enabled": True,
             "no_start_from": "22:30",
             "no_start_until": "06:30",
@@ -463,3 +464,142 @@ def test_detect_home_battle_extracts_tier_and_end_stats_preserves_retry_rect():
     assert stats_hit is not None
     assert stats_hit.label == "HOME"
     assert stats_hit.retry_rect is not None
+
+    retry_hit = detectors.detect_end_stats_retry(
+        frame,
+        ocr_fn=lambda crops: ["GAME STATS", "RETRY", "HOME"],
+    )
+    assert retry_hit is not None
+    assert retry_hit.label == "RETRY"
+
+    # RESUME rejected by default, accepted when allow_resume=True, TOURNAMENT always rejected
+    assert detectors.detect_home_battle(frame, ocr_fn=lambda c: ["BATTLE", "DIFFICULTY Tier 9", "RESUME"]) is None
+    res_hit = detectors.detect_home_battle(
+        frame, allow_resume=True, ocr_fn=lambda c: ["BATTLE", "DIFFICULTY Tier 9", "RESUME"]
+    )
+    assert res_hit is not None and res_hit.label == "RESUME" and res_hit.tier == 9
+    assert detectors.detect_home_battle(
+        frame, allow_resume=True, ocr_fn=lambda c: ["TOURNAMENT", "DIFFICULTY Tier 9", "RESUME"]
+    ) is None
+
+
+def test_collector_auto_retry_falls_back_to_home_when_holding(tmp_path: Path, monkeypatch):
+    cfg = copy.deepcopy(DEFAULT_CONFIG)
+    cfg["run_flow"]["auto_retry"] = True
+    cfg["run_flow"]["auto_home"] = True
+
+    frames = FakeFrames(np.zeros((2560, 1080, 3), dtype=np.uint8))
+    retry_rect = (80, 1660, 420, 150)
+    home_hit = detectors.ButtonHit(
+        rect=(560, 1660, 420, 150),
+        center=(770, 1735),
+        label="HOME",
+        screen="game_stats",
+        retry_rect=retry_rect,
+    )
+    retry_hit = detectors.ButtonHit(
+        rect=retry_rect,
+        center=(290, 1735),
+        label="RETRY",
+        screen="game_stats",
+        retry_rect=retry_rect,
+    )
+    monkeypatch.setattr(detectors, "detect_end_stats_home", lambda f: home_hit)
+    monkeypatch.setattr(detectors, "detect_end_stats_retry", lambda f: retry_hit)
+    monkeypatch.setattr(adb, "visible_windows", lambda *a, **kw: [f"{adb.GAME_PKG}/Activity"])
+    tapped: list[str] = []
+    monkeypatch.setattr(adb, "shell", lambda serial, cmd, **kw: tapped.append(cmd) or b"")
+
+    collector = GemCollector(
+        frames,
+        cfg,
+        flow_delay_sec=(0.0, 0.0),
+        max_taps_per_sec=100.0,
+        event_log_path=tmp_path / "events.jsonl",
+    )
+    # Normal run end -> taps RETRY directly and increments runs_restarted
+    collector.step_once()
+    assert len(tapped) == 1
+    assert collector.flow_status == "tapped RETRY"
+    assert collector.runs_restarted == 1
+
+    # Ignored RETRY tap (GAME STATS still visible after cooldown) must NOT double-log run_ended
+    monkeypatch.setattr(
+        detectors,
+        "read_end_stats",
+        lambda f: run_rules.parse_end_stats("GAME STATS Wave 8996 Tier 9 Killed By Scatter", "10T + 5T = 15T"),
+    )
+    collector._stats_logged_for_run = False
+    collector.flow_cooldown_until = 0.0
+    collector.flow_last_scan = 0.0
+    collector.step_once()
+    assert collector.runs_logged == 1
+    collector.flow_cooldown_until = 0.0
+    collector.flow_last_scan = 0.0
+    collector.step_once()
+    assert collector.runs_logged == 1  # not double-logged
+
+    # Arm finish_and_stop -> falls back to tapping HOME and PRESERVES hold reason/banner
+    cfg2 = copy.deepcopy(cfg)
+    cfg2["run_rules"]["finish_and_stop"] = True
+    collector.reconfigure(cfg2)
+    collector.flow_cooldown_until = 0.0
+    collector.flow_last_scan = 0.0
+    collector.step_once()
+    assert collector.flow_hold_reason == "finish_and_stop"
+    assert "finish & stop" in collector.flow_status
+
+    # Once on Home (no stats screen), hold status stays visible instead of resetting to 'watching'
+    monkeypatch.setattr(detectors, "detect_end_stats_home", lambda f: None)
+    collector.flow_cooldown_until = 0.0
+    collector.flow_last_scan = 0.0
+    collector.step_once()
+    assert collector.flow_hold_reason == "finish_and_stop"
+    assert "finish & stop" in collector.flow_status
+
+
+def test_collector_auto_resume_and_expected_tier_guard(tmp_path: Path, monkeypatch):
+    cfg = copy.deepcopy(DEFAULT_CONFIG)
+    cfg["run_flow"]["auto_battle"] = True
+    cfg["run_flow"]["auto_resume"] = True
+    cfg["run_rules"]["expected_tier"] = 11
+
+    frames = FakeFrames(np.zeros((2560, 1080, 3), dtype=np.uint8))
+    state = {"mode": "wrong_tier"}
+
+    def fake_home(frame, *, allow_resume=False):
+        if state["mode"] == "wrong_tier":
+            return detectors.ButtonHit(rect=(300, 1970, 510, 160), center=(555, 2050), label="BATTLE", screen="home", tier=9)
+        if state["mode"] == "resume" and allow_resume:
+            return detectors.ButtonHit(rect=(300, 1970, 510, 160), center=(555, 2050), label="RESUME", screen="home", tier=9)
+        return None
+
+    monkeypatch.setattr(detectors, "detect_home_battle", fake_home)
+    monkeypatch.setattr(adb, "visible_windows", lambda *a, **kw: [f"{adb.GAME_PKG}/Activity"])
+    tapped: list[str] = []
+    monkeypatch.setattr(adb, "shell", lambda serial, cmd, **kw: tapped.append(cmd) or b"")
+
+    collector = GemCollector(
+        frames,
+        cfg,
+        flow_delay_sec=(0.0, 0.0),
+        max_taps_per_sec=100.0,
+        event_log_path=tmp_path / "events.jsonl",
+    )
+    # 1) Wrong tier on Home -> holds with tier_mismatch (no tap!)
+    collector.step_once()
+    assert tapped == []
+    assert collector.flow_hold_reason == "tier_mismatch"
+    assert "T9 != T11" in collector.flow_status
+
+    # 2) Crashed run RESUME appears -> taps RESUME even if finish_and_stop is armed
+    cfg2 = copy.deepcopy(cfg)
+    cfg2["run_rules"]["finish_and_stop"] = True
+    collector.reconfigure(cfg2)
+    state["mode"] = "resume"
+    collector.flow_last_scan = 0.0
+    collector.step_once()
+    assert len(tapped) == 1
+    assert collector.flow_status == "tapped RESUME"
+    assert collector.runs_restarted == 0
+    assert collector._run_start_exact is False

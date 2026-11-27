@@ -529,8 +529,275 @@
 
     .layout.sidebar-collapsed .sidebar-title,
     .layout.sidebar-collapsed #sidebarStatePill,
+    .layout.sidebar-collapsed .sidebar-wiki-btn,
     .layout.sidebar-collapsed .sidebar-body {
       display: none;
+    }
+
+    .sidebar-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+    }
+
+    .sidebar-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .sidebar-tabs button {
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s, background 0.12s;
+    }
+
+    .sidebar-tabs button:hover {
+      color: var(--text);
+    }
+
+    .sidebar-tabs button.active {
+      color: var(--cyan);
+      border-bottom-color: var(--cyan);
+      background: rgba(34, 211, 238, 0.06);
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
+    .stat-link {
+      background: none;
+      border: none;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .stat-link:disabled {
+      cursor: default;
+    }
+
+    .stat-link:not(:disabled):hover {
+      color: var(--cyan);
+      text-decoration: underline;
+    }
+
+    .loadout-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .primary-btn {
+      flex: 1 1 auto;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.5);
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .primary-btn:hover {
+      background: rgba(34, 211, 238, 0.22);
+      border-color: var(--cyan);
+    }
+
+    .primary-btn:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+
+    .chip-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .wiki-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      max-width: 100%;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+
+    .wiki-chip:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: var(--cyan-dim);
+    }
+
+    .wiki-chip .chip-detail {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .inline-link {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      text-decoration: underline dotted rgba(139, 155, 180, 0.55);
+      text-underline-offset: 2px;
+    }
+
+    .inline-link:hover {
+      color: var(--cyan);
+      text-decoration-color: var(--cyan);
+    }
+
+    /* Slide-over Contextual Wiki Drawer */
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 12, 0.55);
+      z-index: 45;
+    }
+
+    .drawer-backdrop[hidden] { display: none; }
+
+    .wiki-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(440px, 94vw);
+      background: var(--surface);
+      border-left: 1px solid var(--border-strong);
+      box-shadow: -12px 0 32px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      z-index: 50;
+    }
+
+    .wiki-drawer[hidden] { display: none; }
+
+    .wiki-drawer a.mini-btn {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .wiki-search-bar {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .wiki-cats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .wiki-cats button {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .wiki-cats button.active {
+      border-color: rgba(34, 211, 238, 0.45);
+      background: var(--cyan-dim);
+      color: var(--cyan);
+    }
+
+    .wiki-drawer-body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .wiki-results {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .wiki-article[hidden] { display: none; }
+
+    .wiki-article {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .wiki-article-head h2 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .wiki-meta {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .wiki-content {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .wiki-heading {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .wiki-row {
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
     }
 
     .layout.sidebar-collapsed .sidebar-header {

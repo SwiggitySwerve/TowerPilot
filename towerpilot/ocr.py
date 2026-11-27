@@ -150,13 +150,13 @@ def _parse_batch_rows(lines: list[str], count: int) -> list[list[tuple[int, int,
     return rows
 
 
-def read_texts(
+def read_lines(
     crops: Iterable[np.ndarray],
     *,
     scale: float = 2.0,
     timeout: float = 3.0,
-) -> list[str]:
-    """Recognize text for each BGR crop in a single warm WinRT OCR round-trip."""
+) -> list[list[tuple[int, int, str]]]:
+    """Recognize positioned OCR lines (y, x, text) for each BGR crop in one warm round-trip."""
     crop_list = list(crops)
     if not crop_list:
         return []
@@ -164,8 +164,10 @@ def read_texts(
     temp_paths: list[str] = []
     try:
         entries: list[dict] = []
-        for idx, crop in enumerate(crop_list):
+        slot_map: list[int | None] = []
+        for crop in crop_list:
             if crop is None or crop.size == 0:
+                slot_map.append(None)
                 continue
             img = crop
             if scale != 1.0:
@@ -175,20 +177,45 @@ def read_texts(
             temp_paths.append(path)
             if not cv2.imwrite(path, img):
                 raise OSError("Failed to write temporary OCR crop")
+            slot_map.append(len(entries))
             entries.append({"index": len(entries), "path": path})
 
         if not entries:
-            return ["" for _ in crop_list]
+            return [[] for _ in crop_list]
 
         lines = _WARM.recognize(entries, deadline)
         parsed = _parse_batch_rows(lines, len(entries))
-        return [" ".join(text for _, _, text in rows).strip() for rows in parsed]
+        inv = (1.0 / scale) if scale and scale != 1.0 else 1.0
+        out: list[list[tuple[int, int, str]]] = []
+        for slot in slot_map:
+            if slot is None:
+                out.append([])
+            else:
+                out.append(
+                    [
+                        (int(round(y * inv)), int(round(x * inv)), text)
+                        for y, x, text in parsed[slot]
+                        if text
+                    ]
+                )
+        return out
     finally:
         for path in temp_paths:
             try:
                 os.remove(path)
             except OSError:
                 pass
+
+
+def read_texts(
+    crops: Iterable[np.ndarray],
+    *,
+    scale: float = 2.0,
+    timeout: float = 3.0,
+) -> list[str]:
+    """Recognize text for each BGR crop in a single warm WinRT OCR round-trip."""
+    batches = read_lines(crops, scale=scale, timeout=timeout)
+    return [" ".join(text for _, _, text in rows).strip() for rows in batches]
 
 
 def shutdown() -> None:

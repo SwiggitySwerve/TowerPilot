@@ -2,6 +2,7 @@
 config.yaml
 config.yaml.bak-*
 logs/
+/data/
 
 # Legacy v1 local machine state (kept ignored so local files never enter git)
 backend/
