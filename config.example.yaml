@@ -6,6 +6,9 @@ ad_gems:
 floating_gems:
   enabled: true
   timer_interval_sec: 300.0
+run_flow:
+  auto_home: false
+  auto_battle: false
 safety:
   battle_only: true
 adb:

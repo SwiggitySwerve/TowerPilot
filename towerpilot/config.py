@@ -27,6 +27,10 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "enabled": True,
         "timer_interval_sec": 300.0,
     },
+    "run_flow": {
+        "auto_home": False,
+        "auto_battle": False,
+    },
     "safety": {
         "battle_only": True,
     },
@@ -143,6 +147,7 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
 
     ad_raw = _section(cfg, "ad_gems")
     fg_raw = _section(cfg, "floating_gems")
+    flow_raw = _section(cfg, "run_flow")
     safety_raw = _section(cfg, "safety")
     adb_raw = _section(cfg, "adb")
     stream_raw = _section(cfg, "stream")
@@ -173,6 +178,16 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
                 "floating_gems.timer_interval_sec",
                 5.0,
                 86400.0,
+            ),
+        },
+        "run_flow": {
+            "auto_home": _require_bool(
+                flow_raw.get("auto_home", DEFAULT_CONFIG["run_flow"]["auto_home"]),
+                "run_flow.auto_home",
+            ),
+            "auto_battle": _require_bool(
+                flow_raw.get("auto_battle", DEFAULT_CONFIG["run_flow"]["auto_battle"]),
+                "run_flow.auto_battle",
             ),
         },
         "safety": {

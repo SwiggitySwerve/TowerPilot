@@ -395,6 +395,7 @@
 
     .gem-dot.ad { background: var(--cyan); }
     .gem-dot.floating { background: var(--pink); }
+    .gem-dot.flow { background: var(--green); }
 
     .gem-name {
       font-size: 14px;
@@ -452,6 +453,12 @@
       background: var(--pink-dim);
       border-color: rgba(244, 114, 182, 0.5);
       color: var(--pink);
+    }
+
+    .toggle-btn.on.flow {
+      background: var(--green-dim);
+      border-color: rgba(52, 211, 153, 0.5);
+      color: var(--green);
     }
 
     .timer-row {
@@ -658,6 +665,34 @@
           </div>
         </section>
 
+        <section class="card gem-list" aria-label="Run Continuity">
+          <div class="gem-row">
+            <div class="gem-top">
+              <div class="gem-info">
+                <div class="gem-name-line">
+                  <span class="gem-dot flow" aria-hidden="true"></span>
+                  <span class="gem-name">End Stats &rarr; Home</span>
+                </div>
+                <div id="flowStatus" class="gem-status">off</div>
+              </div>
+              <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+            </div>
+          </div>
+          <div class="gem-row">
+            <div class="gem-top">
+              <div class="gem-info">
+                <div class="gem-name-line">
+                  <span class="gem-dot flow" aria-hidden="true"></span>
+                  <span class="gem-name">Auto Re-Battle</span>
+                  <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
+                </div>
+                <div class="gem-status">Tap BATTLE on main menu</div>
+              </div>
+              <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+            </div>
+          </div>
+        </section>
+
         <section class="card" aria-label="Recent Activity">
           <div class="card-header">
             <span class="title">Recent Activity</span>
@@ -857,6 +892,23 @@
       $("floatingTimerRow").hidden = mode !== "timer";
       syncTimerInput($("floatingTimerInput"), $("floatingTimerHuman"), fg.timer_interval_sec);
 
+      // Run continuity (End Stats -> Home, Auto Re-Battle)
+      const flow = data.run_flow || {};
+      const autoHomeOn = Boolean(flow.auto_home);
+      const autoHomeBtn = $("autoHomeBtn");
+      autoHomeBtn.textContent = autoHomeOn ? "ON" : "OFF";
+      autoHomeBtn.className = "toggle-btn flow" + (autoHomeOn ? " on" : "");
+      autoHomeBtn.setAttribute("aria-pressed", String(autoHomeOn));
+
+      const autoBattleOn = Boolean(flow.auto_battle);
+      const autoBattleBtn = $("autoBattleBtn");
+      autoBattleBtn.textContent = autoBattleOn ? "ON" : "OFF";
+      autoBattleBtn.className = "toggle-btn flow" + (autoBattleOn ? " on" : "");
+      autoBattleBtn.setAttribute("aria-pressed", String(autoBattleOn));
+
+      $("runsRestarted").textContent = String(flow.runs_restarted ?? 0);
+      $("flowStatus").textContent = flow.status ? String(flow.status) : "off";
+
       // Recent activity
       renderActivity(data.recent);
     }
@@ -928,6 +980,16 @@
     $("floatingToggleBtn").addEventListener("click", () => {
       const next = !(lastStatus && lastStatus.floating_gems && lastStatus.floating_gems.enabled);
       updateHarvest({ floating_gems: { enabled: next } });
+    });
+
+    $("autoHomeBtn").addEventListener("click", () => {
+      const next = !(lastStatus && lastStatus.run_flow && lastStatus.run_flow.auto_home);
+      updateHarvest({ run_flow: { auto_home: next } });
+    });
+
+    $("autoBattleBtn").addEventListener("click", () => {
+      const next = !(lastStatus && lastStatus.run_flow && lastStatus.run_flow.auto_battle);
+      updateHarvest({ run_flow: { auto_battle: next } });
     });
 
     function bindTimerInput(inputEl, humanEl, key) {

@@ -43,6 +43,10 @@ _FG_ORBIT_JITTER = 0.03
 
 _TIMER_SKIP_BACKOFF_SEC = 5.0
 
+_FLOW_SCAN_INTERVAL_SEC = 3.0
+_FLOW_COOLDOWN_SEC = 15.0
+_FLOW_DELAY_SEC = (2.0, 4.0)
+
 
 class GemCollector:
     """Owns the background gem-collection thread, timers, detection state, and recent log."""
@@ -57,6 +61,7 @@ class GemCollector:
         ad_delay_sec: tuple[float, float] = _AD_DELAY_SEC,
         fg_taps_per_burst: int = _FG_TAPS_PER_BURST,
         max_taps_per_sec: float = _TAP_MAX_PER_SEC,
+        flow_delay_sec: tuple[float, float] = _FLOW_DELAY_SEC,
         event_log_path: Path | None = None,
     ) -> None:
         self._frames = frame_source
@@ -66,6 +71,7 @@ class GemCollector:
         self._ad_delay_sec = ad_delay_sec
         self._fg_taps_per_burst = fg_taps_per_burst
         self._max_taps_per_sec = max_taps_per_sec
+        self._flow_delay_sec = flow_delay_sec
         self._event_log_path = event_log_path
 
         self._lock = threading.RLock()
@@ -95,6 +101,14 @@ class GemCollector:
         self.fg_next_timer_at = 0.0
         self.fg_status = "stopped" if cfg["floating_gems"]["enabled"] else "off"
         self.fg_count = 0
+
+        # End-of-run continuity state (GAME STATS -> HOME, Home -> BATTLE)
+        flow_cfg = cfg.get("run_flow", {})
+        self.flow_last_scan = 0.0
+        self.flow_cooldown_until = 0.0
+        self.flow_pending_action: tuple[str, detectors.ButtonHit, float] | None = None
+        self.flow_status = "stopped" if (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")) else "off"
+        self.runs_restarted = 0
 
         self._recent: deque[dict[str, Any]] = deque(maxlen=30)
         self._reset_timers(time.monotonic())
@@ -177,6 +191,13 @@ class GemCollector:
             elif not self.running:
                 self.fg_status = "stopped"
 
+            flow_cfg = cfg.get("run_flow", {})
+            if not (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")):
+                self.flow_pending_action = None
+                self.flow_status = "off"
+            elif not self.running:
+                self.flow_status = "stopped"
+
     def start(self) -> bool:
         with self._lock:
             if self.running:
@@ -188,8 +209,11 @@ class GemCollector:
             self._last_battle_state = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
+            self.flow_pending_action = None
             self.ad_status = "starting" if self._cfg["ad_gems"]["enabled"] else "off"
             self.fg_status = "starting" if self._cfg["floating_gems"]["enabled"] else "off"
+            flow_cfg = self._cfg.get("run_flow", {})
+            self.flow_status = "watching" if (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")) else "off"
             self._thread = threading.Thread(target=self._run_loop, name="gem-collector", daemon=True)
             self._thread.start()
             self.log(
@@ -216,8 +240,11 @@ class GemCollector:
             self._last_battle_state = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
+            self.flow_pending_action = None
             self.ad_status = "stopped" if self._cfg["ad_gems"]["enabled"] else "off"
             self.fg_status = "stopped" if self._cfg["floating_gems"]["enabled"] else "off"
+            flow_cfg = self._cfg.get("run_flow", {})
+            self.flow_status = "stopped" if (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")) else "off"
             self.log(
                 "Harvesting OFF",
                 event="harvest_stopped",
@@ -446,10 +473,173 @@ class GemCollector:
             else:
                 self.fg_status = "off"
             self.ad_pending_due_at = None
+            self._step_run_flow(frame, now)
             return
 
+        self.flow_pending_action = None
+        flow_cfg = self._cfg.get("run_flow", {})
+        self.flow_status = "in battle" if (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")) else "off"
         self._step_ad_gems(frame, now)
         self._step_floating_gems(frame, now)
+
+    def _execute_flow_action(self, kind: str) -> bool:
+        """Verify foreground game window and target OCR on a fresh ADB frame, then tap."""
+        try:
+            fresh = self._frames.grab_adb()
+        except Exception as exc:
+            self.flow_status = "capture error"
+            self.flow_pending_action = None
+            self.log(f"Auto-restart capture failed: {exc}", event="auto_restart_error", action=kind, error=str(exc))
+            return False
+
+        serial = self._cfg["adb"]["serial"]
+        try:
+            wins = adb.visible_windows(serial, timeout=4.0)
+            blocker = adb.foreground_blocker(wins)
+        except Exception as exc:
+            blocker = f"windows_unreadable:{type(exc).__name__}"
+        self.foreground_blocker = blocker
+        if blocker is not None:
+            self.flow_status = f"skipped ({blocker})"
+            self.flow_pending_action = None
+            self.log(f"Auto-restart skipped ({kind}): {blocker}", event="auto_restart_skipped", action=kind, reason=blocker)
+            return False
+
+        try:
+            hit = (
+                detectors.detect_end_stats_home(fresh)
+                if kind == "end_stats_home"
+                else detectors.detect_home_battle(fresh)
+            )
+        except Exception as exc:
+            self.flow_status = "ocr error"
+            self.flow_pending_action = None
+            self.log(f"Auto-restart OCR failed: {exc}", event="auto_restart_error", action=kind, error=str(exc))
+            return False
+
+        if hit is None:
+            self.flow_pending_action = None
+            self.flow_status = "target gone"
+            self.log(f"Auto-restart target disappeared ({kind})", event="auto_restart_gone", action=kind)
+            return False
+
+        pt = detectors.sample_interior_point(hit.rect, inset_px=16, rng=self._rng)
+        try:
+            res = self._tapper.tap(
+                serial,
+                pt[0],
+                pt[1],
+                cfg=self._tap_cfg(),
+                input_display=self._frames.input_display,
+                reason=f"run_flow:{kind}",
+                frame_size=(int(fresh.shape[1]), int(fresh.shape[0])),
+            )
+        except TapRefused as exc:
+            self.flow_pending_action = None
+            self.flow_status = "tap refused"
+            self.log(f"Auto-restart tap refused ({kind}): {exc}", event="tap_refused", reason=kind, error=str(exc))
+            return False
+
+        now = time.monotonic()
+        self.flow_pending_action = None
+        self.flow_cooldown_until = now + _FLOW_COOLDOWN_SEC
+        if kind == "end_stats_home":
+            self.flow_status = "tapped HOME"
+            self.log(
+                f"End Stats -> HOME tapped at {res['x']},{res['y']}",
+                event="end_stats_home_tapped",
+                x=res["x"],
+                y=res["y"],
+            )
+        else:
+            self.runs_restarted += 1
+            self.flow_status = "tapped BATTLE"
+            self.log(
+                f"Home -> BATTLE tapped at {res['x']},{res['y']}",
+                event="home_battle_tapped",
+                x=res["x"],
+                y=res["y"],
+                runs_restarted=self.runs_restarted,
+            )
+        return True
+
+    def _step_run_flow(self, frame: np.ndarray, now: float) -> None:
+        flow_cfg = self._cfg.get("run_flow", {})
+        auto_home = bool(flow_cfg.get("auto_home"))
+        auto_battle = bool(flow_cfg.get("auto_battle"))
+        if not (auto_home or auto_battle):
+            self.flow_pending_action = None
+            self.flow_status = "off"
+            return
+
+        if now < self.flow_cooldown_until:
+            self.flow_status = f"cooldown ({int(self.flow_cooldown_until - now)}s)"
+            return
+
+        if self.flow_pending_action is not None:
+            kind, hit, due_at = self.flow_pending_action
+            still_enabled = (kind == "end_stats_home" and auto_home) or (kind == "home_battle" and auto_battle)
+            if not still_enabled:
+                self.flow_pending_action = None
+                self.flow_status = "watching"
+                return
+            if now >= due_at:
+                self._execute_flow_action(kind)
+                return
+            self.flow_status = f"tapping {hit.label} in {due_at - now:.1f}s"
+            return
+
+        if now - self.flow_last_scan < _FLOW_SCAN_INTERVAL_SEC:
+            if self.flow_status in ("off", "stopped", "in battle"):
+                self.flow_status = "watching"
+            return
+        self.flow_last_scan = now
+
+        if auto_home:
+            try:
+                stats_hit = detectors.detect_end_stats_home(frame)
+            except Exception as exc:
+                self.flow_status = "ocr error"
+                self.log(f"End Stats OCR failed: {exc}", event="auto_restart_error", action="end_stats_home", error=str(exc))
+                stats_hit = None
+            if stats_hit is not None:
+                dmin, dmax = self._flow_delay_sec
+                delay = self._rng.uniform(float(dmin), float(dmax))
+                self.flow_pending_action = ("end_stats_home", stats_hit, now + delay)
+                self.flow_status = f"tapping HOME in {delay:.1f}s"
+                self.log(
+                    f"GAME STATS detected -> HOME in {delay:.1f}s",
+                    event="end_stats_detected",
+                    rect=list(stats_hit.rect),
+                    delay_sec=round(delay, 2),
+                )
+                if delay <= 0.05:
+                    self._execute_flow_action("end_stats_home")
+                return
+
+        if auto_battle:
+            try:
+                battle_hit = detectors.detect_home_battle(frame)
+            except Exception as exc:
+                self.flow_status = "ocr error"
+                self.log(f"Home BATTLE OCR failed: {exc}", event="auto_restart_error", action="home_battle", error=str(exc))
+                battle_hit = None
+            if battle_hit is not None:
+                dmin, dmax = self._flow_delay_sec
+                delay = self._rng.uniform(float(dmin), float(dmax))
+                self.flow_pending_action = ("home_battle", battle_hit, now + delay)
+                self.flow_status = f"tapping BATTLE in {delay:.1f}s"
+                self.log(
+                    f"Home screen detected -> BATTLE in {delay:.1f}s",
+                    event="home_battle_detected",
+                    rect=list(battle_hit.rect),
+                    delay_sec=round(delay, 2),
+                )
+                if delay <= 0.05:
+                    self._execute_flow_action("home_battle")
+                return
+
+        self.flow_status = "watching"
 
     def _step_ad_gems(self, frame: np.ndarray, now: float) -> None:
         ad_cfg = self._cfg["ad_gems"]
@@ -576,6 +766,9 @@ class GemCollector:
 
             ad_status = "off" if not ad_cfg["enabled"] else (self.ad_status if self.running else "stopped")
             fg_status = "off" if not fg_cfg["enabled"] else (self.fg_status if self.running else "stopped")
+            flow_cfg = self._cfg.get("run_flow", {})
+            flow_any = bool(flow_cfg.get("auto_home") or flow_cfg.get("auto_battle"))
+            flow_status = "off" if not flow_any else (self.flow_status if self.running else "stopped")
 
             return {
                 "running": self.running,
@@ -597,6 +790,12 @@ class GemCollector:
                     if self.running and mode == "timer" and fg_cfg["enabled"]
                     else None,
                     "count": self.fg_count,
+                },
+                "run_flow": {
+                    "auto_home": bool(flow_cfg.get("auto_home")),
+                    "auto_battle": bool(flow_cfg.get("auto_battle")),
+                    "status": flow_status,
+                    "runs_restarted": self.runs_restarted,
                 },
                 "stream": {
                     "backend": self._frames.active_backend,

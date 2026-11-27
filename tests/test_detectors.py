@@ -84,3 +84,42 @@ def test_orbit_tap_points_deterministic_without_jitter():
     for x, y in pts:
         assert x < 510
         assert y < 805
+
+
+def test_detect_end_stats_home_requires_game_stats_and_rejects_tournament():
+    frame = _blank_frame()
+    # Two green buttons matching live GAME STATS layout (RETRY left, HOME right)
+    cv2.rectangle(frame, (83, 1663), (83 + 446, 1663 + 148), (60, 235, 90), 8)
+    cv2.rectangle(frame, (549, 1663), (549 + 449, 1663 + 148), (60, 235, 90), 8)
+
+    hit = detectors.detect_end_stats_home(frame, ocr_fn=lambda crops: ["GAME STATS", "RETRY", "HOME"])
+    assert hit is not None
+    assert hit.label == "HOME"
+    assert hit.screen == "game_stats"
+    assert 549 <= hit.center[0] <= 549 + 449
+
+    # Rejects tournament stats
+    assert detectors.detect_end_stats_home(
+        frame, ocr_fn=lambda crops: ["TOURNAMENT GAME STATS", "RETRY", "HOME"]
+    ) is None
+
+    # Rejects active battle (undimmed hamburger visible)
+    _draw_three_bars(frame)
+    assert detectors.detect_end_stats_home(frame, ocr_fn=lambda crops: ["GAME STATS", "RETRY", "HOME"]) is None
+
+
+def test_detect_home_battle_triple_anchored():
+    frame = _blank_frame()
+    hit = detectors.detect_home_battle(frame, ocr_fn=lambda crops: ["BATTLE", "Difficulty Tier 10", "BATTLE"])
+    assert hit is not None
+    assert hit.label == "BATTLE"
+    assert hit.screen == "home"
+    assert hit.rect == detectors.REF_HOME_BATTLE_BTN
+
+    # Rejects tournament or non-home screens
+    assert detectors.detect_home_battle(frame, ocr_fn=lambda crops: ["TOURNAMENT", "Difficulty", "BATTLE"]) is None
+    assert detectors.detect_home_battle(frame, ocr_fn=lambda crops: ["BATTLE", "Cards", "BATTLE"]) is None
+
+    # Rejects live battle
+    _draw_three_bars(frame)
+    assert detectors.detect_home_battle(frame, ocr_fn=lambda crops: ["BATTLE", "Difficulty", "BATTLE"]) is None

@@ -29,6 +29,13 @@ REF_ABILITY_ROW = (10, 1495, 420, 120)
 REF_ABILITY_ROW_CLOSED_SHIFT = 679
 REF_WAVE_BOX = (690, 1678, 170, 45)
 
+# Reference 1080x2560 end-of-run GAME STATS and Home screen ROIs
+REF_STATS_HEADER = (108, 665, 864, 230)
+REF_STATS_BUTTON_BAND = (0, 1536, 1080, 460)
+REF_HOME_HEADER = (20, 105, 590, 65)
+REF_HOME_DIFFICULTY = (300, 1200, 560, 160)
+REF_HOME_BATTLE_BTN = (300, 1970, 510, 160)
+
 
 @dataclass(frozen=True)
 class AdGemHit:
@@ -42,6 +49,14 @@ class FloatingGemHit:
     rect: tuple[int, int, int, int]
     center: tuple[int, int]
     score: float
+
+
+@dataclass(frozen=True)
+class ButtonHit:
+    rect: tuple[int, int, int, int]
+    center: tuple[int, int]
+    label: str
+    screen: str
 
 
 def scale_rect(rect: tuple[int, int, int, int], frame_shape: tuple[int, ...]) -> tuple[int, int, int, int]:
@@ -386,3 +401,119 @@ def read_wave_ocr(
         if m:
             return int(m.group(1))
     return None
+
+
+# --- End-of-run GAME STATS -> HOME and Home -> BATTLE detectors ----------
+
+def detect_end_stats_home(
+    frame: np.ndarray,
+    *,
+    ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+    timeout: float = 2.5,
+) -> ButtonHit | None:
+    """Detect the green HOME button on the normal GAME STATS modal via OCR.
+
+    Rejects tournament stats screens and live battle screens.
+    """
+    if frame is None or frame.ndim != 3:
+        return None
+    if menu_toggle_visible(frame):
+        return None
+
+    hx, hy, hw, hh = scale_rect(REF_STATS_HEADER, frame.shape)
+    header_crop = frame[hy : hy + hh, hx : hx + hw]
+
+    bx, by, bw, bh = scale_rect(REF_STATS_BUTTON_BAND, frame.shape)
+    band = frame[by : by + bh, bx : bx + bw]
+    if header_crop.size == 0 or band.size == 0:
+        return None
+
+    sx = frame.shape[1] / REF_W
+    sy = frame.shape[0] / REF_H
+    min_w, max_w = int(round(200 * sx)), int(round(560 * sx))
+    min_h, max_h = int(round(80 * sy)), int(round(240 * sy))
+
+    hsv = cv2.cvtColor(band, cv2.COLOR_BGR2HSV)
+    green = cv2.inRange(hsv, (35, 60, 120), (95, 255, 255))
+    contours, _ = cv2.findContours(green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    candidates: list[tuple[int, int, int, int]] = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        if min_w <= w <= max_w and min_h <= h <= max_h:
+            candidates.append((bx + x, by + y, w, h))
+
+    if not candidates:
+        return None
+    candidates.sort(key=lambda r: (r[0], r[1]))
+
+    crops = [header_crop] + [frame[y : y + h, x : x + w] for x, y, w, h in candidates]
+    reader = ocr_fn if ocr_fn is not None else (lambda items: ocr.read_texts(items, scale=2.0, timeout=timeout))
+    texts = reader(crops)
+    if len(texts) != len(crops):
+        return None
+
+    header_text = texts[0].upper()
+    if "GAME STATS" not in header_text or "TOURNAMENT" in header_text:
+        return None
+
+    for (x, y, w, h), raw in zip(candidates, texts[1:]):
+        upper = raw.upper()
+        if re.search(r"\bHOME\b", upper) and "RETRY" not in upper:
+            return ButtonHit(
+                rect=(x, y, w, h),
+                center=(x + w // 2, y + h // 2),
+                label="HOME",
+                screen="game_stats",
+            )
+    return None
+
+
+def detect_home_battle(
+    frame: np.ndarray,
+    *,
+    ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+    timeout: float = 2.5,
+) -> ButtonHit | None:
+    """Detect the Home screen BATTLE button via triple-anchored OCR.
+
+    Requires:
+    - Not in an active battle (side-menu toggle not visible)
+    - Top header reads BATTLE (not TOURNAMENT)
+    - Center difficulty region reads DIFFICULTY or TIER
+    - Lower BATTLE button region reads BATTLE (not TOURNAMENT / RESUME)
+    """
+    if frame is None or frame.ndim != 3:
+        return None
+    if menu_toggle_visible(frame):
+        return None
+
+    hdr_rect = scale_rect(REF_HOME_HEADER, frame.shape)
+    diff_rect = scale_rect(REF_HOME_DIFFICULTY, frame.shape)
+    btn_rect = scale_rect(REF_HOME_BATTLE_BTN, frame.shape)
+    crops = [frame[y : y + h, x : x + w] for x, y, w, h in (hdr_rect, diff_rect, btn_rect)]
+    if any(c.size == 0 for c in crops):
+        return None
+
+    reader = ocr_fn if ocr_fn is not None else (lambda items: ocr.read_texts(items, scale=2.0, timeout=timeout))
+    texts = reader(crops)
+    if len(texts) != 3:
+        return None
+
+    hdr_text, diff_text, btn_text = (t.upper() for t in texts)
+    if "TOURNAMENT" in hdr_text or "TOURNAMENT" in btn_text or "RESUME" in btn_text:
+        return None
+    if not re.search(r"\bBATTLE\b", hdr_text):
+        return None
+    if not (re.search(r"\bDIFFICULTY\b", diff_text) or re.search(r"\bTIER\b", diff_text)):
+        return None
+    if not re.search(r"\bBATTLE\b", btn_text):
+        return None
+
+    bx, by, bw, bh = btn_rect
+    return ButtonHit(
+        rect=btn_rect,
+        center=(bx + bw // 2, by + bh // 2),
+        label="BATTLE",
+        screen="home",
+    )

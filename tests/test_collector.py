@@ -201,6 +201,7 @@ def test_collector_status_matches_minimal_contract():
         "mode",
         "ad_gems",
         "floating_gems",
+        "run_flow",
         "stream",
         "battle",
         "recent",
@@ -275,4 +276,59 @@ def test_collector_persists_structured_trigger_events_to_jsonl(tmp_path, monkeyp
     assert ad_collected["trigger"] == "ocr"
     assert ad_collected["count"] == 1
     assert "iso" in ad_collected and "ts" in ad_collected
+
+
+def test_collector_auto_home_and_auto_battle_flow(tmp_path, monkeypatch):
+    import json
+
+    log_file = tmp_path / "events.jsonl"
+    cfg = copy.deepcopy(DEFAULT_CONFIG)
+    cfg["run_flow"]["auto_home"] = True
+    cfg["run_flow"]["auto_battle"] = True
+
+    obscured = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    frames = FakeFrames(obscured)
+    home_hit = detectors.ButtonHit(rect=(549, 1663, 449, 148), center=(773, 1737), label="HOME", screen="game_stats")
+    battle_hit = detectors.ButtonHit(rect=(300, 1970, 510, 160), center=(555, 2050), label="BATTLE", screen="home")
+
+    state = {"screen": "stats"}
+    monkeypatch.setattr(
+        detectors,
+        "detect_end_stats_home",
+        lambda frame: home_hit if state["screen"] == "stats" else None,
+    )
+    monkeypatch.setattr(
+        detectors,
+        "detect_home_battle",
+        lambda frame: battle_hit if state["screen"] == "home" else None,
+    )
+    monkeypatch.setattr(adb, "visible_windows", lambda *a, **kw: [f"{adb.GAME_PKG}/Activity"])
+    tapped: list[str] = []
+    monkeypatch.setattr(adb, "shell", lambda serial, cmd, **kw: tapped.append(cmd) or b"")
+
+    collector = GemCollector(
+        frames,
+        cfg,
+        flow_delay_sec=(0.0, 0.0),
+        max_taps_per_sec=100.0,
+        event_log_path=log_file,
+    )
+    # 1) On GAME STATS -> taps HOME
+    collector.step_once()
+    assert len(tapped) == 1
+    assert collector.runs_restarted == 0
+
+    # 2) Transitions to Home after cooldown -> taps BATTLE
+    state["screen"] = "home"
+    collector.flow_cooldown_until = 0.0
+    collector.flow_last_scan = 0.0
+    collector.step_once()
+    assert len(tapped) == 2
+    assert collector.runs_restarted == 1
+
+    events = [json.loads(line)["event"] for line in log_file.read_text(encoding="utf-8").splitlines()]
+    assert "end_stats_detected" in events
+    assert "end_stats_home_tapped" in events
+    assert "home_battle_detected" in events
+    assert "home_battle_tapped" in events
 

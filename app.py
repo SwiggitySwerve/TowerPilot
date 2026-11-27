@@ -20,8 +20,9 @@ from towerpilot.config import CONFIG_PATH, VALID_MODES, deep_merge, load_config,
 
 STATIC_DIR = Path(__file__).resolve().parent / "towerpilot" / "static"
 
-_HARVEST_TOP_KEYS = frozenset({"running", "mode", "ad_gems", "floating_gems"})
+_HARVEST_TOP_KEYS = frozenset({"running", "mode", "ad_gems", "floating_gems", "run_flow"})
 _HARVEST_GEM_KEYS = frozenset({"enabled", "timer_interval_sec"})
+_HARVEST_FLOW_KEYS = frozenset({"auto_home", "auto_battle"})
 
 
 def _error_frame(message: str, width: int = 540, height: int = 960) -> bytes:
@@ -87,6 +88,15 @@ def _parse_harvest_patch(payload: Any) -> tuple[bool | None, dict[str, Any]]:
         if bad_sub:
             raise ValueError(f"Unknown {section} fields: {', '.join(sorted(bad_sub))}")
         cfg_patch[section] = dict(sub)
+
+    if "run_flow" in payload:
+        sub = payload["run_flow"]
+        if not isinstance(sub, dict):
+            raise ValueError("run_flow must be a JSON object")
+        bad_flow = set(sub) - _HARVEST_FLOW_KEYS
+        if bad_flow:
+            raise ValueError(f"Unknown run_flow fields: {', '.join(sorted(bad_flow))}")
+        cfg_patch["run_flow"] = dict(sub)
 
     return running, cfg_patch
 

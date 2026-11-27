@@ -54,9 +54,16 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             "mode",
             "ad_gems",
             "floating_gems",
+            "run_flow",
             "stream",
             "battle",
             "recent",
+        }
+        assert status["run_flow"] == {
+            "auto_home": False,
+            "auto_battle": False,
+            "status": "off",
+            "runs_restarted": 0,
         }
         assert status["version"] == __version__
         assert status["running"] is False
@@ -80,6 +87,7 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
                 "mode": "timer",
                 "ad_gems": {"enabled": True, "timer_interval_sec": 600},
                 "floating_gems": {"enabled": False, "timer_interval_sec": 180},
+                "run_flow": {"auto_home": True, "auto_battle": True},
             },
         )
         assert upd.status_code == 200
@@ -93,12 +101,15 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
         assert body["floating_gems"]["timer_interval_sec"] == 180.0
         assert body["floating_gems"]["next_timer_sec"] is None
         assert body["floating_gems"]["status"] == "off"
+        assert body["run_flow"]["auto_home"] is True
+        assert body["run_flow"]["auto_battle"] is True
 
         # Persisted cleanly to config.yaml
         saved = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
         assert saved["mode"] == "timer"
         assert saved["ad_gems"] == {"enabled": True, "timer_interval_sec": 600.0}
         assert saved["floating_gems"] == {"enabled": False, "timer_interval_sec": 180.0}
+        assert saved["run_flow"] == {"auto_home": True, "auto_battle": True}
 
         # Stop harvesting via partial payload
         stopped = client.post("/api/harvest", json={"running": False})
@@ -114,6 +125,8 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             {"ad_gems": {"enabled": 1}},
             {"ad_gems": {"timer_interval_sec": 2}},
             {"floating_gems": {"extra": True}},
+            {"run_flow": {"auto_home": "yes"}},
+            {"run_flow": {"bad": True}},
         ):
             bad = client.post("/api/harvest", json=bad_body)
             assert bad.status_code == 400
