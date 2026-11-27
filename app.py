@@ -229,6 +229,8 @@ def create_app(
             profile_store = collector.profile_store
         if hasattr(collector, "telemetry"):
             telemetry = collector.telemetry
+        if hasattr(collector, "account_store"):
+            account_store = collector.account_store
     else:
         gem_collector = GemCollector(
             frames,
@@ -236,6 +238,7 @@ def create_app(
             event_log_path=event_log_path,
             profile_store=profile_store,
             telemetry=telemetry,
+            account_store=account_store,
         )
 
     def status_payload() -> dict[str, Any]:
@@ -426,22 +429,39 @@ def create_app(
     @app.route("/api/account", methods=["GET", "POST"])
     def api_account() -> tuple[Response, int] | Response:
         if request.method == "GET":
-            return jsonify(account_store.snapshot())
+            return jsonify({**account_store.snapshot(), "scan": gem_collector.scan_status()})
         payload = request.get_json(silent=True)
         if not isinstance(payload, dict):
             return jsonify({"error": "JSON object expected"}), 400
         action = payload.get("action")
         if action == "reset":
-            return jsonify({"account": account_store.reset()})
+            return jsonify({"account": account_store.reset(), "scan": gem_collector.scan_status()})
         if action == "observe":
             try:
                 frame, _backend = frames.latest_or_grab(max_age_sec=1.5)
                 obs = loadouts.observe_frame(frame)
                 snap = account_store.merge_observation(obs)
-                return jsonify({"observed": obs, "account": snap})
+                return jsonify({"observed": obs, "account": snap, "scan": gem_collector.scan_status()})
             except Exception as exc:
                 return jsonify({"error": str(exc)}), 502
-        return jsonify({"error": "action must be 'observe' or 'reset'"}), 400
+        if action == "scan":
+            scope = payload.get("scope", "all")
+            if not isinstance(scope, str):
+                return jsonify({"error": "scope must be a string"}), 400
+            queue_if_battle = payload.get("queue_if_battle", True)
+            if not isinstance(queue_if_battle, bool):
+                return jsonify({"error": "queue_if_battle must be a boolean"}), 400
+            try:
+                scan_state = gem_collector.request_scan(scope=scope, queue_if_battle=queue_if_battle)
+            except ValueError as exc:
+                return jsonify({"error": str(exc)}), 400
+            except RuntimeError as exc:
+                return jsonify({"error": str(exc)}), 409
+            return jsonify({"scan": scan_state, "account": {**account_store.snapshot(), "scan": scan_state}})
+        if action == "cancel_scan":
+            scan_state = gem_collector.cancel_scan()
+            return jsonify({"scan": scan_state, "account": {**account_store.snapshot(), "scan": scan_state}})
+        return jsonify({"error": "action must be 'observe', 'reset', 'scan', or 'cancel_scan'"}), 400
 
     @app.route("/api/wiki")
     def api_wiki() -> tuple[Response, int] | Response:

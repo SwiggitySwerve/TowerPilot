@@ -601,14 +601,17 @@ class MenuNavigator:
         profile_store: ProfileStore,
         on_run_ended_fn: Callable[[np.ndarray], dict[str, Any] | None],
         on_battle_started_fn: Callable[..., None],
+        force_home: bool = False,
+        scan_queued: bool = False,
     ) -> bool:
         """One-tap-per-tick off-battle navigation & passive run-end scraping."""
         flow_cfg = cfg.get("run_flow", {})
         auto_home, auto_battle = bool(flow_cfg.get("auto_home")), bool(flow_cfg.get("auto_battle"))
         auto_retry, auto_resume = bool(flow_cfg.get("auto_retry")), bool(flow_cfg.get("auto_resume"))
         rules = cfg.get("run_rules", {}) if isinstance(cfg.get("run_rules"), dict) else {}
+        must_go_home = bool(force_home or scan_queued)
 
-        if not _flow_any_enabled(flow_cfg):
+        if not (_flow_any_enabled(flow_cfg) or must_go_home):
             self.pending_action = self.hold_reason = self._last_hold_reason = None
             self.nav_state = "off"
             if now - self.last_scan >= self._ctx.scan_interval_sec:
@@ -630,7 +633,12 @@ class MenuNavigator:
 
         if self.pending_action is not None:
             key, tgt, due = self.pending_action
-            enabled_map = {"end_stats_home": auto_home, "end_stats_retry": auto_retry, "home_battle": auto_battle, "home_resume": auto_resume}
+            enabled_map = {
+                "end_stats_home": auto_home or must_go_home,
+                "end_stats_retry": auto_retry and not must_go_home,
+                "home_battle": auto_battle and not must_go_home,
+                "home_resume": auto_resume,
+            }
             if key in enabled_map and not enabled_map[key]:
                 self.pending_action = None
                 self.nav_state = "watching"
@@ -724,7 +732,7 @@ class MenuNavigator:
             eff_hold = pick_hold or self._legacy_guard(
                 rules, profile=next_prof or current_prof, detected_tier=ended_tier, check_tier=True, has_tier_arrows=False
             )
-            if auto_retry and "retry" in screen.targets:
+            if auto_retry and not must_go_home and "retry" in screen.targets:
                 p_ok = next_prof is not None and profiles.presets_match(next_prof, self.verified_cards_preset, self.verified_modules_preset)
                 t_ok = next_prof is not None and profiles.tier_matches(next_prof, ended_tier, ceiling_reached=self.ceiling_tier_reached)
                 if profiles.should_direct_retry(current_prof, next_prof, hold_reason=eff_hold, presets_verified=p_ok, tier_verified=t_ok):
@@ -737,9 +745,9 @@ class MenuNavigator:
                     )
                 if eff_hold is not None:
                     self._set_hold(eff_hold, rules, profile=next_prof or current_prof, detected_tier=ended_tier)
-                    if not auto_home:
+                    if not (auto_home or must_go_home):
                         return False
-            if auto_home and "home" in screen.targets:
+            if (auto_home or must_go_home) and "home" in screen.targets:
                 return self._schedule_or_execute(
                     action_key="end_stats_home", target=screen.targets["home"], now=now,
                     status_prefix="tapping HOME", detect_event="end_stats_detected",
@@ -749,7 +757,7 @@ class MenuNavigator:
             return False
 
         # Priority 3: Menu navigation & battle start on home / cards / modules.
-        if not auto_battle:
+        if must_go_home or not auto_battle:
             self.nav_state = (
                 self._format_hold_label(self.hold_reason, rules, detected_tier=self.current_tier)
                 if self.hold_reason else "watching"

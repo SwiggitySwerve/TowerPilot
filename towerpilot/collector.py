@@ -20,8 +20,10 @@ import numpy as np
 from towerpilot import adb, detectors, run_rules
 from towerpilot.capture import CaptureError, FrameSource
 from towerpilot.input import TapRefused, Tapper
+from towerpilot.loadouts import AccountStore
 from towerpilot.nav import MenuNavigator, VerifiedTapContext
 from towerpilot.profiles import ProfileStore
+from towerpilot.scanner import InventoryScanner
 from towerpilot.telemetry import DEFAULT_EVENT_LOG_PATH, Telemetry
 
 # Built-in humanization & geometry defaults (kept out of config bloat)
@@ -74,6 +76,20 @@ class _MemoryProfileStore(ProfileStore):
             return super().seed_from_config(cfg)
 
 
+class _MemoryAccountStore(AccountStore):
+    """In-memory AccountStore used when GemCollector is constructed without an explicit store."""
+
+    def __init__(self) -> None:
+        super().__init__(path=Path("__memory_account__.json"))
+        self._mem_data: dict[str, Any] | None = None
+
+    def _read_unlocked(self) -> dict[str, Any]:
+        return copy.deepcopy(self._mem_data) if self._mem_data is not None else self._empty()
+
+    def _write_unlocked(self, data: dict[str, Any]) -> None:
+        self._mem_data = copy.deepcopy(data)
+
+
 class GemCollector:
     """Owns the background gem-collection thread, timers, detection state, and telemetry."""
 
@@ -94,6 +110,8 @@ class GemCollector:
         on_notify: Callable[[str, str], None] | None = None,
         profile_store: ProfileStore | None = None,
         telemetry: Telemetry | None = None,
+        account_store: AccountStore | None = None,
+        scan_step_delay_sec: tuple[float, float] = (0.6, 1.0),
     ) -> None:
         self._frames = frame_source
         self._cfg = cfg
@@ -175,6 +193,21 @@ class GemCollector:
         flow_cfg = cfg.get("run_flow", {})
         self._nav.nav_state = "stopped" if self._flow_any_enabled(flow_cfg) else "off"
 
+        # Automated off-battle inventory scanner (0 extra threads, stepped in step_once)
+        self._account_store = account_store if account_store is not None else _MemoryAccountStore()
+        self._scanner = InventoryScanner(
+            grab_verified_frame=self._grab_verified_frame,
+            check_foreground=self._check_foreground,
+            tap=self._dispatch_menu_tap,
+            swipe=self._dispatch_menu_swipe,
+            log=self.log,
+            notify=self._notify,
+            stop_event=self._stop_event,
+            account_store=self._account_store,
+            rng=self._rng,
+            step_delay_sec=scan_step_delay_sec,
+        )
+
         self._reset_timers(now_mono)
 
     # --- Compatibility properties delegating to MenuNavigator / Telemetry ---
@@ -188,8 +221,49 @@ class GemCollector:
         return self._profile_store
 
     @property
+    def account_store(self) -> AccountStore:
+        return self._account_store
+
+    @property
     def navigator(self) -> MenuNavigator:
         return self._nav
+
+    @property
+    def scanner(self) -> InventoryScanner:
+        return self._scanner
+
+    def scan_status(self) -> dict[str, Any]:
+        with self._lock:
+            return self._scanner.status()
+
+    def _effective_battle_live(self) -> bool:
+        battle_live = self.battle_live
+        if not self.running or self._last_battle_state is None:
+            preview = getattr(self._frames, "last_frame", None)
+            if preview is not None:
+                menu_state = detectors.side_menu_state(preview)
+                battle_live = (not self._cfg["safety"]["battle_only"]) or menu_state in ("closed", "open")
+        return bool(battle_live)
+
+    def request_scan(
+        self,
+        *,
+        scope: str = "all",
+        queue_if_battle: bool = True,
+        require_running: bool = True,
+    ) -> dict[str, Any]:
+        with self._lock:
+            if require_running and not self.running:
+                raise RuntimeError("Turn Gem Harvesting ON before starting an inventory scan")
+            return self._scanner.request_scan(
+                scope=scope,
+                battle_live=self._effective_battle_live(),
+                queue_if_battle=queue_if_battle,
+            )
+
+    def cancel_scan(self) -> dict[str, Any]:
+        with self._lock:
+            return self._scanner.cancel()
 
     @property
     def flow_status(self) -> str:
@@ -461,6 +535,8 @@ class GemCollector:
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
             self._nav.reset_verification(clear_presets=False, clear_tier=False, clear_hold=True)
+            if self._scanner.running or self._scanner.queued:
+                self._scanner.cancel()
             self.frozen = False
             self._freeze_notified = False
             self.ad_status = "stopped" if self._cfg["ad_gems"]["enabled"] else "off"
@@ -601,6 +677,44 @@ class GemCollector:
             )
         except TapRefused as exc:
             self.log(f"Tap refused ({reason}): {exc}", event="tap_refused", reason=reason, error=str(exc), point=list(pt))
+            return None
+
+    def _dispatch_menu_swipe(
+        self,
+        start: tuple[int, int],
+        end: tuple[int, int],
+        frame: np.ndarray,
+        *,
+        duration_ms: int = 550,
+        reason: str = "",
+        input_display: int | None = None,
+    ) -> dict[str, Any] | None:
+        """Dispatch a scanner-validated off-battle swipe through Tapper."""
+        if self._stop_event.is_set():
+            return None
+        try:
+            return self._tapper.swipe(
+                self._cfg["adb"]["serial"],
+                start[0],
+                start[1],
+                end[0],
+                end[1],
+                duration_ms=duration_ms,
+                cfg=self._tap_cfg(),
+                input_display=input_display,
+                reason=reason,
+                frame_size=(int(frame.shape[1]), int(frame.shape[0])),
+                stop_event=self._stop_event,
+            )
+        except TapRefused as exc:
+            self.log(
+                f"Swipe refused ({reason}): {exc}",
+                event="tap_refused",
+                reason=reason,
+                error=str(exc),
+                start=list(start),
+                end=list(end),
+            )
             return None
 
     def _fail_ad_attempt(self) -> None:
@@ -851,6 +965,28 @@ class GemCollector:
             self.frozen = False
             self._freeze_notified = False
             self._saw_non_battle = True
+            if self._scanner.running:
+                self._scanner.step(frame, now)
+                return
+            if self._scanner.queued:
+                if self._scanner.try_start_from_frame(frame, now):
+                    self._scanner.step(frame, now)
+                    return
+                self._nav.current_tier = self.current_tier
+                acted = self._nav.step(
+                    frame,
+                    now,
+                    cfg=self._cfg,
+                    profile_store=self._profile_store,
+                    on_run_ended_fn=self._record_run_ended,
+                    on_battle_started_fn=self._on_battle_started,
+                    force_home=True,
+                )
+                if self._nav.current_tier is not None:
+                    self.current_tier = self._nav.current_tier
+                if acted:
+                    return
+                return
             self._nav.current_tier = self.current_tier
             acted = self._nav.step(
                 frame,
@@ -865,6 +1001,8 @@ class GemCollector:
             if acted:
                 return
         else:
+            if self._scanner.running:
+                self._scanner.abort_for_battle()
             flow_cfg = self._cfg.get("run_flow", {})
             self._nav.on_enter_battle(flow_enabled=self._flow_any_enabled(flow_cfg))
             self._stats_logged_for_run = False
@@ -1242,5 +1380,6 @@ class GemCollector:
                     "elapsed_sec": elapsed_sec,
                     "frozen": self.frozen,
                 },
+                "scan": self._scanner.status(),
                 "recent": self._telemetry.recent(limit=20),
             }

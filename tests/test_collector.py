@@ -218,6 +218,7 @@ def test_collector_status_matches_minimal_contract():
         "telemetry",
         "stream",
         "battle",
+        "scan",
         "recent",
     }
     assert set(st["profile"].keys()) == {

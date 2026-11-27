@@ -16,6 +16,12 @@ let inFlight = 0;
 let serverWasOffline = false;
 let activeWikiQuery = "";
 let activeWikiCategory = "";
+let lastAccountSnap = null;
+let lastScanState = null;
+let lastScanRunning = false;
+let scanRequestBusy = false;
+let loadoutOwnerFilter = "all";
+let loadoutPresetFilter = "";
 
 const KIND_LABELS = {
   farm: "FARM",
@@ -1000,70 +1006,549 @@ async function fetchRuns() {
   }
 }
 
-// --- Loadout tab (zero-tap observer) -----------------------------------
+// --- Loadout tab (inventory scanner & master catalog) ------------------
 
-function renderChipGroup(container, items, emptyText) {
+const SLOT_LABELS = {
+  cannon: "Cannon",
+  armor: "Armor",
+  generator: "Gen",
+  core: "Core",
+};
+
+const DEFAULT_PRESET_NAMES = ["Preset 1", "Preset 2", "Preset 3", "Preset 4", "Preset 5"];
+
+function normalizeKey(str) {
+  return String(str || "").trim().toLowerCase();
+}
+
+function getActiveProfilePresets() {
+  const profStatus = (lastStatus && lastStatus.profile) || {};
+  let cards = profStatus.verified_cards || null;
+  let modules = profStatus.verified_modules || null;
+  if ((!cards || !modules) && lastProfilesStore && Array.isArray(lastProfilesStore.profiles)) {
+    const activeId = profStatus.active_id || lastProfilesStore.active_id;
+    const found = lastProfilesStore.profiles.find((p) => p && p.id === activeId);
+    if (found && found.presets) {
+      if (!cards && found.presets.cards) cards = found.presets.cards;
+      if (!modules && found.presets.modules) modules = found.presets.modules;
+    }
+  }
+  return { cards, modules };
+}
+
+function collectPresetNames(snap) {
+  const seen = new Set();
+  const ordered = [];
+  const add = (name) => {
+    const s = String(name || "").trim();
+    if (s && !seen.has(s)) {
+      seen.add(s);
+      ordered.push(s);
+    }
+  };
+  if (snap) {
+    if (Array.isArray(snap.presets)) snap.presets.forEach(add);
+    if (snap.card_presets && typeof snap.card_presets === "object") {
+      Object.keys(snap.card_presets).forEach(add);
+    }
+    if (snap.module_presets && typeof snap.module_presets === "object") {
+      Object.keys(snap.module_presets).forEach(add);
+    }
+  }
+  ordered.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+  return ordered;
+}
+
+function syncPresetFilterDropdown(snap) {
+  const sel = $("loadoutPresetFilter");
+  const names = new Set(DEFAULT_PRESET_NAMES);
+  for (const name of collectPresetNames(snap)) {
+    names.add(name);
+  }
+  const sorted = Array.from(names).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+
+  const currentVal = loadoutPresetFilter;
+  sel.textContent = "";
+  const allOpt = document.createElement("option");
+  allOpt.value = "";
+  allOpt.textContent = "All Presets";
+  sel.appendChild(allOpt);
+
+  for (const name of sorted) {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  }
+  sel.value = names.has(currentVal) ? currentVal : "";
+  if (sel.value !== loadoutPresetFilter) {
+    loadoutPresetFilter = sel.value;
+  }
+}
+
+function buildPresetMembershipMaps(snap) {
+  const cardMap = new Map();
+  const modMap = new Map();
+  const addTo = (map, key, preset) => {
+    const k = normalizeKey(key);
+    if (!k) return;
+    if (!map.has(k)) map.set(k, new Set());
+    map.get(k).add(preset);
+  };
+
+  if (snap && snap.card_presets && typeof snap.card_presets === "object") {
+    for (const [preset, entries] of Object.entries(snap.card_presets)) {
+      if (!Array.isArray(entries)) continue;
+      for (const entry of entries) {
+        if (typeof entry === "string") {
+          addTo(cardMap, entry, preset);
+        } else if (entry && typeof entry === "object") {
+          if (entry.slug) addTo(cardMap, entry.slug, preset);
+          if (entry.name) addTo(cardMap, entry.name, preset);
+        }
+      }
+    }
+  }
+
+  if (snap && snap.module_presets && typeof snap.module_presets === "object") {
+    for (const [preset, slots] of Object.entries(snap.module_presets)) {
+      if (!slots || typeof slots !== "object") continue;
+      for (const entry of Object.values(slots)) {
+        if (!entry) continue;
+        if (typeof entry === "string") {
+          addTo(modMap, entry, preset);
+        } else if (typeof entry === "object") {
+          if (entry.slug) addTo(modMap, entry.slug, preset);
+          if (entry.name) addTo(modMap, entry.name, preset);
+        }
+      }
+    }
+  }
+  return { cardMap, modMap };
+}
+
+function resolveEquippedIn(item, category, membershipMaps) {
+  const out = new Set();
+  if (Array.isArray(item.equipped_in)) {
+    for (const p of item.equipped_in) {
+      if (p) out.add(String(p));
+    }
+  }
+  const map = category === "card" ? membershipMaps.cardMap : (category === "module" ? membershipMaps.modMap : null);
+  if (map) {
+    for (const candidate of [item.slug, item.name]) {
+      const k = normalizeKey(candidate);
+      if (k && map.has(k)) {
+        for (const p of map.get(k)) out.add(p);
+      }
+    }
+  }
+  return Array.from(out);
+}
+
+function getRarityChipClass(item, category) {
+  const r = normalizeKey(item.rarity);
+  if (category === "card") {
+    if (r === "epic") return "card-epic";
+    if (r === "rare") return "card-rare";
+    return "card-common";
+  }
+  if (category === "module") {
+    if (r.includes("ancestral")) return "mod-ancestral";
+    if (r.includes("mythic")) return "mod-mythic";
+    if (r.includes("legendary")) return "mod-legendary";
+    if (r.includes("epic")) return "mod-epic";
+    if (r.includes("rare")) return "mod-rare";
+    return "mod-owned";
+  }
+  if (category === "uw") {
+    return "uw-owned";
+  }
+  return "";
+}
+
+function getDetailRarityClass(item, category, detailText) {
+  if (item.maxed || /^max$/i.test(detailText)) return "rarity-max";
+  const r = normalizeKey(item.rarity || detailText);
+  if (category === "module") {
+    if (r.includes("ancestral")) return "rarity-ancestral";
+    if (r.includes("mythic")) return "rarity-mythic";
+    if (r.includes("legendary")) return "rarity-legendary";
+    if (r.includes("epic")) return "rarity-epic";
+    if (r.includes("rare")) return "rarity-rare";
+  }
+  return "";
+}
+
+function formatCatalogDetail(item, category) {
+  if (!item.owned) return "";
+  if (category === "card") {
+    if (item.maxed) return "Max";
+    if (item.stars !== null && item.stars !== undefined && Number(item.stars) > 0) {
+      return `${item.stars}\u2605`;
+    }
+    if (item.level !== null && item.level !== undefined && Number(item.level) > 0) {
+      return `Lv.${item.level}`;
+    }
+    return item.detail ? String(item.detail) : "";
+  }
+  if (category === "module") {
+    const parts = [];
+    if (item.level !== null && item.level !== undefined && Number(item.level) > 0) {
+      parts.push(`Lv.${item.level}`);
+    }
+    if (item.rarity) {
+      parts.push(String(item.rarity));
+    }
+    if (parts.length > 0) return parts.join(" ");
+    return item.detail ? String(item.detail) : "";
+  }
+  if (item.detail) return String(item.detail);
+  if (item.level !== null && item.level !== undefined && Number(item.level) > 0) {
+    return `Lv.${item.level}`;
+  }
+  return "";
+}
+
+function buildItemTooltip(item, category, detailText, equippedIn) {
+  const lines = [item.name || item.slug || "Item"];
+  const meta = [];
+  if (category === "module" && item.slot) {
+    meta.push(SLOT_LABELS[normalizeKey(item.slot)] || String(item.slot));
+  }
+  if (item.rarity) meta.push(String(item.rarity));
+  if (detailText && !meta.includes(detailText)) meta.push(detailText);
+  meta.push(item.owned ? "Owned" : "Not owned");
+  lines.push(meta.join(" \u00b7 "));
+  if (equippedIn.length > 0) {
+    lines.push(`Equipped: ${equippedIn.join(", ")}`);
+  }
+  if (Array.isArray(item.substats) && item.substats.length > 0) {
+    lines.push(`Substats: ${item.substats.join(", ")}`);
+  }
+  lines.push("Click to open Wiki");
+  return lines.join("\n");
+}
+
+const SCAN_PHASE_LABELS = {
+  starting: "Starting scan",
+  cards: "Scanning Cards",
+  modules: "Scanning Modules",
+  uws: "Scanning UWs",
+  returning: "Returning Home",
+};
+
+function formatScanProgress(scan) {
+  if (!scan) return "Scanning inventory...";
+  const parts = [];
+  const phase = scan.phase ? String(scan.phase).trim() : "";
+  const phaseKey = phase.toLowerCase();
+  const detail = scan.detail ? String(scan.detail).trim() : "";
+  const progress = scan.progress ? String(scan.progress).trim() : "";
+  if (phase) {
+    const mapped = SCAN_PHASE_LABELS[phaseKey];
+    if (mapped) {
+      parts.push(mapped);
+    } else {
+      const label = phase.charAt(0).toUpperCase() + phase.slice(1);
+      parts.push(/^scanning\b/i.test(label) ? label : `Scanning ${label}`);
+    }
+  }
+  const detailLower = detail.toLowerCase();
+  const phaseLabelLower = parts.length > 0 ? parts[0].toLowerCase() : "";
+  if (detail && detailLower !== phaseKey && detailLower !== phaseLabelLower) {
+    parts.push(detail);
+  }
+  if (progress && progress !== detail) {
+    parts.push(progress);
+  }
+  return parts.length > 0 ? parts.join(" \u00b7 ") : "Scanning inventory...";
+}
+
+function renderScanState(scan) {
+  if (scan && typeof scan === "object") {
+    lastScanState = scan;
+  }
+  const s = lastScanState || {};
+  const isRunning = Boolean(s.running);
+  const isQueued = Boolean(s.queued) && !isRunning;
+  const errMsg = !isRunning && !isQueued && s.error ? String(s.error) : "";
+  const battleLive = Boolean(lastStatus && lastStatus.battle && lastStatus.battle.live);
+
+  const scanBtn = $("scanInventoryBtn");
+  const banner = $("scanBanner");
+  const bannerText = $("scanBannerText");
+  const cancelBtn = $("cancelScanBtn");
+
+  if (scanRequestBusy) {
+    scanBtn.disabled = true;
+    scanBtn.className = "primary-btn";
+    scanBtn.textContent = "Starting...";
+  } else if (isRunning) {
+    scanBtn.disabled = true;
+    scanBtn.className = "primary-btn";
+    scanBtn.textContent = "Scanning...";
+  } else if (isQueued) {
+    scanBtn.disabled = true;
+    scanBtn.className = "primary-btn amber";
+    scanBtn.textContent = "Scan Queued";
+  } else if (battleLive) {
+    scanBtn.disabled = false;
+    scanBtn.className = "primary-btn amber";
+    scanBtn.textContent = "Queue Scan (Next Boundary)";
+    scanBtn.title = "Battle is live \u2014 arm automated scan to run automatically at the next boundary";
+  } else {
+    scanBtn.disabled = false;
+    scanBtn.className = "primary-btn";
+    scanBtn.textContent = "Scan Inventory";
+    scanBtn.title = "Automated inventory scan across Cards and Modules";
+  }
+
+  if (isRunning) {
+    banner.className = "alert-banner loadout-scan-banner cyan";
+    bannerText.textContent = formatScanProgress(s);
+    bannerText.title = bannerText.textContent;
+    cancelBtn.hidden = false;
+    cancelBtn.className = "mini-btn cyan";
+    banner.hidden = false;
+  } else if (isQueued) {
+    banner.className = "alert-banner loadout-scan-banner amber";
+    const qText = (s.detail && /queue|boundary|battle/i.test(String(s.detail)))
+      ? String(s.detail)
+      : "Scan queued for next boundary";
+    bannerText.textContent = qText;
+    bannerText.title = qText;
+    cancelBtn.hidden = false;
+    cancelBtn.className = "mini-btn amber";
+    banner.hidden = false;
+  } else if (errMsg) {
+    banner.className = "alert-banner loadout-scan-banner red";
+    bannerText.textContent = `Scan error: ${errMsg}`;
+    bannerText.title = bannerText.textContent;
+    cancelBtn.hidden = true;
+    banner.hidden = false;
+  } else {
+    banner.hidden = true;
+    cancelBtn.hidden = true;
+  }
+}
+
+function renderCatalogSection(container, items, category, membershipMaps, activePresets) {
   container.textContent = "";
-  if (!Array.isArray(items) || items.length === 0) {
+  const list = Array.isArray(items) ? items : [];
+  const filtered = list.filter((item) => {
+    const owned = Boolean(item && item.owned);
+    if (loadoutOwnerFilter === "owned") return owned;
+    if (loadoutOwnerFilter === "missing") return !owned;
+    return true;
+  });
+
+  if (filtered.length === 0) {
     const span = document.createElement("span");
     span.className = "ledger-empty";
-    span.textContent = emptyText;
+    if (list.length === 0) {
+      span.textContent = "None observed yet.";
+    } else if (loadoutOwnerFilter === "missing") {
+      span.textContent = `All ${list.length} owned!`;
+    } else if (loadoutOwnerFilter === "owned") {
+      span.textContent = "None owned yet.";
+    } else {
+      span.textContent = "No items.";
+    }
     container.appendChild(span);
     return;
   }
-  for (const item of items) {
+
+  const presetAware = category === "card" || category === "module";
+  const activePresetForCat = category === "card" ? activePresets.cards : (category === "module" ? activePresets.modules : null);
+
+  for (const item of filtered) {
+    const owned = Boolean(item.owned);
+    const equippedIn = resolveEquippedIn(item, category, membershipMaps);
+    let isEquipped = false;
+    let notInSelectedPreset = false;
+
+    if (presetAware) {
+      if (loadoutPresetFilter) {
+        isEquipped = equippedIn.includes(loadoutPresetFilter);
+        if (!isEquipped) notInSelectedPreset = true;
+      } else if (activePresetForCat) {
+        isEquipped = equippedIn.includes(activePresetForCat);
+      } else {
+        isEquipped = equippedIn.length > 0;
+      }
+    }
+
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "wiki-chip";
-    btn.appendChild(document.createTextNode(item.name));
-    if (item.detail) {
+    const classes = ["wiki-chip", owned ? "owned" : "unowned"];
+    if (owned) {
+      const rarityCls = getRarityChipClass(item, category);
+      if (rarityCls) classes.push(rarityCls);
+    }
+    if (isEquipped) classes.push("is-equipped");
+    if (notInSelectedPreset) classes.push("not-in-preset");
+    btn.className = classes.join(" ");
+
+    if (isEquipped) {
+      const eqDot = document.createElement("span");
+      eqDot.className = "chip-eq-dot";
+      eqDot.textContent = "\u2713";
+      eqDot.setAttribute("aria-hidden", "true");
+      btn.appendChild(eqDot);
+    }
+
+    if (category === "module" && item.slot) {
+      const slotKey = normalizeKey(item.slot);
+      const slotTag = document.createElement("span");
+      slotTag.className = `slot-tag slot-${slotKey.replace(/[^a-z0-9_-]/g, "")}`;
+      slotTag.textContent = SLOT_LABELS[slotKey] || String(item.slot);
+      btn.appendChild(slotTag);
+    }
+
+    btn.appendChild(document.createTextNode(item.name || item.slug || ""));
+
+    const detailText = formatCatalogDetail(item, category);
+    if (detailText) {
       const det = document.createElement("span");
-      det.className = "chip-detail";
-      det.textContent = item.detail;
+      const detRarityCls = getDetailRarityClass(item, category, detailText);
+      det.className = "chip-detail" + (detRarityCls ? ` ${detRarityCls}` : "");
+      det.textContent = detailText;
       btn.appendChild(det);
     }
-    btn.title = `Open wiki for ${item.name}`;
+
+    btn.title = buildItemTooltip(item, category, detailText, equippedIn);
     btn.addEventListener("click", () => openWiki(item.slug || item.name));
     container.appendChild(btn);
   }
 }
 
-function renderAccount(snap) {
-  if (!snap) return;
-  const cards = Array.isArray(snap.cards) ? snap.cards : [];
-  const modules = Array.isArray(snap.modules) ? snap.modules : [];
-  const uws = Array.isArray(snap.uws) ? snap.uws : [];
-  const presets = Array.isArray(snap.presets) ? snap.presets : [];
-
-  $("cardsCount").textContent = String(cards.length);
-  $("modulesCount").textContent = String(modules.length);
-  $("uwsCount").textContent = String(uws.length);
-
-  renderChipGroup($("loadoutCards"), cards, "None observed yet.");
-  renderChipGroup($("loadoutModules"), modules, "None observed yet.");
-  renderChipGroup($("loadoutUws"), uws, "None observed yet.");
-
+function renderPresetSummary(snap, catalogCards, catalogModules, membershipMaps) {
   const presetsBox = $("loadoutPresets");
   presetsBox.textContent = "";
-  if (presets.length === 0) {
+  const presetNames = collectPresetNames(snap);
+
+  if (presetNames.length === 0) {
     const span = document.createElement("span");
     span.className = "ledger-empty";
-    span.textContent = "None observed yet.";
+    span.textContent = "None scanned yet.";
     presetsBox.appendChild(span);
-  } else {
-    for (const p of presets) {
-      const tag = document.createElement("span");
-      tag.className = "profile-chip";
-      tag.textContent = p;
-      presetsBox.appendChild(tag);
-    }
+    return;
   }
 
-  if (snap.updated_at) {
-    const screen = snap.last_screen || "screen";
-    $("observeMeta").textContent = `Last observed: ${screen} at ${fmtTime(snap.updated_at)} (${snap.total_items || 0} items)`;
+  for (const presetName of presetNames) {
+    let cardCount = 0;
+    if (snap.card_presets && Array.isArray(snap.card_presets[presetName])) {
+      cardCount = snap.card_presets[presetName].length;
+    } else {
+      cardCount = catalogCards.filter((c) => resolveEquippedIn(c, "card", membershipMaps).includes(presetName)).length;
+    }
+
+    let modCount = 0;
+    if (snap.module_presets && snap.module_presets[presetName] && typeof snap.module_presets[presetName] === "object") {
+      modCount = Object.values(snap.module_presets[presetName]).filter(Boolean).length;
+    } else {
+      modCount = catalogModules.filter((m) => resolveEquippedIn(m, "module", membershipMaps).includes(presetName)).length;
+    }
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    const isActive = loadoutPresetFilter === presetName;
+    btn.className = "preset-summary-pill" + (isActive ? " active" : "");
+    btn.setAttribute("aria-pressed", String(isActive));
+    btn.appendChild(document.createTextNode(presetName));
+
+    const countParts = [];
+    if (cardCount > 0) countParts.push(`${cardCount}C`);
+    if (modCount > 0) countParts.push(`${modCount}M`);
+    if (countParts.length > 0) {
+      const cnt = document.createElement("span");
+      cnt.className = "preset-pill-count";
+      cnt.textContent = countParts.join(" \u00b7 ");
+      btn.appendChild(cnt);
+    }
+
+    btn.title = isActive
+      ? `Showing ${presetName} \u2014 click to show all presets`
+      : `Highlight items equipped in ${presetName}`;
+    btn.addEventListener("click", () => {
+      loadoutPresetFilter = loadoutPresetFilter === presetName ? "" : presetName;
+      $("loadoutPresetFilter").value = loadoutPresetFilter;
+      if (lastAccountSnap) renderAccount(lastAccountSnap);
+    });
+    presetsBox.appendChild(btn);
+  }
+}
+
+function getSectionCatalog(snap, key, category) {
+  if (snap && snap.catalog && Array.isArray(snap.catalog[key]) && snap.catalog[key].length > 0) {
+    return snap.catalog[key];
+  }
+  const fallback = snap && Array.isArray(snap[key]) ? snap[key] : [];
+  return fallback.map((item) => ({
+    ...item,
+    category: item.category || category,
+    owned: item.owned !== undefined ? Boolean(item.owned) : true,
+  }));
+}
+
+function renderAccount(snap) {
+  if (!snap) return;
+  lastAccountSnap = snap;
+  syncPresetFilterDropdown(snap);
+
+  if (snap.scan && typeof snap.scan === "object") {
+    renderScanState(snap.scan);
+  }
+
+  const catalogCards = getSectionCatalog(snap, "cards", "card");
+  const catalogModules = getSectionCatalog(snap, "modules", "module");
+  const catalogUws = getSectionCatalog(snap, "uws", "uw");
+
+  const counts = snap.counts || {};
+  const cardsOwned = counts.cards_owned ?? catalogCards.filter((i) => i.owned).length;
+  const cardsTotal = counts.cards_total ?? catalogCards.length;
+  const modsOwned = counts.modules_owned ?? catalogModules.filter((i) => i.owned).length;
+  const modsTotal = counts.modules_total ?? catalogModules.length;
+  const uwsOwned = counts.uws_owned ?? catalogUws.filter((i) => i.owned).length;
+  const uwsTotal = counts.uws_total ?? catalogUws.length;
+
+  $("cardsCount").textContent = cardsTotal > 0 ? `${cardsOwned}/${cardsTotal}` : String(cardsOwned);
+  $("modulesCount").textContent = modsTotal > 0 ? `${modsOwned}/${modsTotal}` : String(modsOwned);
+  $("uwsCount").textContent = uwsTotal > 0 ? `${uwsOwned}/${uwsTotal}` : String(uwsOwned);
+
+  const slotsBadge = $("cardSlotsBadge");
+  if (snap.active_card_slots) {
+    slotsBadge.textContent = `${snap.active_card_slots} slots`;
+    slotsBadge.hidden = false;
   } else {
-    $("observeMeta").textContent = "Open Cards, Modules, or UWs in-game and click Observe (zero taps).";
+    slotsBadge.textContent = "";
+    slotsBadge.hidden = true;
+  }
+
+  const membershipMaps = buildPresetMembershipMaps(snap);
+  const activePresets = getActiveProfilePresets();
+
+  renderCatalogSection($("loadoutCards"), catalogCards, "card", membershipMaps, activePresets);
+  renderCatalogSection($("loadoutModules"), catalogModules, "module", membershipMaps, activePresets);
+  renderCatalogSection($("loadoutUws"), catalogUws, "uw", membershipMaps, activePresets);
+  renderPresetSummary(snap, catalogCards, catalogModules, membershipMaps);
+
+  const metaParts = [];
+  if (snap.scan && snap.scan.last_scan_at) {
+    metaParts.push(`Scanned ${fmtTime(snap.scan.last_scan_at)}`);
+  } else if (snap.updated_at) {
+    const screen = snap.last_screen || "screen";
+    metaParts.push(`Observed ${screen} at ${fmtTime(snap.updated_at)}`);
+  }
+  const totalOwned = cardsOwned + modsOwned + uwsOwned;
+  if (totalOwned > 0) {
+    metaParts.push(`${totalOwned} owned`);
+  }
+  if (metaParts.length > 0) {
+    $("observeMeta").textContent = metaParts.join(" \u00b7 ");
+  } else {
+    $("observeMeta").textContent = "Scan inventory or open Cards/Modules/UWs and click Observe.";
   }
 }
 
@@ -1074,6 +1559,65 @@ async function fetchAccount() {
     renderAccount(await res.json());
   } catch (_) {
     // non-fatal
+  }
+}
+
+async function scanInventory() {
+  scanRequestBusy = true;
+  renderScanState(lastScanState);
+  try {
+    const res = await fetch("/api/account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "scan", scope: "all", queue_if_battle: true }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (data.scan) {
+      lastScanRunning = Boolean(data.scan.running);
+      renderScanState(data.scan);
+    }
+    if (data.account) {
+      renderAccount(data.account);
+    }
+    if (data.scan && data.scan.queued) {
+      showToast("Scan queued for next boundary");
+    } else if (data.scan && data.scan.running) {
+      showToast("Inventory scan started");
+    } else {
+      showToast("Inventory scan complete");
+    }
+  } catch (err) {
+    showToast(err.message || "Scan failed", true);
+  } finally {
+    scanRequestBusy = false;
+    renderScanState(lastScanState);
+  }
+}
+
+async function cancelInventoryScan() {
+  const cancelBtn = $("cancelScanBtn");
+  cancelBtn.disabled = true;
+  try {
+    const res = await fetch("/api/account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "cancel_scan" }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (data.scan) {
+      lastScanRunning = Boolean(data.scan.running);
+      renderScanState(data.scan);
+    }
+    if (data.account) {
+      renderAccount(data.account);
+    }
+    showToast("Scan cancelled");
+  } catch (err) {
+    showToast(err.message || "Cancel failed", true);
+  } finally {
+    cancelBtn.disabled = false;
   }
 }
 
@@ -1097,7 +1641,7 @@ async function observeScreen() {
     showToast(err.message || "Observe failed", true);
   } finally {
     btn.disabled = false;
-    btn.textContent = "Observe Screen";
+    btn.textContent = "Observe";
   }
 }
 
@@ -1460,6 +2004,23 @@ function render(data) {
     fetchMetrics();
   }
 
+  // Live inventory scan status & auto-refresh when scan finishes (true -> false)
+  if (data.scan && typeof data.scan === "object") {
+    const isRunning = Boolean(data.scan.running);
+    renderScanState(data.scan);
+    if (lastScanRunning && !isRunning) {
+      fetchAccount();
+      if (data.scan.error) {
+        showToast(String(data.scan.error), true);
+      } else if (data.scan.phase === "done") {
+        showToast("Inventory scan complete");
+      }
+    }
+    lastScanRunning = isRunning;
+  } else {
+    renderScanState(null);
+  }
+
   renderActivity(data.recent);
 }
 
@@ -1504,6 +2065,7 @@ async function pollStatus() {
       $("streamImg").src = "/api/stream.mjpg?t=" + Date.now();
       fetchProfiles();
       fetchMetrics();
+      fetchAccount();
     }
     if (inFlight === 0) {
       render(data);
@@ -1669,8 +2231,27 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Loadout bindings
+$("scanInventoryBtn").addEventListener("click", scanInventory);
+$("cancelScanBtn").addEventListener("click", cancelInventoryScan);
 $("observeBtn").addEventListener("click", observeScreen);
 $("resetAccountBtn").addEventListener("click", resetAccount);
+$("loadoutOwnerFilter").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-filter]");
+  if (!btn) return;
+  const next = btn.dataset.filter;
+  if (next !== "all" && next !== "owned" && next !== "missing") return;
+  loadoutOwnerFilter = next;
+  for (const b of $("loadoutOwnerFilter").querySelectorAll("button[data-filter]")) {
+    const active = b.dataset.filter === loadoutOwnerFilter;
+    b.classList.toggle("active", active);
+    b.setAttribute("aria-pressed", String(active));
+  }
+  if (lastAccountSnap) renderAccount(lastAccountSnap);
+});
+$("loadoutPresetFilter").addEventListener("change", () => {
+  loadoutPresetFilter = $("loadoutPresetFilter").value || "";
+  if (lastAccountSnap) renderAccount(lastAccountSnap);
+});
 $("liveTierBtn").addEventListener("click", () => {
   const t = $("liveTierBtn").dataset.tier;
   if (t) openWiki(`tier:${t}`);

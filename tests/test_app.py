@@ -60,6 +60,7 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             "telemetry",
             "stream",
             "battle",
+            "scan",
             "recent",
         }
         assert status["profile"]["active_id"] == "farm-default"

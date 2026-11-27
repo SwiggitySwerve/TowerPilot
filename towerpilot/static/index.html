@@ -243,43 +243,66 @@
             </div>
           </div>
 
-          <!-- TAB 2: LOADOUT (Zero-tap OCR observer) -->
+          <!-- TAB 2: LOADOUT (Inventory Scanner & Master Catalog) -->
           <div id="tabLoadout" class="tab-panel" role="tabpanel" hidden>
             <div class="sidebar-section">
               <div class="loadout-actions">
-                <button id="observeBtn" class="primary-btn" type="button">Observe Screen</button>
+                <button id="scanInventoryBtn" class="primary-btn" type="button" title="Automated inventory scan across Cards and Modules">Scan Inventory</button>
+                <button id="observeBtn" class="mini-btn" type="button" title="Quick zero-tap single-screen read">Observe</button>
                 <button id="resetAccountBtn" class="mini-btn" type="button" title="Clear observed loadout">Clear</button>
               </div>
-              <div id="observeMeta" class="gem-status">Open Cards, Modules, or UWs in-game and click Observe (zero taps).</div>
+              <div id="scanBanner" class="alert-banner loadout-scan-banner cyan" hidden>
+                <span id="scanBannerText" class="scan-banner-text">Scanning inventory&hellip;</span>
+                <button id="cancelScanBtn" class="mini-btn" type="button">Cancel</button>
+              </div>
+              <div id="observeMeta" class="gem-status">Scan inventory or open Cards/Modules/UWs and click Observe.</div>
+              <div class="loadout-filters">
+                <div id="loadoutOwnerFilter" class="mini-seg" role="group" aria-label="Ownership filter">
+                  <button type="button" data-filter="all" aria-pressed="true" class="active">All</button>
+                  <button type="button" data-filter="owned" aria-pressed="false">Owned</button>
+                  <button type="button" data-filter="missing" aria-pressed="false">Missing</button>
+                </div>
+                <select id="loadoutPresetFilter" class="compact-input select loadout-preset-select" aria-label="Preset filter">
+                  <option value="">All Presets</option>
+                  <option value="Preset 1">Preset 1</option>
+                  <option value="Preset 2">Preset 2</option>
+                  <option value="Preset 3">Preset 3</option>
+                  <option value="Preset 4">Preset 4</option>
+                  <option value="Preset 5">Preset 5</option>
+                </select>
+              </div>
             </div>
 
             <div class="sidebar-section">
               <div class="section-heading">
                 <span>Cards</span>
-                <span id="cardsCount" class="gem-count">0</span>
+                <span class="section-heading-right">
+                  <span id="cardSlotsBadge" class="slots-badge" hidden></span>
+                  <span id="cardsCount" class="gem-count">0/31</span>
+                </span>
               </div>
               <div id="loadoutCards" class="chip-grid">
-                <span class="ledger-empty">None observed yet.</span>
+                <span class="ledger-empty">Loading catalog&hellip;</span>
               </div>
             </div>
 
             <div class="sidebar-section">
               <div class="section-heading">
                 <span>Modules</span>
-                <span id="modulesCount" class="gem-count">0</span>
+                <span id="modulesCount" class="gem-count">0/25</span>
               </div>
               <div id="loadoutModules" class="chip-grid">
-                <span class="ledger-empty">None observed yet.</span>
+                <span class="ledger-empty">Loading catalog&hellip;</span>
               </div>
             </div>
 
             <div class="sidebar-section">
               <div class="section-heading">
                 <span>Ultimate Weapons</span>
-                <span id="uwsCount" class="gem-count">0</span>
+                <span id="uwsCount" class="gem-count">0/9</span>
               </div>
               <div id="loadoutUws" class="chip-grid">
-                <span class="ledger-empty">None observed yet.</span>
+                <span class="ledger-empty">Loading catalog&hellip;</span>
               </div>
             </div>
 

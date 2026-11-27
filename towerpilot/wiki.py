@@ -33,6 +33,8 @@ class IndexItem:
     aliases: tuple[str, ...]
     wiki_page: str
     highlight: str
+    slot: str = ""
+    rarity: str = ""
 
 
 def _slugify(text: str) -> str:
@@ -41,66 +43,75 @@ def _slugify(text: str) -> str:
 
 # --- Verified names-only vocabulary (zero stats, zero images) ------------
 
-_CARD_NAMES: tuple[str, ...] = (
-    "Damage",
-    "Attack Speed",
-    "Critical Chance",
-    "Critical Coin",
-    "Range",
-    "Health",
-    "Health Regen",
-    "Extra Defense",
-    "Fortress",
-    "Cash",
-    "Coins",
-    "Slow Aura",
-    "Enemy Balance",
-    "Free Upgrades",
-    "Extra Orb",
-    "Plasma Cannon",
-    "Wave Skip",
-    "Intro Sprint",
-    "Land Mine Stun",
-    "Recovery Package Chance",
-    "Cells",
-    "Death Ray",
-    "Energy Net",
-    "Super Tower",
-    "Second Wind",
-    "Demon Mode",
-    "Energy Shield",
-    "Wave Accelerator",
-    "Berserker",
-    "Ultimate Crit",
-    "Nuke",
+_CARDS: tuple[tuple[str, str], ...] = (
+    # Common (12)
+    ("Damage", "common"),
+    ("Attack Speed", "common"),
+    ("Health", "common"),
+    ("Health Regen", "common"),
+    ("Range", "common"),
+    ("Cash", "common"),
+    ("Coins", "common"),
+    ("Slow Aura", "common"),
+    ("Critical Chance", "common"),
+    ("Enemy Balance", "common"),
+    ("Extra Defense", "common"),
+    ("Fortress", "common"),
+    # Rare (9)
+    ("Free Upgrades", "rare"),
+    ("Extra Orb", "rare"),
+    ("Plasma Cannon", "rare"),
+    ("Critical Coin", "rare"),
+    ("Wave Skip", "rare"),
+    ("Intro Sprint", "rare"),
+    ("Land Mine Stun", "rare"),
+    ("Recovery Package Chance", "rare"),
+    ("Cells", "rare"),
+    # Epic (10)
+    ("Death Ray", "epic"),
+    ("Energy Net", "epic"),
+    ("Super Tower", "epic"),
+    ("Second Wind", "epic"),
+    ("Demon Mode", "epic"),
+    ("Energy Shield", "epic"),
+    ("Wave Accelerator", "epic"),
+    ("Berserker", "epic"),
+    ("Ultimate Crit", "epic"),
+    ("Nuke", "epic"),
 )
 
-_MODULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("Amplifying Strike", ("AS",)),
-    ("Anti-Cube Portal", ("ACP",)),
-    ("Astral Deliverance", ("AD",)),
-    ("Being Annihilator", ("BA",)),
-    ("Black Hole Digestor", ("BHD",)),
-    ("Death Penalty", ("DP",)),
-    ("Dimension Core", ("DC",)),
-    ("Galaxy Compressor", ("GC", "GCOMP")),
-    ("Harmony Conductor", ("HC",)),
-    ("Havoc Bringer", ("HB",)),
-    ("Magnetic Hook", ("MH",)),
-    ("Multiverse Nexus", ("MVN",)),
-    ("Negative Mass Projector", ("NMP",)),
-    ("Om Chip", ("OC",)),
-    ("Orbital Augment", ("OA",)),
-    ("Primordial Collapse", ("PC",)),
-    ("Project Funding", ("PF",)),
-    ("Pulsar Harvester", ("PH",)),
-    ("Restorative Bonus", ("RB",)),
-    ("Sharp Fortitude", ("SF",)),
-    ("Shrink Ray", ("SR",)),
-    ("Singularity Harness", ("SH",)),
-    ("Solar Dyson Sphere", ("SDS",)),
-    ("Space Displacer", ("SD",)),
-    ("Wormhole Redirector", ("WR",)),
+_CARD_NAMES: tuple[str, ...] = tuple(name for name, _ in _CARDS)
+
+_MODULES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    # Cannon (6)
+    ("Amplifying Strike", "cannon", ("AS",)),
+    ("Astral Deliverance", "cannon", ("AD",)),
+    ("Being Annihilator", "cannon", ("BA",)),
+    ("Death Penalty", "cannon", ("DP",)),
+    ("Havoc Bringer", "cannon", ("HB",)),
+    ("Shrink Ray", "cannon", ("SR",)),
+    # Armor (6)
+    ("Anti-Cube Portal", "armor", ("ACP",)),
+    ("Negative Mass Projector", "armor", ("NMP",)),
+    ("Orbital Augment", "armor", ("OA",)),
+    ("Sharp Fortitude", "armor", ("SF",)),
+    ("Space Displacer", "armor", ("SD",)),
+    ("Wormhole Redirector", "armor", ("WR",)),
+    # Generator (6)
+    ("Black Hole Digestor", "generator", ("BHD",)),
+    ("Galaxy Compressor", "generator", ("GC", "GCOMP")),
+    ("Project Funding", "generator", ("PF",)),
+    ("Pulsar Harvester", "generator", ("PH",)),
+    ("Restorative Bonus", "generator", ("RB",)),
+    ("Singularity Harness", "generator", ("SH",)),
+    # Core (7)
+    ("Dimension Core", "core", ("DC",)),
+    ("Harmony Conductor", "core", ("HC",)),
+    ("Magnetic Hook", "core", ("MH",)),
+    ("Multiverse Nexus", "core", ("MVN",)),
+    ("Om Chip", "core", ("OC",)),
+    ("Primordial Collapse", "core", ("PC",)),
+    ("Solar Dyson Sphere", "core", ("SDS",)),
 )
 
 _UWS: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -143,10 +154,10 @@ _TOPICS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
 
 def _build_index() -> list[IndexItem]:
     items: list[IndexItem] = []
-    for name in _CARD_NAMES:
-        items.append(IndexItem(f"card:{_slugify(name)}", name, "card", (), "Cards", name))
-    for name, aliases in _MODULES:
-        items.append(IndexItem(f"module:{_slugify(name)}", name, "module", aliases, "Epic Module Unique Effect", name))
+    for name, rarity in _CARDS:
+        items.append(IndexItem(f"card:{_slugify(name)}", name, "card", (), "Cards", name, rarity=rarity))
+    for name, slot, aliases in _MODULES:
+        items.append(IndexItem(f"module:{_slugify(name)}", name, "module", aliases, "Epic Module Unique Effect", name, slot=slot))
     for name, aliases in _UWS:
         items.append(IndexItem(f"uw:{_slugify(name)}", name, "uw", aliases, name, name))
     for name, aliases in _ENEMIES:
@@ -248,10 +259,34 @@ def search_index(query: str = "", *, category: str | None = None, limit: int = 2
             "name": it.name,
             "category": it.category,
             "aliases": list(it.aliases),
+            "slot": it.slot,
+            "rarity": it.rarity,
             "wiki_page": it.wiki_page,
         }
         for _, it in out[:limit]
     ]
+
+
+def master_catalog() -> dict[str, list[dict[str, Any]]]:
+    """Return the full names-only master catalog of all 31 cards, 25 modules, and 9 UWs."""
+    def _entry(it: IndexItem) -> dict[str, Any]:
+        return {
+            "slug": it.slug,
+            "name": it.name,
+            "category": it.category,
+            "aliases": list(it.aliases),
+            "slot": it.slot,
+            "rarity": it.rarity,
+        }
+
+    return {
+        "cards": [_entry(it) for it in INDEX if it.category == "card"],
+        "modules": [_entry(it) for it in INDEX if it.category == "module"],
+        "uws": [_entry(it) for it in INDEX if it.category == "uw"],
+    }
+
+
+catalog = master_catalog
 
 
 # --- Wikitext cleaner & section extractor (text-only, zero images) -------
