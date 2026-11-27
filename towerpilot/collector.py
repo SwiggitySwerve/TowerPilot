@@ -17,7 +17,7 @@ from typing import Any
 import numpy as np
 
 from towerpilot import adb, detectors
-from towerpilot.capture import FrameSource
+from towerpilot.capture import CaptureError, FrameSource
 from towerpilot.input import TapRefused, Tapper
 
 DEFAULT_EVENT_LOG_PATH = Path(__file__).resolve().parents[1] / "logs" / "events.jsonl"
@@ -226,10 +226,12 @@ class GemCollector:
             return True
 
     def stop(self) -> bool:
+        # Signal cancellation before acquiring self._lock so an in-flight capture/OCR
+        # pass aborts immediately before dispatching any tap.
+        self._stop_event.set()
         with self._lock:
             if not self.running:
                 return False
-            self._stop_event.set()
             thread = self._thread
         if thread is not None and thread is not threading.current_thread():
             thread.join(timeout=3.0)
@@ -253,7 +255,35 @@ class GemCollector:
             )
             return True
 
-    def _check_safety_guard(self, frame: np.ndarray, *, check_foreground: bool = True) -> tuple[bool, str]:
+    def _resolve_input_display(self) -> tuple[bool, int | None, str]:
+        try:
+            return True, self._frames.input_display, "ok"
+        except CaptureError as exc:
+            return False, None, f"unpaired_display:{exc}"
+
+    def _check_foreground(self, input_display: int | None) -> tuple[bool, str]:
+        serial = self._cfg["adb"]["serial"]
+        try:
+            if input_display is not None:
+                wins = adb.visible_windows(serial, timeout=4.0, display_id=input_display)
+            else:
+                wins = adb.visible_windows(serial, timeout=4.0)
+            blocker = adb.foreground_blocker(wins)
+        except Exception as exc:
+            self.foreground_blocker = f"windows_unreadable:{type(exc).__name__}"
+            return False, self.foreground_blocker
+        self.foreground_blocker = blocker
+        if blocker is not None:
+            return False, blocker
+        return True, "ok"
+
+    def _check_safety_guard(
+        self,
+        frame: np.ndarray,
+        *,
+        check_foreground: bool = True,
+        input_display: int | None = None,
+    ) -> tuple[bool, str]:
         """Verify the emulator is unobstructed in a live battle before sending input."""
         self.menu_state = detectors.side_menu_state(frame)
         if not self._cfg["safety"]["battle_only"]:
@@ -266,18 +296,10 @@ class GemCollector:
             return False, "hud_obscured"
 
         if check_foreground:
-            serial = self._cfg["adb"]["serial"]
-            try:
-                wins = adb.visible_windows(serial, timeout=4.0)
-                blocker = adb.foreground_blocker(wins)
-            except Exception as exc:
-                self.foreground_blocker = f"windows_unreadable:{type(exc).__name__}"
+            fg_ok, fg_why = self._check_foreground(input_display)
+            if not fg_ok:
                 self.battle_live = False
-                return False, self.foreground_blocker
-            self.foreground_blocker = blocker
-            if blocker is not None:
-                self.battle_live = False
-                return False, blocker
+                return False, fg_why
 
         self.battle_live = True
         return True, "ok"
@@ -290,10 +312,27 @@ class GemCollector:
             return False, "under_open_side_menu"
         return True, "ok"
 
-    def _dispatch_tap(self, pt: tuple[int, int], frame: np.ndarray, reason: str) -> dict[str, Any] | None:
+    def _dispatch_tap(
+        self,
+        pt: tuple[int, int],
+        frame: np.ndarray,
+        reason: str,
+        *,
+        input_display: int | None = None,
+        display_resolved: bool = False,
+    ) -> dict[str, Any] | None:
+        if self._stop_event.is_set():
+            return None
+        if not display_resolved:
+            disp_ok, input_display, disp_why = self._resolve_input_display()
+            if not disp_ok:
+                self.log(f"Skipped {reason}: {disp_why}", event="tap_skipped", reason=reason, why=disp_why)
+                return None
         ok, why = self._safe_tap_point(pt, frame)
         if not ok:
             self.log(f"Skipped {reason}: {why}", event="tap_skipped", reason=reason, why=why, point=list(pt))
+            return None
+        if self._stop_event.is_set():
             return None
         try:
             return self._tapper.tap(
@@ -301,7 +340,7 @@ class GemCollector:
                 pt[0],
                 pt[1],
                 cfg=self._tap_cfg(),
-                input_display=self._frames.input_display,
+                input_display=input_display,
                 reason=reason,
                 frame_size=(int(frame.shape[1]), int(frame.shape[0])),
             )
@@ -311,6 +350,8 @@ class GemCollector:
 
     def _collect_ad_gem(self, *, trigger: str, rect: tuple[int, int, int, int] | None = None) -> bool:
         """Verify live battle on a fresh ADB frame, then tap Ad Gem."""
+        if self._stop_event.is_set():
+            return False
         try:
             fresh = self._frames.grab_adb()
         except Exception as exc:
@@ -318,7 +359,13 @@ class GemCollector:
             self.log(f"Ad Gem capture failed: {exc}", event="ad_gem_error", trigger=trigger, error=str(exc))
             return False
 
-        ok, why = self._check_safety_guard(fresh, check_foreground=True)
+        disp_ok, input_display, disp_why = self._resolve_input_display()
+        if not disp_ok:
+            self.ad_status = "skipped (unpaired display)"
+            self.log(f"Ad Gem skipped ({trigger}): {disp_why}", event="ad_gem_skipped", trigger=trigger, reason=disp_why)
+            return False
+
+        ok, why = self._check_safety_guard(fresh, check_foreground=True, input_display=input_display)
         if not ok:
             self.ad_status = f"skipped ({why})"
             self.log(f"Ad Gem skipped ({trigger}): {why}", event="ad_gem_skipped", trigger=trigger, reason=why)
@@ -349,25 +396,41 @@ class GemCollector:
             sx, sy = detectors.scale_point(_AD_DEFAULT_TAP_POINT, fresh.shape)
             pt = (int(round(sx)), int(round(sy)))
 
-        res = self._dispatch_tap(pt, fresh, reason=f"ad_gem:{trigger}")
+        res = self._dispatch_tap(
+            pt,
+            fresh,
+            reason=f"ad_gem:{trigger}",
+            input_display=input_display,
+            display_resolved=True,
+        )
         if res is None:
             return False
 
         now = time.monotonic()
-        self.ad_count += 1
         self.ad_cooldown_until = now + _AD_COOLDOWN_SEC
         self.ad_next_timer_at = now + float(self._cfg["ad_gems"]["timer_interval_sec"])
         self.ad_pending_due_at = None
         self.ad_visible_hit = None
-        self.ad_status = "collected"
-        self.log(
-            f"Ad Gem collected ({trigger}) at {res['x']},{res['y']}",
-            event="ad_gem_collected",
-            trigger=trigger,
-            x=res["x"],
-            y=res["y"],
-            count=self.ad_count,
-        )
+        if trigger == "timer":
+            self.ad_status = "timer tapped"
+            self.log(
+                f"Ad Gem timer tap at {res['x']},{res['y']}",
+                event="ad_gem_attempted",
+                trigger=trigger,
+                x=res["x"],
+                y=res["y"],
+            )
+        else:
+            self.ad_count += 1
+            self.ad_status = "collected"
+            self.log(
+                f"Ad Gem collected ({trigger}) at {res['x']},{res['y']}",
+                event="ad_gem_collected",
+                trigger=trigger,
+                x=res["x"],
+                y=res["y"],
+                count=self.ad_count,
+            )
         return True
 
     def _collect_floating_gem(
@@ -376,7 +439,9 @@ class GemCollector:
         trigger: str,
         detected: detectors.FloatingGemHit | None = None,
     ) -> bool:
-        """Verify live battle on a fresh ADB frame, then tap floating gem or orbit arc."""
+        """Verify live battle on a fresh ADB frame before EACH tap in the burst."""
+        if self._stop_event.is_set():
+            return False
         try:
             fresh = self._frames.grab_adb()
         except Exception as exc:
@@ -384,7 +449,13 @@ class GemCollector:
             self.log(f"Floating Gem capture failed: {exc}", event="floating_gem_error", trigger=trigger, error=str(exc))
             return False
 
-        ok, why = self._check_safety_guard(fresh, check_foreground=True)
+        disp_ok, input_display, disp_why = self._resolve_input_display()
+        if not disp_ok:
+            self.fg_status = "skipped (unpaired display)"
+            self.log(f"Floating Gem skipped ({trigger}): {disp_why}", event="floating_gem_skipped", trigger=trigger, reason=disp_why)
+            return False
+
+        ok, why = self._check_safety_guard(fresh, check_foreground=True, input_display=input_display)
         if not ok:
             self.fg_status = f"skipped ({why})"
             self.log(f"Floating Gem skipped ({trigger}): {why}", event="floating_gem_skipped", trigger=trigger, reason=why)
@@ -423,8 +494,51 @@ class GemCollector:
             )
 
         tapped = []
-        for pt in points:
-            res = self._dispatch_tap(pt, fresh, reason=f"floating_gem:{trigger}")
+        current_frame = fresh
+        for idx, pt in enumerate(points):
+            if self._stop_event.is_set():
+                break
+            if idx > 0:
+                try:
+                    current_frame = self._frames.grab_adb()
+                except Exception as exc:
+                    self.log(
+                        f"Floating Gem burst aborted on capture: {exc}",
+                        event="floating_gem_error",
+                        trigger=trigger,
+                        error=str(exc),
+                    )
+                    break
+                disp_ok, input_display, disp_why = self._resolve_input_display()
+                if not disp_ok:
+                    self.log(
+                        f"Floating Gem burst aborted: {disp_why}",
+                        event="floating_gem_skipped",
+                        trigger=trigger,
+                        reason=disp_why,
+                    )
+                    break
+                ok_step, why_step = self._check_safety_guard(
+                    current_frame,
+                    check_foreground=True,
+                    input_display=input_display,
+                )
+                if not ok_step:
+                    self.fg_status = f"aborted ({why_step})"
+                    self.log(
+                        f"Floating Gem burst aborted ({trigger}): {why_step}",
+                        event="floating_gem_skipped",
+                        trigger=trigger,
+                        reason=why_step,
+                    )
+                    break
+            res = self._dispatch_tap(
+                pt,
+                current_frame,
+                reason=f"floating_gem:{trigger}",
+                input_display=input_display,
+                display_resolved=True,
+            )
             if res is not None:
                 tapped.append(res)
 
@@ -432,17 +546,26 @@ class GemCollector:
             return False
 
         now = time.monotonic()
-        self.fg_count += 1
         self.fg_cooldown_until = now + _FG_COOLDOWN_SEC
         self.fg_next_timer_at = now + float(self._cfg["floating_gems"]["timer_interval_sec"])
-        self.fg_status = "collected"
-        self.log(
-            f"Floating Gem collected ({trigger}, {len(tapped)} tap{'s' if len(tapped) != 1 else ''})",
-            event="floating_gem_collected",
-            trigger=trigger,
-            points=[[r["x"], r["y"]] for r in tapped],
-            count=self.fg_count,
-        )
+        if trigger == "timer":
+            self.fg_status = "timer tapped"
+            self.log(
+                f"Floating Gem timer tap ({len(tapped)} tap{'s' if len(tapped) != 1 else ''})",
+                event="floating_gem_attempted",
+                trigger=trigger,
+                points=[[r["x"], r["y"]] for r in tapped],
+            )
+        else:
+            self.fg_count += 1
+            self.fg_status = "collected"
+            self.log(
+                f"Floating Gem collected ({trigger}, {len(tapped)} tap{'s' if len(tapped) != 1 else ''})",
+                event="floating_gem_collected",
+                trigger=trigger,
+                points=[[r["x"], r["y"]] for r in tapped],
+                count=self.fg_count,
+            )
         return True
 
     def step_once(self) -> None:
@@ -456,6 +579,7 @@ class GemCollector:
             return
 
         ok, why = self._check_safety_guard(frame, check_foreground=False)
+        in_battle_hud = self.menu_state in ("closed", "open")
         battle_state = (ok, why)
         if battle_state != self._last_battle_state:
             self._last_battle_state = battle_state
@@ -463,6 +587,14 @@ class GemCollector:
                 self.log(f"Battle live (menu {self.menu_state})", event="battle_live", menu_state=self.menu_state)
             else:
                 self.log(f"Waiting for battle ({why})", event="battle_waiting", reason=why, menu_state=self.menu_state)
+
+        if not in_battle_hud:
+            self._step_run_flow(frame, now)
+        else:
+            self.flow_pending_action = None
+            flow_cfg = self._cfg.get("run_flow", {})
+            self.flow_status = "in battle" if (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")) else "off"
+
         if not ok:
             if self._cfg["ad_gems"]["enabled"]:
                 self.ad_status = f"waiting ({why})"
@@ -473,17 +605,16 @@ class GemCollector:
             else:
                 self.fg_status = "off"
             self.ad_pending_due_at = None
-            self._step_run_flow(frame, now)
             return
 
-        self.flow_pending_action = None
-        flow_cfg = self._cfg.get("run_flow", {})
-        self.flow_status = "in battle" if (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")) else "off"
         self._step_ad_gems(frame, now)
         self._step_floating_gems(frame, now)
 
     def _execute_flow_action(self, kind: str) -> bool:
         """Verify foreground game window and target OCR on a fresh ADB frame, then tap."""
+        if self._stop_event.is_set():
+            self.flow_pending_action = None
+            return False
         try:
             fresh = self._frames.grab_adb()
         except Exception as exc:
@@ -492,17 +623,18 @@ class GemCollector:
             self.log(f"Auto-restart capture failed: {exc}", event="auto_restart_error", action=kind, error=str(exc))
             return False
 
-        serial = self._cfg["adb"]["serial"]
-        try:
-            wins = adb.visible_windows(serial, timeout=4.0)
-            blocker = adb.foreground_blocker(wins)
-        except Exception as exc:
-            blocker = f"windows_unreadable:{type(exc).__name__}"
-        self.foreground_blocker = blocker
-        if blocker is not None:
-            self.flow_status = f"skipped ({blocker})"
+        disp_ok, input_display, disp_why = self._resolve_input_display()
+        if not disp_ok:
+            self.flow_status = "skipped (unpaired display)"
             self.flow_pending_action = None
-            self.log(f"Auto-restart skipped ({kind}): {blocker}", event="auto_restart_skipped", action=kind, reason=blocker)
+            self.log(f"Auto-restart skipped ({kind}): {disp_why}", event="auto_restart_skipped", action=kind, reason=disp_why)
+            return False
+
+        fg_ok, fg_why = self._check_foreground(input_display)
+        if not fg_ok:
+            self.flow_status = f"skipped ({fg_why})"
+            self.flow_pending_action = None
+            self.log(f"Auto-restart skipped ({kind}): {fg_why}", event="auto_restart_skipped", action=kind, reason=fg_why)
             return False
 
         try:
@@ -523,14 +655,19 @@ class GemCollector:
             self.log(f"Auto-restart target disappeared ({kind})", event="auto_restart_gone", action=kind)
             return False
 
+        if self._stop_event.is_set():
+            self.flow_pending_action = None
+            return False
+
         pt = detectors.sample_interior_point(hit.rect, inset_px=16, rng=self._rng)
+        serial = self._cfg["adb"]["serial"]
         try:
             res = self._tapper.tap(
                 serial,
                 pt[0],
                 pt[1],
                 cfg=self._tap_cfg(),
-                input_display=self._frames.input_display,
+                input_display=input_display,
                 reason=f"run_flow:{kind}",
                 frame_size=(int(fresh.shape[1]), int(fresh.shape[0])),
             )

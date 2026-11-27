@@ -175,3 +175,47 @@ def test_stream_route_and_extensions_shutdown(tmp_path: Path, monkeypatch):
     # Idempotent second shutdown
     ext["shutdown"]()
     assert ocr_closed == [True]
+
+
+def test_loopback_host_and_origin_enforcement_and_static_assets(tmp_path: Path):
+    cfg_path = tmp_path / "config.yaml"
+    app = create_app(config_path=cfg_path, frame_source=DummyFrames())
+    client = app.test_client()
+    try:
+        # Static CSS & JS served cleanly
+        home = client.get("/")
+        assert home.status_code == 200
+        assert b"/static/style.css" in home.data
+        assert b"/static/app.js" in home.data
+        assert client.get("/static/style.css").status_code == 200
+        assert client.get("/static/app.js").status_code == 200
+
+        # DNS rebinding: foreign Host rejected on GET and POST
+        assert client.get("/api/status", headers={"Host": "evil.example:8620"}).status_code == 403
+        assert client.post(
+            "/api/harvest",
+            json={"mode": "timer"},
+            headers={"Host": "evil.example:8620"},
+        ).status_code == 403
+
+        # Cross-origin POST rejected via Origin or Referer
+        assert client.post(
+            "/api/harvest",
+            json={"mode": "timer"},
+            headers={"Origin": "http://evil.example"},
+        ).status_code == 403
+        assert client.post(
+            "/api/harvest",
+            json={"mode": "timer"},
+            headers={"Referer": "https://evil.example/page"},
+        ).status_code == 403
+
+        # Loopback Origin allowed
+        ok = client.post(
+            "/api/harvest",
+            json={"mode": "timer"},
+            headers={"Host": "127.0.0.1:8620", "Origin": "http://127.0.0.1:8620"},
+        )
+        assert ok.status_code == 200
+    finally:
+        app.extensions["towerpilot"]["shutdown"]()

@@ -106,3 +106,77 @@ def test_config_roundtrip_legacy_seeding_and_validation(tmp_path: Path):
         config.validate_config({"ad_gems": {"timer_interval_sec": 2}})
     with pytest.raises(ValueError):
         config.validate_config({"floating_gems": {"timer_interval_sec": True}})
+
+
+def test_visible_windows_filters_by_display_id(monkeypatch):
+    dump = (
+        "  Window #0 Window{111 u0 com.other/Overlay}:\n"
+        "    mDisplayId=0\n"
+        "    isOnScreen=true\n"
+        "  Window #1 Window{222 u0 com.TechTreeGames.TheTower/Activity}:\n"
+        "    mDisplayId=2\n"
+        "    isOnScreen=true\n"
+    ).encode("utf-8")
+    monkeypatch.setattr(adb, "shell", lambda *a, **kw: dump)
+    assert adb.visible_windows("127.0.0.1:16384", display_id=2) == [
+        "com.TechTreeGames.TheTower/Activity"
+    ]
+    assert adb.visible_windows("127.0.0.1:16384", display_id=0) == ["com.other/Overlay"]
+
+
+def test_frame_source_refuses_unpaired_secondary_display(monkeypatch):
+    cfg = config.validate_config({"adb": {"serial": "127.0.0.1:16384"}})
+    monkeypatch.setattr(adb, "resolve_game_display", lambda serial: ("463094649", None))
+    fs = capture.FrameSource(cfg)
+    with pytest.raises(capture.CaptureError, match="logical input display"):
+        _ = fs.input_display
+
+
+def test_frame_source_publishes_failure_state_after_adb_error(monkeypatch):
+    cfg = config.validate_config({"adb": {"serial": "127.0.0.1:16384"}, "stream": {"backend": "adb"}})
+    fs = capture.FrameSource(cfg)
+    ok_frame = np.zeros((10, 10, 3), dtype=np.uint8)
+    monkeypatch.setattr(fs, "grab_adb", lambda: ok_frame)
+    _frame, backend = fs.read_frame(prefer_preview=True)
+    assert backend == "adb"
+    assert fs.active_backend == "adb"
+    assert fs.last_error is None
+
+    def fail():
+        raise capture.CaptureError("device offline")
+
+    monkeypatch.setattr(fs, "grab_adb", fail)
+    with pytest.raises(capture.CaptureError):
+        fs.read_frame(prefer_preview=True)
+    assert fs.active_backend == "none"
+    assert fs.last_error == "device offline"
+
+
+def test_adb_recover_starts_server_when_refused(monkeypatch):
+    states = iter(["no_server", "missing", "device"])
+    started = []
+    monkeypatch.setattr(adb, "get_state", lambda serial, timeout=2.0: next(states))
+    monkeypatch.setattr(adb, "_server_refuses", lambda timeout=3.0: True)
+    monkeypatch.setattr(adb, "start_server", lambda adb_exe="": started.append(adb_exe) or True)
+    monkeypatch.setattr(adb, "reconnect", lambda serial: True)
+
+    assert adb.recover("127.0.0.1:16384", adb_exe="C:/adb.exe", attempts=1) == "device"
+    assert started == ["C:/adb.exe"]
+
+
+def test_tapper_refuses_on_android_input_error_output(monkeypatch):
+    from towerpilot.input import TapRefused, Tapper
+
+    cfg = {
+        "screen": {"width": 1080, "height": 2560},
+        "safety": {
+            "allow_taps": True,
+            "dry_run": False,
+            "jitter_px": 0,
+            "press_ms": [60, 60],
+            "max_taps_per_sec": 100.0,
+        },
+    }
+    monkeypatch.setattr(adb, "shell", lambda *a, **kw: b"Error: Invalid display id: 99\n")
+    with pytest.raises(TapRefused, match="Invalid display id"):
+        Tapper().tap("127.0.0.1:16384", 100, 200, cfg=cfg, input_display=99)

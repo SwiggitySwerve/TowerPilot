@@ -76,9 +76,12 @@ class Tapper:
             disp_flag = f" -d {input_display}" if input_display is not None else ""
             cmd = f"input{disp_flag} swipe {jx} {jy} {ex} {ey} {dur}"
             try:
-                adb.shell(serial, cmd, timeout=8.0)
+                raw = adb.shell(serial, cmd, timeout=8.0)
             except (OSError, adb.AdbError) as exc:
                 raise TapRefused(f"ADB tap failed: {exc}") from exc
+            output = raw.decode("utf-8", errors="replace").strip() if raw else ""
+            if output:
+                raise TapRefused(f"ADB input error: {output}")
             self._last_tap = time.monotonic()
 
         result["dispatched"] = True

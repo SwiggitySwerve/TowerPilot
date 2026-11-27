@@ -8,11 +8,19 @@ from __future__ import annotations
 
 import re
 import socket
+import subprocess
 import time
+from pathlib import Path
 
 HOST = ("127.0.0.1", 5037)
 DEFAULT_TIMEOUT = 15.0
 GAME_PKG = "com.TechTreeGames.TheTower"
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+_DEFAULT_ADB_PATHS = (
+    Path(r"C:\Program Files\Netease\MuMuPlayer\nx_main\adb.exe"),
+    Path(r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0\shell\adb.exe"),
+    Path(r"C:\Program Files\Netease\MuMu Player 12\shell\adb.exe"),
+)
 
 _OFFLINE_STALE_S = 30.0
 _offline_since: dict[tuple[tuple[str, int], str], float] = {}
@@ -138,9 +146,53 @@ def disconnect(serial: str) -> bool:
         return False
 
 
-def recover(serial: str, *, attempts: int = 2, settle: float = 1.5) -> str:
+def _server_refuses(timeout: float = 3.0) -> bool:
+    """True only when TCP connect to the ADB server is actively refused (nothing listening)."""
+    try:
+        socket.create_connection(HOST, timeout=timeout).close()
+    except ConnectionRefusedError:
+        return True
+    except OSError:
+        return False
+    return False
+
+
+def _resolve_adb_exe(adb_exe: str = "") -> Path | None:
+    if adb_exe:
+        path = Path(adb_exe).expanduser()
+        if path.is_file():
+            return path
+    for candidate in _DEFAULT_ADB_PATHS:
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def start_server(adb_exe: str = "", timeout: float = 10.0) -> bool:
+    """Sanctioned one-time hidden `adb start-server` when no daemon listens on 5037."""
+    exe = _resolve_adb_exe(adb_exe)
+    if exe is None:
+        return False
+    try:
+        proc = subprocess.run(
+            [str(exe), "start-server"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout,
+            creationflags=NO_WINDOW,
+        )
+        return proc.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def recover(serial: str, *, adb_exe: str = "", attempts: int = 2, settle: float = 1.5) -> str:
     """Reconnect a dropped TCP emulator serial without killing the ADB server."""
     state = get_state(serial)
+    if state == "no_server" and _server_refuses():
+        if start_server(adb_exe):
+            state = get_state(serial)
     if ":" not in serial:
         return state
     key = (HOST, serial)
@@ -207,8 +259,17 @@ def resolve_game_display(serial: str, timeout: float = 8.0) -> tuple[str | None,
 _SYSTEM_DECOR_PREFIXES = ("StatusBar", "ScreenDecorOverlay", "DockedStackDivider")
 
 
-def visible_windows(serial: str, timeout: float = 5.0) -> list[str]:
-    """Return front-to-back visible window titles from `dumpsys window windows`."""
+def visible_windows(
+    serial: str,
+    timeout: float = 5.0,
+    *,
+    display_id: int | None = None,
+) -> list[str]:
+    """Return front-to-back visible window titles from `dumpsys window windows`.
+
+    When `display_id` is given, only windows on that logical Android display are
+    included; missing display metadata fails closed.
+    """
     out = shell(serial, "dumpsys window windows", timeout=timeout).decode("utf-8", errors="replace")
     entries = list(re.finditer(r"Window #\d+ Window\{[0-9a-f]+ u\d+ ([^}]+)\}", out))
     visible: list[str] = []
@@ -216,6 +277,12 @@ def visible_windows(serial: str, timeout: float = 5.0) -> list[str]:
         title = entry.group(1)
         end = entries[idx + 1].start() if idx + 1 < len(entries) else len(out)
         block = out[entry.end():end]
+        if display_id is not None:
+            disp_match = re.search(r"\b(?:mDisplayId|displayId)=(\d+)\b", block)
+            if disp_match is None:
+                raise ValueError(f"window display id unavailable for {title}")
+            if int(disp_match.group(1)) != display_id:
+                continue
         flags = re.findall(r"\bis(?:OnScreen|Visible)(?:\(\))?=(true|false)\b", block)
         if not flags:
             raise ValueError(f"window visibility unavailable for {title}")

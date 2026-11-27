@@ -352,6 +352,13 @@ class FrameSource:
     def input_display(self) -> int | None:
         with self._lock:
             self._ensure_display_locked()
+            if self._physical_display is not None and self._input_display is None:
+                # Re-try once before refusing input so we never tap display 0 when capturing a secondary display.
+                self._ensure_display_locked(force=True)
+            if self._physical_display is not None and self._input_display is None:
+                raise CaptureError(
+                    f"Secondary display {self._physical_display} has no matching logical input display"
+                )
             return self._input_display
 
     def _ensure_display_locked(self, force: bool = False) -> str | None:
@@ -361,15 +368,17 @@ class FrameSource:
         if force or self._display_serial != serial:
             try:
                 self._physical_display, self._input_display = adb.resolve_game_display(serial)
+                self._display_serial = serial
             except (OSError, adb.AdbError):
                 self._physical_display, self._input_display = None, None
-            self._display_serial = serial
+                self._display_serial = None
         return self._physical_display
 
     def grab_adb(self) -> np.ndarray:
         """Capture a fresh frame over ADB socket screencap (with display auto-refresh)."""
         with self._lock:
             serial = self._cfg["adb"]["serial"]
+            adb_exe = self._cfg["adb"].get("exe", "")
             display = self._ensure_display_locked()
             exp_w = self._cfg["screen"]["width"]
             exp_h = self._cfg["screen"]["height"]
@@ -386,7 +395,10 @@ class FrameSource:
             except (OSError, adb.AdbError) as exc:
                 if attempt == 2:
                     raise CaptureError(f"ADB screencap failed: {exc}") from exc
-                adb.recover(serial)
+                adb.recover(serial, adb_exe=adb_exe)
+                with self._lock:
+                    display = self._ensure_display_locked(force=True)
+                cmd = "screencap" + (f" -d {display}" if display else "")
 
         if len(raw) < 1000:
             with self._lock:
@@ -438,9 +450,16 @@ class FrameSource:
                 self.last_error = f"MuMu fallback: {exc}"
                 self._mumu_failed_until = time.monotonic() + 10.0
                 if backend_pref == "mumu":
+                    self.active_backend = "none"
+                    self.last_error = str(exc)
                     raise CaptureError(str(exc)) from exc
 
-        frame = self.grab_adb()
+        try:
+            frame = self.grab_adb()
+        except Exception as exc:
+            self.active_backend = "none"
+            self.last_error = str(exc)
+            raise
         self._record_frame(frame, "adb")
         return frame, "adb"
 
