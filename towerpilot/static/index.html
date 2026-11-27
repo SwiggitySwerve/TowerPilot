@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tower Pilot</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="shell">
+    <div class="layout">
+      <!-- Left column: Live emulator stream -->
+      <section class="card" aria-label="Emulator Stream">
+        <div class="card-header">
+          <div class="header-left">
+            <span id="backendPill" class="pill"><span class="dot"></span>Offline</span>
+          </div>
+          <span id="battlePill" class="pill"><span class="dot"></span>Waiting</span>
+        </div>
+        <div id="streamStage" class="stream-stage">
+          <img id="streamImg" src="/api/stream.mjpg" alt="Emulator live stream" />
+          <div id="streamError" class="stream-error" hidden></div>
+        </div>
+      </section>
+
+      <!-- Right column: Essential gem harvesting controls -->
+      <div class="controls">
+        <div class="top-bar">
+          <div class="brand">
+            <h1>Tower Pilot</h1>
+            <span id="versionTag" class="version"></span>
+          </div>
+          <span id="connPill" class="pill" hidden><span class="dot"></span>Server Offline</span>
+        </div>
+
+        <button id="harvestBtn" class="harvest-btn" type="button" aria-pressed="false">
+          <span class="harvest-left">
+            <span class="power-dot" aria-hidden="true"></span>
+            <span id="harvestLabel" class="harvest-label">Gem Harvesting: OFF</span>
+          </span>
+          <span id="harvestBadge" class="harvest-badge">STOPPED</span>
+        </button>
+
+        <section class="card mode-card" aria-label="Collection Mode">
+          <div class="mode-title">
+            <strong>Collection Mode</strong>
+            <span id="modeHint">OCR &amp; vision detection</span>
+          </div>
+          <div id="modeSeg" class="seg" role="group" aria-label="Collection Mode">
+            <button type="button" data-mode="ocr" aria-pressed="true" class="active">OCR</button>
+            <button type="button" data-mode="timer" aria-pressed="false">Timer</button>
+          </div>
+        </section>
+
+        <section class="card gem-list" aria-label="Gem Types">
+          <!-- Ad Gems -->
+          <div class="gem-row">
+            <div class="gem-top">
+              <div class="gem-info">
+                <div class="gem-name-line">
+                  <span class="gem-dot ad" aria-hidden="true"></span>
+                  <span class="gem-name">Ad Gems</span>
+                  <span id="adCount" class="gem-count" title="Collected this session">0</span>
+                </div>
+                <div id="adStatus" class="gem-status">idle</div>
+              </div>
+              <button id="adToggleBtn" class="toggle-btn ad" type="button" aria-pressed="false">OFF</button>
+            </div>
+            <div id="adTimerRow" class="timer-row" hidden>
+              <label for="adTimerInput">Interval</label>
+              <input id="adTimerInput" class="timer-input" type="number" min="5" max="86400" step="1" inputmode="numeric" />
+              <span class="timer-unit">sec</span>
+              <span id="adTimerHuman" class="timer-human"></span>
+            </div>
+          </div>
+
+          <!-- Floating Gems -->
+          <div class="gem-row">
+            <div class="gem-top">
+              <div class="gem-info">
+                <div class="gem-name-line">
+                  <span class="gem-dot floating" aria-hidden="true"></span>
+                  <span class="gem-name">Floating Gems</span>
+                  <span id="floatingCount" class="gem-count" title="Collected this session">0</span>
+                </div>
+                <div id="floatingStatus" class="gem-status">idle</div>
+              </div>
+              <button id="floatingToggleBtn" class="toggle-btn floating" type="button" aria-pressed="false">OFF</button>
+            </div>
+            <div id="floatingTimerRow" class="timer-row" hidden>
+              <label for="floatingTimerInput">Interval</label>
+              <input id="floatingTimerInput" class="timer-input" type="number" min="5" max="86400" step="1" inputmode="numeric" />
+              <span class="timer-unit">sec</span>
+              <span id="floatingTimerHuman" class="timer-human"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card gem-list" aria-label="Run Continuity">
+          <div class="gem-row">
+            <div class="gem-top">
+              <div class="gem-info">
+                <div class="gem-name-line">
+                  <span class="gem-dot flow" aria-hidden="true"></span>
+                  <span class="gem-name">End Stats &rarr; Home</span>
+                </div>
+                <div id="flowStatus" class="gem-status">off</div>
+              </div>
+              <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+            </div>
+          </div>
+          <div class="gem-row">
+            <div class="gem-top">
+              <div class="gem-info">
+                <div class="gem-name-line">
+                  <span class="gem-dot flow" aria-hidden="true"></span>
+                  <span class="gem-name">Auto Re-Battle</span>
+                  <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
+                </div>
+                <div class="gem-status">Tap BATTLE on main menu</div>
+              </div>
+              <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-label="Recent Activity">
+          <div class="card-header">
+            <span class="title">Recent Activity</span>
+          </div>
+          <ul id="activityList" class="activity-list">
+            <li class="activity-empty">No recent activity yet.</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

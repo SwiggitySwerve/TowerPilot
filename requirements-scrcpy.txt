@@ -1,2 +1,0 @@
-# Optional dashboard preview decoder. Install alongside requirements.txt.
-av==19.0.1

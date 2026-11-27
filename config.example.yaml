@@ -1,0 +1,25 @@
+# Copy to config.yaml (git-ignored) or let Tower Pilot generate it on first start.
+mode: "ocr"                 # ocr | timer
+ad_gems:
+  enabled: true
+  timer_interval_sec: 900.0
+floating_gems:
+  enabled: true
+  timer_interval_sec: 300.0
+run_flow:
+  auto_home: false
+  auto_battle: false
+safety:
+  battle_only: true
+adb:
+  serial: "127.0.0.1:16384"
+  exe: ""
+stream:
+  backend: "auto"           # auto | mumu | adb
+  fps: 10.0
+  quality: 80
+  mumu_install_dir: ""
+  mumu_index: -1
+screen:
+  width: 1080
+  height: 2560
