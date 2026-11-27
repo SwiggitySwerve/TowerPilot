@@ -213,6 +213,7 @@ def test_collector_status_matches_minimal_contract():
         "ad_gems",
         "floating_gems",
         "run_flow",
+        "run_rules",
         "stream",
         "battle",
         "recent",
@@ -234,13 +235,21 @@ def test_collector_status_matches_minimal_contract():
         "count": 0,
     }
     assert st["stream"] == {"backend": "adb", "frame_size": [1080, 2560], "error": None}
-    assert st["battle"] == {"live": True, "menu_state": "closed", "blocker": None}
+    assert st["battle"] == {
+        "live": True,
+        "menu_state": "closed",
+        "blocker": None,
+        "wave": None,
+        "tier": None,
+        "elapsed_sec": None,
+        "frozen": False,
+    }
     assert isinstance(st["recent"], list)
 
     # Stale foreground_blocker clears once passive idle check sees a healthy battle HUD
     collector.foreground_blocker = "covered_by:com.mumu.store"
     st_after = collector.status()
-    assert st_after["battle"] == {"live": True, "menu_state": "closed", "blocker": None}
+    assert st_after["battle"]["blocker"] is None
     assert collector.foreground_blocker is None
 
 

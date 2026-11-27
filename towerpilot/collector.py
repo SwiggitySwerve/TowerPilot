@@ -12,12 +12,13 @@ import random
 import threading
 import time
 from collections import deque
+from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
-from towerpilot import adb, detectors
+from towerpilot import adb, detectors, run_rules
 from towerpilot.capture import CaptureError, FrameSource
 from towerpilot.input import TapRefused, Tapper
 
@@ -48,6 +49,7 @@ _FAILURE_BACKOFF_SEC = 5.0
 _FLOW_SCAN_INTERVAL_SEC = 3.0
 _FLOW_COOLDOWN_SEC = 15.0
 _FLOW_DELAY_SEC = (2.0, 4.0)
+_WAVE_SCAN_INTERVAL_SEC = 20.0
 
 
 class GemCollector:
@@ -64,7 +66,10 @@ class GemCollector:
         fg_taps_per_burst: int = _FG_TAPS_PER_BURST,
         max_taps_per_sec: float = _TAP_MAX_PER_SEC,
         flow_delay_sec: tuple[float, float] = _FLOW_DELAY_SEC,
+        wave_scan_interval_sec: float = _WAVE_SCAN_INTERVAL_SEC,
         event_log_path: Path | None = None,
+        now_local_fn: Callable[[], datetime] | None = None,
+        on_notify: Callable[[str, str], None] | None = None,
     ) -> None:
         self._frames = frame_source
         self._cfg = cfg
@@ -74,7 +79,10 @@ class GemCollector:
         self._fg_taps_per_burst = fg_taps_per_burst
         self._max_taps_per_sec = max_taps_per_sec
         self._flow_delay_sec = flow_delay_sec
+        self._wave_scan_interval_sec = wave_scan_interval_sec
         self._event_log_path = event_log_path
+        self._now_local_fn = now_local_fn or datetime.now
+        self._on_notify = on_notify
 
         self._lock = threading.RLock()
         self._stop_event = threading.Event()
@@ -82,12 +90,22 @@ class GemCollector:
 
         self.running = False
 
-        # Live battle observation state
+        # Live battle observation & freeze-watch state
         self.battle_live = False
         self.menu_state = "unknown"
         self.foreground_blocker: str | None = None
         self._last_battle_state: tuple[bool, str] | None = None
         self._last_capture_error: str | None = None
+        now_mono = time.monotonic()
+        self._run_started_at: float | None = None
+        self._run_start_exact: bool = False
+        self._saw_non_battle: bool = False
+        self.current_wave: int | None = None
+        self.current_tier: int | None = None
+        self._wave_last_scan: float = now_mono
+        self._wave_changed_at: float = now_mono
+        self.frozen: bool = False
+        self._freeze_notified: bool = False
 
         # Ad Gem routine state
         self.ad_last_scan = 0.0
@@ -105,16 +123,58 @@ class GemCollector:
         self.fg_status = "stopped" if cfg["floating_gems"]["enabled"] else "off"
         self.fg_count = 0
 
-        # End-of-run continuity state (GAME STATS -> HOME, Home -> BATTLE)
+        # End-of-run continuity & run ledger state (GAME STATS -> HOME, Home -> BATTLE)
         flow_cfg = cfg.get("run_flow", {})
         self.flow_last_scan = 0.0
         self.flow_cooldown_until = 0.0
         self.flow_pending_action: tuple[str, detectors.ButtonHit, float] | None = None
         self.flow_status = "stopped" if (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")) else "off"
+        self.flow_hold_reason: str | None = None
+        self._last_hold_reason: str | None = None
         self.runs_restarted = 0
+        self._stats_logged_for_run = False
+        self._runs: deque[dict[str, Any]] = deque(
+            run_rules.load_run_ledger(event_log_path, limit=100),
+            maxlen=100,
+        )
+        self.runs_logged = len(self._runs)
 
         self._recent: deque[dict[str, Any]] = deque(maxlen=30)
-        self._reset_timers(time.monotonic())
+        self._reset_timers(now_mono)
+
+    def set_notifier(self, fn: Callable[[str, str], None] | None) -> None:
+        with self._lock:
+            self._on_notify = fn
+
+    def _notify(self, message: str, title: str = "Tower Pilot") -> None:
+        fn = self._on_notify
+        if callable(fn):
+            try:
+                fn(message, title)
+            except Exception:
+                pass
+
+    def reset_runs_restarted(self) -> None:
+        with self._lock:
+            self.runs_restarted = 0
+            if self.flow_hold_reason == "max_runs":
+                self.flow_hold_reason = None
+                self._last_hold_reason = None
+                if self.running:
+                    self.flow_status = "watching"
+            self.log("Run counter reset to 0", event="run_count_reset")
+
+    def runs_ledger(self, limit: int = 50) -> dict[str, Any]:
+        with self._lock:
+            all_runs = list(self._runs)
+        return {
+            "runs": all_runs[:limit],
+            "by_tier": run_rules.summarize_by_tier(all_runs),
+        }
+
+    def _rules_cfg(self) -> dict[str, Any]:
+        raw = self._cfg.get("run_rules")
+        return raw if isinstance(raw, dict) else {}
 
     def _reset_timers(self, now: float) -> None:
         self.ad_next_timer_at = now + float(self._cfg["ad_gems"]["timer_interval_sec"])
@@ -197,9 +257,30 @@ class GemCollector:
             flow_cfg = cfg.get("run_flow", {})
             if not (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")):
                 self.flow_pending_action = None
+                self.flow_hold_reason = None
+                self._last_hold_reason = None
                 self.flow_status = "off"
             elif not self.running:
+                self.flow_hold_reason = None
+                self._last_hold_reason = None
                 self.flow_status = "stopped"
+            elif flow_cfg.get("auto_battle") and not self.battle_live:
+                # Re-evaluate hold immediately when rules change while off-battle
+                action, reason = run_rules.decide_home_action(
+                    self._now_local_fn(),
+                    runs_restarted=self.runs_restarted,
+                    rules=self._rules_cfg(),
+                )
+                if action != "hold":
+                    if self.flow_hold_reason is not None:
+                        self.flow_hold_reason = None
+                        self._last_hold_reason = None
+                        self.flow_status = "watching"
+                else:
+                    if self.flow_pending_action is not None and self.flow_pending_action[0] == "home_battle":
+                        self.flow_pending_action = None
+                    self.flow_hold_reason = reason
+                    self.flow_status = run_rules.hold_label(reason, self._rules_cfg(), self.runs_restarted)
 
     def start(self) -> bool:
         with self._lock:
@@ -207,13 +288,20 @@ class GemCollector:
                 return False
             self._stop_event.clear()
             self.running = True
-            self._reset_timers(time.monotonic())
+            now_mono = time.monotonic()
+            self._reset_timers(now_mono)
             self.foreground_blocker = None
             self._last_battle_state = None
             self._last_capture_error = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
             self.flow_pending_action = None
+            self.flow_hold_reason = None
+            self._last_hold_reason = None
+            self._wave_last_scan = now_mono
+            self._wave_changed_at = now_mono
+            self.frozen = False
+            self._freeze_notified = False
             self.ad_status = "starting" if self._cfg["ad_gems"]["enabled"] else "off"
             self.fg_status = "starting" if self._cfg["floating_gems"]["enabled"] else "off"
             flow_cfg = self._cfg.get("run_flow", {})
@@ -248,6 +336,10 @@ class GemCollector:
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
             self.flow_pending_action = None
+            self.flow_hold_reason = None
+            self._last_hold_reason = None
+            self.frozen = False
+            self._freeze_notified = False
             self.ad_status = "stopped" if self._cfg["ad_gems"]["enabled"] else "off"
             self.fg_status = "stopped" if self._cfg["floating_gems"]["enabled"] else "off"
             flow_cfg = self._cfg.get("run_flow", {})
@@ -597,12 +689,22 @@ class GemCollector:
                 self.log(f"Waiting for battle ({why})", event="battle_waiting", reason=why, menu_state=self.menu_state)
 
         if not in_battle_hud:
+            self.frozen = False
+            self._freeze_notified = False
+            self._saw_non_battle = True
             if self._step_run_flow(frame, now):
                 return
         else:
             self.flow_pending_action = None
+            self.flow_hold_reason = None
+            self._last_hold_reason = None
+            self._stats_logged_for_run = False
+            if self._run_started_at is None:
+                self._run_started_at = time.time()
+                self._run_start_exact = self._saw_non_battle
             flow_cfg = self._cfg.get("run_flow", {})
             self.flow_status = "in battle" if (flow_cfg.get("auto_home") or flow_cfg.get("auto_battle")) else "off"
+            self._step_wave_watch(frame, now)
 
         if not ok:
             if self._cfg["ad_gems"]["enabled"]:
@@ -619,11 +721,151 @@ class GemCollector:
         self._step_ad_gems(frame, now)
         self._step_floating_gems(frame, now)
 
+    def _step_wave_watch(self, frame: np.ndarray, now: float) -> None:
+        """Passively read current wave every ~20s and alert if the emulator freezes."""
+        if now - self._wave_last_scan < self._wave_scan_interval_sec:
+            return
+        self._wave_last_scan = now
+        try:
+            wave = detectors.read_wave_ocr(frame)
+        except Exception:
+            return
+        if wave is None:
+            return
+
+        if self.current_wave is None or wave != self.current_wave:
+            was_frozen = self.frozen
+            self.current_wave = wave
+            self._wave_changed_at = now
+            self.frozen = False
+            self._freeze_notified = False
+            if was_frozen:
+                self.log(f"Battle resumed at Wave {wave}", event="battle_unfrozen", wave=wave)
+            return
+
+        freeze_min = int(self._rules_cfg().get("freeze_timeout_min", 10) or 0)
+        if freeze_min > 0 and (now - self._wave_changed_at) >= freeze_min * 60.0:
+            if not self.frozen:
+                self.frozen = True
+                self.log(
+                    f"Battle frozen at Wave {wave} for {freeze_min}+ min",
+                    event="battle_frozen",
+                    wave=wave,
+                    minutes=freeze_min,
+                )
+            if not self._freeze_notified:
+                self._freeze_notified = True
+                self._notify(f"Battle frozen at Wave {wave} for {freeze_min}+ min")
+
+    def _record_run_ended(self, frame: np.ndarray) -> dict[str, Any] | None:
+        """Passively scrape GAME STATS once per run end, log to JSONL, and notify."""
+        if self._stats_logged_for_run:
+            return None
+        try:
+            parsed = detectors.read_end_stats(frame)
+        except Exception:
+            parsed = None
+        if not parsed:
+            return None
+
+        self._stats_logged_for_run = True
+        now_wall = time.time()
+        duration_sec: float | None = None
+        duration_exact = bool(self._run_start_exact)
+        if self._run_started_at is not None and now_wall >= self._run_started_at:
+            duration_sec = round(now_wall - self._run_started_at, 1)
+        self._run_started_at = None
+        self._run_start_exact = False
+
+        tier = parsed["tier"] if parsed.get("tier") is not None else self.current_tier
+        wave = parsed["wave"] if parsed.get("wave") is not None else self.current_wave
+        if tier is not None:
+            self.current_tier = tier
+
+        total_coins = parsed.get("total_coins")
+        coins_per_hour: float | None = None
+        if (
+            duration_exact
+            and parsed.get("coins_verified", True)
+            and isinstance(total_coins, (int, float))
+            and total_coins > 0
+            and duration_sec is not None
+            and duration_sec >= 30.0
+        ):
+            coins_per_hour = total_coins / (duration_sec / 3600.0)
+
+        rules = self._rules_cfg()
+        profile = str(rules.get("profile_name") or "").strip()
+        record: dict[str, Any] = {
+            "ts": round(now_wall, 3),
+            "iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(now_wall)),
+            "event": "run_ended",
+            "tier": tier,
+            "wave": wave,
+            "highest_wave": parsed.get("highest_wave"),
+            "killed_by": parsed.get("killed_by"),
+            "coins_raw": parsed.get("coins_raw"),
+            "ad_coins_raw": parsed.get("ad_coins_raw"),
+            "total_coins_raw": parsed.get("total_coins_raw"),
+            "coins_earned": parsed.get("coins_earned"),
+            "ad_coins_earned": parsed.get("ad_coins_earned"),
+            "total_coins": total_coins,
+            "coins_verified": bool(parsed.get("coins_verified", False)),
+            "duration_sec": duration_sec,
+            "duration_exact": duration_exact,
+            "coins_per_hour": coins_per_hour,
+            "coins_per_hour_fmt": run_rules.format_coins(coins_per_hour) if coins_per_hour else None,
+            "profile": profile,
+        }
+        summary = run_rules.format_death_toast(record)
+        record["msg"] = f"Run ended: {summary}"
+
+        self._runs.appendleft(record)
+        self.runs_logged += 1
+        self.log(
+            record["msg"],
+            event="run_ended",
+            tier=tier,
+            wave=wave,
+            highest_wave=parsed.get("highest_wave"),
+            killed_by=parsed.get("killed_by"),
+            coins_raw=parsed.get("coins_raw"),
+            ad_coins_raw=parsed.get("ad_coins_raw"),
+            total_coins_raw=parsed.get("total_coins_raw"),
+            coins_earned=parsed.get("coins_earned"),
+            ad_coins_earned=parsed.get("ad_coins_earned"),
+            total_coins=total_coins,
+            coins_verified=bool(parsed.get("coins_verified", False)),
+            duration_sec=duration_sec,
+            duration_exact=duration_exact,
+            coins_per_hour=coins_per_hour,
+            coins_per_hour_fmt=record["coins_per_hour_fmt"],
+            profile=profile,
+        )
+        if bool(rules.get("notify_on_death", True)):
+            self._notify(summary)
+        return record
+
     def _execute_flow_action(self, kind: str) -> bool:
         """Verify foreground game window and target OCR on a fresh ADB frame, then tap."""
         if self._stop_event.is_set():
             self.flow_pending_action = None
             return False
+        if kind == "home_battle":
+            rules = self._rules_cfg()
+            action, reason = run_rules.decide_home_action(
+                self._now_local_fn(),
+                runs_restarted=self.runs_restarted,
+                rules=rules,
+            )
+            if action == "hold":
+                self.flow_pending_action = None
+                self.flow_hold_reason = reason
+                self.flow_status = run_rules.hold_label(reason, rules, self.runs_restarted)
+                if self._last_hold_reason != reason:
+                    self._last_hold_reason = reason
+                    self.log(f"Auto-restart holding: {self.flow_status}", event="run_hold", reason=reason)
+                return False
         try:
             fresh, input_display = self._grab_verified_frame()
         except Exception as exc:
@@ -660,6 +902,11 @@ class GemCollector:
             self.flow_status = "target gone"
             self.log(f"Auto-restart target disappeared ({kind})", event="auto_restart_gone", action=kind)
             return False
+
+        if kind == "end_stats_home" and not self._stats_logged_for_run:
+            self._record_run_ended(fresh)
+        elif kind == "home_battle" and hit.tier is not None:
+            self.current_tier = hit.tier
 
         if self._stop_event.is_set():
             self.flow_pending_action = None
@@ -698,24 +945,43 @@ class GemCollector:
             )
         else:
             self.runs_restarted += 1
+            self._run_started_at = time.time()
+            self._run_start_exact = True
+            self.current_wave = None
+            self._stats_logged_for_run = False
+            self.flow_hold_reason = None
+            self._last_hold_reason = None
             self.flow_status = "tapped BATTLE"
             self.log(
                 f"Home -> BATTLE tapped at {res['x']},{res['y']}",
                 event="home_battle_tapped",
                 x=res["x"],
                 y=res["y"],
+                tier=self.current_tier,
                 runs_restarted=self.runs_restarted,
             )
         return True
 
     def _step_run_flow(self, frame: np.ndarray, now: float) -> bool:
-        """Check End Stats -> HOME or Home -> BATTLE; return True when input was dispatched."""
+        """Scrape GAME STATS passively, and handle End Stats -> HOME / Home -> BATTLE."""
         flow_cfg = self._cfg.get("run_flow", {})
         auto_home = bool(flow_cfg.get("auto_home"))
         auto_battle = bool(flow_cfg.get("auto_battle"))
+        rules = self._rules_cfg()
+
         if not (auto_home or auto_battle):
             self.flow_pending_action = None
+            self.flow_hold_reason = None
+            self._last_hold_reason = None
             self.flow_status = "off"
+            # Still passively scrape GAME STATS once when a run ends (zero taps)
+            if not self._stats_logged_for_run and now - self.flow_last_scan >= _FLOW_SCAN_INTERVAL_SEC:
+                self.flow_last_scan = now
+                try:
+                    if detectors.detect_end_stats_home(frame) is not None:
+                        self._record_run_ended(frame)
+                except Exception:
+                    pass
             return False
 
         if now < self.flow_cooldown_until:
@@ -729,6 +995,20 @@ class GemCollector:
                 self.flow_pending_action = None
                 self.flow_status = "watching"
                 return False
+            if kind == "home_battle":
+                action, reason = run_rules.decide_home_action(
+                    self._now_local_fn(),
+                    runs_restarted=self.runs_restarted,
+                    rules=rules,
+                )
+                if action == "hold":
+                    self.flow_pending_action = None
+                    self.flow_hold_reason = reason
+                    self.flow_status = run_rules.hold_label(reason, rules, self.runs_restarted)
+                    if self._last_hold_reason != reason:
+                        self._last_hold_reason = reason
+                        self.log(f"Auto-restart holding: {self.flow_status}", event="run_hold", reason=reason)
+                    return False
             if now >= due_at:
                 return self._execute_flow_action(kind)
             self.flow_status = f"tapping {hit.label} in {due_at - now:.1f}s"
@@ -740,29 +1020,52 @@ class GemCollector:
             return False
         self.flow_last_scan = now
 
-        if auto_home:
+        if auto_home or not self._stats_logged_for_run:
             try:
                 stats_hit = detectors.detect_end_stats_home(frame)
             except Exception as exc:
-                self.flow_status = "ocr error"
-                self.log(f"End Stats OCR failed: {exc}", event="auto_restart_error", action="end_stats_home", error=str(exc))
+                if auto_home:
+                    self.flow_status = "ocr error"
+                    self.log(
+                        f"End Stats OCR failed: {exc}",
+                        event="auto_restart_error",
+                        action="end_stats_home",
+                        error=str(exc),
+                    )
                 stats_hit = None
             if stats_hit is not None:
-                dmin, dmax = self._flow_delay_sec
-                delay = self._rng.uniform(float(dmin), float(dmax))
-                self.flow_pending_action = ("end_stats_home", stats_hit, now + delay)
-                self.flow_status = f"tapping HOME in {delay:.1f}s"
-                self.log(
-                    f"GAME STATS detected -> HOME in {delay:.1f}s",
-                    event="end_stats_detected",
-                    rect=list(stats_hit.rect),
-                    delay_sec=round(delay, 2),
-                )
-                if delay <= 0.05:
-                    return self._execute_flow_action("end_stats_home")
-                return False
+                self._record_run_ended(frame)
+                if auto_home:
+                    dmin, dmax = self._flow_delay_sec
+                    delay = self._rng.uniform(float(dmin), float(dmax))
+                    self.flow_pending_action = ("end_stats_home", stats_hit, now + delay)
+                    self.flow_status = f"tapping HOME in {delay:.1f}s"
+                    self.log(
+                        f"GAME STATS detected -> HOME in {delay:.1f}s",
+                        event="end_stats_detected",
+                        rect=list(stats_hit.rect),
+                        delay_sec=round(delay, 2),
+                    )
+                    if delay <= 0.05:
+                        return self._execute_flow_action("end_stats_home")
+                    return False
 
         if auto_battle:
+            action, reason = run_rules.decide_home_action(
+                self._now_local_fn(),
+                runs_restarted=self.runs_restarted,
+                rules=rules,
+            )
+            if action == "hold":
+                self.flow_hold_reason = reason
+                self.flow_status = run_rules.hold_label(reason, rules, self.runs_restarted)
+                if self._last_hold_reason != reason:
+                    self._last_hold_reason = reason
+                    self.log(f"Auto-restart holding: {self.flow_status}", event="run_hold", reason=reason)
+                return False
+            self.flow_hold_reason = None
+            self._last_hold_reason = None
+
             try:
                 battle_hit = detectors.detect_home_battle(frame)
             except Exception as exc:
@@ -770,6 +1073,8 @@ class GemCollector:
                 self.log(f"Home BATTLE OCR failed: {exc}", event="auto_restart_error", action="home_battle", error=str(exc))
                 battle_hit = None
             if battle_hit is not None:
+                if battle_hit.tier is not None:
+                    self.current_tier = battle_hit.tier
                 dmin, dmax = self._flow_delay_sec
                 delay = self._rng.uniform(float(dmin), float(dmax))
                 self.flow_pending_action = ("home_battle", battle_hit, now + delay)
@@ -778,6 +1083,7 @@ class GemCollector:
                     f"Home screen detected -> BATTLE in {delay:.1f}s",
                     event="home_battle_detected",
                     rect=list(battle_hit.rect),
+                    tier=battle_hit.tier,
                     delay_sec=round(delay, 2),
                 )
                 if delay <= 0.05:
@@ -915,6 +1221,10 @@ class GemCollector:
             flow_cfg = self._cfg.get("run_flow", {})
             flow_any = bool(flow_cfg.get("auto_home") or flow_cfg.get("auto_battle"))
             flow_status = "off" if not flow_any else (self.flow_status if self.running else "stopped")
+            rules_cfg = self._rules_cfg()
+            elapsed_sec: float | None = None
+            if battle_live and self._run_started_at is not None:
+                elapsed_sec = max(0.0, round(time.time() - self._run_started_at, 1))
 
             return {
                 "running": self.running,
@@ -942,6 +1252,19 @@ class GemCollector:
                     "auto_battle": bool(flow_cfg.get("auto_battle")),
                     "status": flow_status,
                     "runs_restarted": self.runs_restarted,
+                    "holding": bool(self.flow_hold_reason),
+                    "hold_reason": self.flow_hold_reason,
+                    "runs_logged": self.runs_logged,
+                },
+                "run_rules": {
+                    "profile_name": str(rules_cfg.get("profile_name", "")),
+                    "finish_and_stop": bool(rules_cfg.get("finish_and_stop", False)),
+                    "max_runs": int(rules_cfg.get("max_runs", 0) or 0),
+                    "no_start_enabled": bool(rules_cfg.get("no_start_enabled", False)),
+                    "no_start_from": str(rules_cfg.get("no_start_from", "23:00")),
+                    "no_start_until": str(rules_cfg.get("no_start_until", "07:00")),
+                    "freeze_timeout_min": int(rules_cfg.get("freeze_timeout_min", 10) or 0),
+                    "notify_on_death": bool(rules_cfg.get("notify_on_death", True)),
                 },
                 "stream": {
                     "backend": self._frames.active_backend,
@@ -952,6 +1275,10 @@ class GemCollector:
                     "live": bool(battle_live),
                     "menu_state": menu_state,
                     "blocker": blocker,
+                    "wave": self.current_wave,
+                    "tier": self.current_tier,
+                    "elapsed_sec": elapsed_sec,
+                    "frozen": self.frozen,
                 },
                 "recent": list(self._recent)[:20],
             }

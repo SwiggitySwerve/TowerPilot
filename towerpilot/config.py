@@ -32,6 +32,16 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "auto_home": False,
         "auto_battle": False,
     },
+    "run_rules": {
+        "profile_name": "",
+        "finish_and_stop": False,
+        "max_runs": 0,
+        "no_start_enabled": False,
+        "no_start_from": "23:00",
+        "no_start_until": "07:00",
+        "freeze_timeout_min": 10,
+        "notify_on_death": True,
+    },
     "safety": {
         "battle_only": True,
     },
@@ -149,6 +159,7 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
     ad_raw = _section(cfg, "ad_gems")
     fg_raw = _section(cfg, "floating_gems")
     flow_raw = _section(cfg, "run_flow")
+    rules_raw = _section(cfg, "run_rules")
     safety_raw = _section(cfg, "safety")
     adb_raw = _section(cfg, "adb")
     stream_raw = _section(cfg, "stream")
@@ -157,6 +168,26 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
     backend = stream_raw.get("backend", DEFAULT_CONFIG["stream"]["backend"])
     if not isinstance(backend, str) or backend.lower() not in VALID_BACKENDS:
         raise ValueError(f"stream.backend must be one of {VALID_BACKENDS}")
+
+    from towerpilot.run_rules import valid_hhmm
+
+    profile_raw = rules_raw.get("profile_name", DEFAULT_CONFIG["run_rules"]["profile_name"])
+    if not isinstance(profile_raw, str):
+        raise ValueError("run_rules.profile_name must be a string")
+    profile_name = profile_raw.strip()
+    if len(profile_name) > 40:
+        raise ValueError("run_rules.profile_name must be at most 40 characters")
+
+    no_start_from = str(
+        rules_raw.get("no_start_from", DEFAULT_CONFIG["run_rules"]["no_start_from"])
+    ).strip()
+    no_start_until = str(
+        rules_raw.get("no_start_until", DEFAULT_CONFIG["run_rules"]["no_start_until"])
+    ).strip()
+    if not valid_hhmm(no_start_from):
+        raise ValueError("run_rules.no_start_from must be HH:MM (00:00-23:59)")
+    if not valid_hhmm(no_start_until):
+        raise ValueError("run_rules.no_start_until must be HH:MM (00:00-23:59)")
 
     return {
         "running": _require_bool(cfg.get("running", DEFAULT_CONFIG["running"]), "running"),
@@ -190,6 +221,35 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
             "auto_battle": _require_bool(
                 flow_raw.get("auto_battle", DEFAULT_CONFIG["run_flow"]["auto_battle"]),
                 "run_flow.auto_battle",
+            ),
+        },
+        "run_rules": {
+            "profile_name": profile_name,
+            "finish_and_stop": _require_bool(
+                rules_raw.get("finish_and_stop", DEFAULT_CONFIG["run_rules"]["finish_and_stop"]),
+                "run_rules.finish_and_stop",
+            ),
+            "max_runs": _require_int(
+                rules_raw.get("max_runs", DEFAULT_CONFIG["run_rules"]["max_runs"]),
+                "run_rules.max_runs",
+                0,
+                9999,
+            ),
+            "no_start_enabled": _require_bool(
+                rules_raw.get("no_start_enabled", DEFAULT_CONFIG["run_rules"]["no_start_enabled"]),
+                "run_rules.no_start_enabled",
+            ),
+            "no_start_from": no_start_from,
+            "no_start_until": no_start_until,
+            "freeze_timeout_min": _require_int(
+                rules_raw.get("freeze_timeout_min", DEFAULT_CONFIG["run_rules"]["freeze_timeout_min"]),
+                "run_rules.freeze_timeout_min",
+                0,
+                180,
+            ),
+            "notify_on_death": _require_bool(
+                rules_raw.get("notify_on_death", DEFAULT_CONFIG["run_rules"]["notify_on_death"]),
+                "run_rules.notify_on_death",
             ),
         },
         "safety": {

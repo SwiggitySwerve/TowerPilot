@@ -55,6 +55,7 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             "ad_gems",
             "floating_gems",
             "run_flow",
+            "run_rules",
             "stream",
             "battle",
             "recent",
@@ -64,6 +65,9 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             "auto_battle": False,
             "status": "off",
             "runs_restarted": 0,
+            "holding": False,
+            "hold_reason": None,
+            "runs_logged": 0,
         }
         assert status["version"] == __version__
         assert status["running"] is False
@@ -77,7 +81,15 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
         assert status["floating_gems"]["next_timer_sec"] is None
         assert status["floating_gems"]["count"] == 0
         assert status["stream"] == {"backend": "mumu", "frame_size": [1080, 2560], "error": None}
-        assert status["battle"] == {"live": False, "menu_state": "obscured", "blocker": None}
+        assert status["battle"] == {
+            "live": False,
+            "menu_state": "obscured",
+            "blocker": None,
+            "wave": None,
+            "tier": None,
+            "elapsed_sec": None,
+            "frozen": False,
+        }
 
         # Switch to timer mode, update intervals, disable floating gems, and start harvesting
         upd = client.post(

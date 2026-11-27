@@ -31,6 +31,8 @@ REF_WAVE_BOX = (690, 1678, 170, 45)
 
 # Reference 1080x2560 end-of-run GAME STATS and Home screen ROIs
 REF_STATS_HEADER = (108, 665, 864, 230)
+REF_STATS_UPPER = (108, 700, 864, 560)
+REF_STATS_COINS = (80, 1450, 920, 180)
 REF_STATS_BUTTON_BAND = (0, 1536, 1080, 460)
 REF_HOME_HEADER = (20, 105, 590, 65)
 REF_HOME_DIFFICULTY = (300, 1200, 560, 160)
@@ -57,6 +59,8 @@ class ButtonHit:
     center: tuple[int, int]
     label: str
     screen: str
+    tier: int | None = None
+    retry_rect: tuple[int, int, int, int] | None = None
 
 
 def scale_rect(rect: tuple[int, int, int, int], frame_shape: tuple[int, ...]) -> tuple[int, int, int, int]:
@@ -391,6 +395,8 @@ def read_wave_ocr(
             frame.shape,
         )
         crops.append(frame[y : y + h, x : x + w])
+    if not any(int(c.max()) >= 40 for c in crops if c.size > 0):
+        return None
     reader = ocr_fn if ocr_fn is not None else (lambda items: ocr.read_texts(items, scale=3.0, timeout=timeout))
     try:
         texts = reader(crops)
@@ -458,23 +464,88 @@ def detect_end_stats_home(
         return None
 
     home_rect: tuple[int, int, int, int] | None = None
-    has_retry = False
+    retry_rect: tuple[int, int, int, int] | None = None
     for (x, y, w, h), raw in zip(candidates, texts[1:]):
         upper = raw.upper()
         if re.search(r"\bRETRY\b", upper) and "HOME" not in upper:
-            has_retry = True
+            retry_rect = (x, y, w, h)
         elif re.search(r"\bHOME\b", upper) and "RETRY" not in upper:
             home_rect = (x, y, w, h)
 
-    if home_rect is not None and has_retry:
+    if home_rect is not None and retry_rect is not None:
         x, y, w, h = home_rect
         return ButtonHit(
             rect=(x, y, w, h),
             center=(x + w // 2, y + h // 2),
             label="HOME",
             screen="game_stats",
+            retry_rect=retry_rect,
         )
     return None
+
+
+def parse_tier_from_text(text: str) -> int | None:
+    """Extract a tier integer from OCR text like 'DIFFICULTY Tier 11' or 'TIER 9'."""
+    if not text:
+        return None
+    m = re.search(r"\bTIER\s*[:#-]?\s*(\d{1,3})\b", text, flags=re.IGNORECASE)
+    return int(m.group(1)) if m else None
+
+
+def read_end_stats(
+    frame: np.ndarray,
+    *,
+    ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+    timeout: float = 2.5,
+) -> dict[str, object] | None:
+    """Scrape Tier, Wave, Highest Wave, Killed By, and Coins from a GAME STATS modal."""
+    if frame is None or frame.ndim != 3:
+        return None
+    ux, uy, uw, uh = scale_rect(REF_STATS_UPPER, frame.shape)
+    cx, cy, cw, ch = scale_rect(REF_STATS_COINS, frame.shape)
+    upper_crop = frame[uy : uy + uh, ux : ux + uw]
+    coins_crop = frame[cy : cy + ch, cx : cx + cw]
+    if upper_crop.size == 0 or coins_crop.size == 0:
+        return None
+    if int(upper_crop.max()) < 40 and int(coins_crop.max()) < 40:
+        return None
+
+    reader = ocr_fn if ocr_fn is not None else (lambda items: ocr.read_texts(items, scale=2.0, timeout=timeout))
+    texts = reader([upper_crop, coins_crop])
+    if len(texts) != 2:
+        return None
+
+    from towerpilot import run_rules
+
+    parsed = run_rules.parse_end_stats(texts[0], texts[1])
+    if (
+        parsed["wave"] is None
+        and parsed["tier"] is None
+        and parsed["killed_by"] is None
+        and parsed["total_coins_raw"] is None
+    ):
+        return None
+    return parsed
+
+
+def read_home_tier(
+    frame: np.ndarray,
+    *,
+    ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+    timeout: float = 2.0,
+) -> int | None:
+    """Read the selected Tier number from the Home screen difficulty banner."""
+    if frame is None or frame.ndim != 3:
+        return None
+    x, y, w, h = scale_rect(REF_HOME_DIFFICULTY, frame.shape)
+    crop = frame[y : y + h, x : x + w]
+    if crop.size == 0:
+        return None
+    reader = ocr_fn if ocr_fn is not None else (lambda items: ocr.read_texts(items, scale=2.0, timeout=timeout))
+    texts = reader([crop])
+    if not texts:
+        return None
+    return parse_tier_from_text(texts[0])
 
 
 def detect_home_battle(
@@ -524,4 +595,5 @@ def detect_home_battle(
         center=(bx + bw // 2, by + bh // 2),
         label="BATTLE",
         screen="home",
+        tier=parse_tier_from_text(texts[1]),
     )

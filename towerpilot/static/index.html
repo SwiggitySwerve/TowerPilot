@@ -8,9 +8,145 @@
 </head>
 <body>
   <main class="shell">
-    <div class="layout">
-      <!-- Left column: Live emulator stream -->
-      <section class="card" aria-label="Emulator Stream">
+    <div id="layoutGrid" class="layout">
+      <!-- Left column: Collapsible Runs & Restart Rules sidebar -->
+      <aside id="runsSidebar" class="card sidebar" aria-label="Runs and Restart Rules">
+        <div class="card-header sidebar-header">
+          <div class="header-left">
+            <span class="title sidebar-title">Runs</span>
+            <span id="sidebarStatePill" class="pill"><span class="dot"></span>Off</span>
+          </div>
+          <button id="collapseSidebarBtn" class="icon-btn" type="button" title="Collapse Runs panel" aria-expanded="true" aria-controls="sidebarBody">&laquo;</button>
+        </div>
+
+        <div class="sidebar-rail" aria-hidden="true">
+          <span class="rail-label">RUNS</span>
+        </div>
+
+        <div id="sidebarBody" class="sidebar-body">
+          <!-- Live run telemetry -->
+          <div class="run-telemetry" aria-label="Current Run">
+            <div class="stat-cell">
+              <span class="stat-label">Tier</span>
+              <span id="liveTier" class="stat-value">&mdash;</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-label">Wave</span>
+              <span id="liveWave" class="stat-value">&mdash;</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-label">Elapsed</span>
+              <span id="liveElapsed" class="stat-value">&mdash;</span>
+            </div>
+          </div>
+
+          <div id="freezeBanner" class="alert-banner red" hidden>
+            <span>Battle wave appears frozen</span>
+          </div>
+
+          <div id="holdBanner" class="alert-banner amber" hidden>
+            <span id="holdBannerText">Holding at Home</span>
+            <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
+          </div>
+
+          <!-- Restart toggles & conditions -->
+          <div class="sidebar-section">
+            <div class="section-heading">Auto-Restart</div>
+
+            <div class="rule-row">
+              <div class="rule-info">
+                <div class="gem-name-line">
+                  <span class="gem-dot flow" aria-hidden="true"></span>
+                  <span class="rule-name">End Stats &rarr; Home</span>
+                </div>
+                <div id="flowStatus" class="gem-status">off</div>
+              </div>
+              <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-info">
+                <div class="gem-name-line">
+                  <span class="gem-dot flow" aria-hidden="true"></span>
+                  <span class="rule-name">Auto Re-Battle</span>
+                  <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
+                  <button id="resetRunsBtn" class="mini-btn" type="button" title="Reset session run counter">Reset</button>
+                </div>
+                <div class="gem-status">Tap BATTLE on main menu</div>
+              </div>
+              <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-info">
+                <div class="rule-name">Finish Run &amp; Hold</div>
+                <div class="gem-status">Park at Home after this run</div>
+              </div>
+              <button id="finishStopBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
+            </div>
+
+            <div class="rule-field-row">
+              <label for="maxRunsInput">Max runs <span class="hint">(0 = unlimited)</span></label>
+              <input id="maxRunsInput" class="compact-input num" type="number" min="0" max="9999" step="1" inputmode="numeric" />
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-info">
+                <div class="rule-name">Quiet Window</div>
+                <div class="gem-status">Don&rsquo;t start new runs during hours</div>
+              </div>
+              <button id="noStartBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
+            </div>
+
+            <div id="noStartTimesRow" class="time-window-row" hidden>
+              <label for="noStartFrom">From</label>
+              <input id="noStartFrom" class="compact-input time" type="time" />
+              <label for="noStartUntil">Until</label>
+              <input id="noStartUntil" class="compact-input time" type="time" />
+            </div>
+
+            <div class="rule-field-row stacked">
+              <label for="profileInput">Profile / Build Tag</label>
+              <input id="profileInput" class="compact-input text" type="text" maxlength="40" placeholder="e.g. T9 eHP Farm" />
+            </div>
+
+            <div class="rule-field-row">
+              <label for="freezeMinInput">Freeze alert <span class="hint">(min, 0 = off)</span></label>
+              <input id="freezeMinInput" class="compact-input num" type="number" min="0" max="180" step="1" inputmode="numeric" />
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-info">
+                <div class="rule-name">Death Toast</div>
+                <div class="gem-status">Tray alert with run summary</div>
+              </div>
+              <button id="notifyDeathBtn" class="toggle-btn flow" type="button" aria-pressed="true">ON</button>
+            </div>
+          </div>
+
+          <!-- Measured Coins/hr by Tier -->
+          <div class="sidebar-section">
+            <div class="section-heading">Measured Coins / hr</div>
+            <div id="tierSummaryList" class="tier-summary-list">
+              <div class="ledger-empty">Complete a run to measure Coins/hr.</div>
+            </div>
+          </div>
+
+          <!-- Run Ledger -->
+          <div class="sidebar-section">
+            <div class="section-heading">
+              <span>Run Ledger</span>
+              <span id="ledgerCount" class="gem-count">0</span>
+            </div>
+            <ul id="runLedgerList" class="ledger-list">
+              <li class="ledger-empty">No completed runs logged yet.</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center column: Live emulator stream -->
+      <section class="card stream-card" aria-label="Emulator Stream">
         <div class="card-header">
           <div class="header-left">
             <span id="backendPill" class="pill"><span class="dot"></span>Offline</span>
@@ -23,7 +159,7 @@
         </div>
       </section>
 
-      <!-- Right column: Essential gem harvesting controls -->
+      <!-- Right column: Gem harvesting & activity -->
       <div class="controls">
         <div class="top-bar">
           <div class="brand">
@@ -92,34 +228,6 @@
               <input id="floatingTimerInput" class="timer-input" type="number" min="5" max="86400" step="1" inputmode="numeric" />
               <span class="timer-unit">sec</span>
               <span id="floatingTimerHuman" class="timer-human"></span>
-            </div>
-          </div>
-        </section>
-
-        <section class="card gem-list" aria-label="Run Continuity">
-          <div class="gem-row">
-            <div class="gem-top">
-              <div class="gem-info">
-                <div class="gem-name-line">
-                  <span class="gem-dot flow" aria-hidden="true"></span>
-                  <span class="gem-name">End Stats &rarr; Home</span>
-                </div>
-                <div id="flowStatus" class="gem-status">off</div>
-              </div>
-              <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-            </div>
-          </div>
-          <div class="gem-row">
-            <div class="gem-top">
-              <div class="gem-info">
-                <div class="gem-name-line">
-                  <span class="gem-dot flow" aria-hidden="true"></span>
-                  <span class="gem-name">Auto Re-Battle</span>
-                  <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
-                </div>
-                <div class="gem-status">Tap BATTLE on main menu</div>
-              </div>
-              <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
             </div>
           </div>
         </section>

@@ -261,12 +261,25 @@ def run_tray(
 
     watch_stop = stopped if stopped is not None else threading.Event()
     collector = app.extensions.get("towerpilot", {}).get("collector")
+    if collector is not None and hasattr(collector, "set_notifier"):
+        def _tray_notify(message: str, title: str = TITLE) -> None:
+            try:
+                icon.notify(message, title)
+            except Exception:
+                pass
+
+        collector.set_notifier(_tray_notify)
 
     def _watch_server() -> None:
         stalled_since: float | None = None
         notified = False
         while not watch_stop.wait(STALL_CHECK_SEC) and not cleaned.is_set():
-            if collector is None or not getattr(collector, "running", False) or getattr(collector, "battle_live", False):
+            if (
+                collector is None
+                or not getattr(collector, "running", False)
+                or getattr(collector, "battle_live", False)
+                or getattr(collector, "flow_hold_reason", None)
+            ):
                 stalled_since = None
                 notified = False
                 continue
@@ -290,6 +303,8 @@ def run_tray(
     except KeyboardInterrupt:
         icon.stop()
     finally:
+        if collector is not None and hasattr(collector, "set_notifier"):
+            collector.set_notifier(None)
         _shutdown_once()
     return 0
 

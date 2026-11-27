@@ -21,9 +21,21 @@ from towerpilot.config import CONFIG_PATH, VALID_MODES, deep_merge, load_config,
 
 STATIC_DIR = Path(__file__).resolve().parent / "towerpilot" / "static"
 
-_HARVEST_TOP_KEYS = frozenset({"running", "mode", "ad_gems", "floating_gems", "run_flow"})
+_HARVEST_TOP_KEYS = frozenset({"running", "mode", "ad_gems", "floating_gems", "run_flow", "run_rules"})
 _HARVEST_GEM_KEYS = frozenset({"enabled", "timer_interval_sec"})
 _HARVEST_FLOW_KEYS = frozenset({"auto_home", "auto_battle"})
+_RUN_RULES_KEYS = frozenset(
+    {
+        "profile_name",
+        "finish_and_stop",
+        "max_runs",
+        "no_start_enabled",
+        "no_start_from",
+        "no_start_until",
+        "freeze_timeout_min",
+        "notify_on_death",
+    }
+)
 _LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 
 
@@ -134,7 +146,59 @@ def _parse_harvest_patch(payload: Any) -> tuple[bool | None, dict[str, Any]]:
             raise ValueError(f"Unknown run_flow fields: {', '.join(sorted(bad_flow))}")
         cfg_patch["run_flow"] = dict(sub)
 
+    if "run_rules" in payload:
+        sub = payload["run_rules"]
+        if not isinstance(sub, dict):
+            raise ValueError("run_rules must be a JSON object")
+        bad_rules = set(sub) - _RUN_RULES_KEYS
+        if bad_rules:
+            raise ValueError(f"Unknown run_rules fields: {', '.join(sorted(bad_rules))}")
+        cfg_patch["run_rules"] = dict(sub)
+
     return running, cfg_patch
+
+
+def _parse_run_rules_patch(payload: Any) -> tuple[str | None, dict[str, Any]]:
+    """Validate a POST /api/run-rules payload into (action, config_patch)."""
+    if not isinstance(payload, dict):
+        raise ValueError("JSON object expected")
+    allowed = _RUN_RULES_KEYS | {"action", "run_flow", "run_rules"}
+    unknown = set(payload) - allowed
+    if unknown:
+        raise ValueError(f"Unknown fields: {', '.join(sorted(unknown))}")
+
+    action = payload.get("action")
+    if action is not None and action not in ("reset_run_count",):
+        raise ValueError(f"Unknown action: {action}")
+
+    cfg_patch: dict[str, Any] = {}
+    if "run_flow" in payload:
+        sub = payload["run_flow"]
+        if not isinstance(sub, dict):
+            raise ValueError("run_flow must be a JSON object")
+        bad_flow = set(sub) - _HARVEST_FLOW_KEYS
+        if bad_flow:
+            raise ValueError(f"Unknown run_flow fields: {', '.join(sorted(bad_flow))}")
+        cfg_patch["run_flow"] = dict(sub)
+
+    rules_patch: dict[str, Any] = {}
+    if "run_rules" in payload:
+        sub = payload["run_rules"]
+        if not isinstance(sub, dict):
+            raise ValueError("run_rules must be a JSON object")
+        bad_rules = set(sub) - _RUN_RULES_KEYS
+        if bad_rules:
+            raise ValueError(f"Unknown run_rules fields: {', '.join(sorted(bad_rules))}")
+        rules_patch.update(sub)
+
+    for key in _RUN_RULES_KEYS:
+        if key in payload:
+            rules_patch[key] = payload[key]
+
+    if rules_patch:
+        cfg_patch["run_rules"] = rules_patch
+
+    return action, cfg_patch
 
 
 def create_app(
@@ -225,6 +289,27 @@ def create_app(
         payload = request.get_json(silent=True)
         try:
             return jsonify(update_harvest(payload))
+        except (ValueError, TypeError) as exc:
+            return jsonify({"error": str(exc)}), 400
+
+    @app.route("/api/runs")
+    def api_runs() -> Response:
+        return jsonify(gem_collector.runs_ledger())
+
+    @app.route("/api/run-rules", methods=["POST"])
+    def api_run_rules() -> tuple[Response, int] | Response:
+        payload = request.get_json(silent=True)
+        try:
+            action, cfg_patch = _parse_run_rules_patch(payload)
+            if cfg_patch:
+                with cfg_lock:
+                    merged = deep_merge(state["cfg"], cfg_patch)
+                    saved = save_config(merged, config_path)
+                    state["cfg"] = saved
+                    gem_collector.reconfigure(saved)
+            if action == "reset_run_count":
+                gem_collector.reset_runs_restarted()
+            return jsonify(status_payload())
         except (ValueError, TypeError) as exc:
             return jsonify({"error": str(exc)}), 400
 

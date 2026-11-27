@@ -10,6 +10,15 @@ floating_gems:
 run_flow:
   auto_home: false
   auto_battle: false
+run_rules:
+  profile_name: ""
+  finish_and_stop: false
+  max_runs: 0
+  no_start_enabled: false
+  no_start_from: "23:00"
+  no_start_until: "07:00"
+  freeze_timeout_min: 10
+  notify_on_death: true
 safety:
   battle_only: true
 adb:
