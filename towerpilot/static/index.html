@@ -48,6 +48,10 @@
                 <span class="stat-label">Elapsed</span>
                 <span id="liveElapsed" class="stat-value">&mdash;</span>
               </div>
+              <div class="stat-cell">
+                <span class="stat-label">Live Coins/hr</span>
+                <span id="liveCoinsPerHour" class="stat-value">&mdash;</span>
+              </div>
             </div>
 
             <div id="activeProfileStrip" class="profile-screen-strip" aria-label="Active Profile and Screen">
@@ -72,6 +76,11 @@
             <div id="holdBanner" class="alert-banner amber" hidden>
               <span id="holdBannerText">Holding at Home</span>
               <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
+            </div>
+
+            <div id="setupTestBanner" class="alert-banner cyan" hidden>
+              <span id="setupTestBannerText">Setup test running&hellip;</span>
+              <button id="cancelSetupTestBtn" class="mini-btn" type="button">Cancel</button>
             </div>
 
             <div class="sidebar-section" aria-label="Profiles">

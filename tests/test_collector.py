@@ -219,6 +219,7 @@ def test_collector_status_matches_minimal_contract():
         "stream",
         "battle",
         "scan",
+        "setup_test",
         "recent",
     }
     assert set(st["profile"].keys()) == {
@@ -263,6 +264,9 @@ def test_collector_status_matches_minimal_contract():
         "tier": None,
         "elapsed_sec": None,
         "frozen": False,
+        "coins_raw": None,
+        "live_coins_per_hour": None,
+        "live_coins_per_hour_fmt": None,
     }
     assert isinstance(st["recent"], list)
 

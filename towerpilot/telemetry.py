@@ -148,6 +148,76 @@ def _empty_counters() -> dict[str, Any]:
     }
 
 
+def recover_open_run(
+    event_log_path: Path | None,
+    *,
+    max_age_sec: float = 48.0 * 3600.0,
+    now: float | None = None,
+) -> dict[str, Any] | None:
+    """Recover an in-progress run's exact start timestamp from logs/events.jsonl after restart.
+
+    Returns `{started_at, exact, tier, iteration_id}` when the most recent run lifecycle
+    event is a battle start (`home_battle_tapped`, `end_stats_retry_tapped`, `home_resume_tapped`)
+    with no subsequent `run_ended` or `setup_test_surrendered`.
+    """
+    if event_log_path is None or not event_log_path.is_file():
+        return None
+    latest: dict[str, Any] | None = None
+    try:
+        with open(event_log_path, "r", encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                if not any(
+                    tok in line
+                    for tok in (
+                        '"home_battle_tapped"',
+                        '"end_stats_retry_tapped"',
+                        '"home_resume_tapped"',
+                        '"run_ended"',
+                        '"setup_test_surrendered"',
+                    )
+                ):
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(row, dict):
+                    ev = row.get("event")
+                    if ev in (
+                        "home_battle_tapped",
+                        "end_stats_retry_tapped",
+                        "home_resume_tapped",
+                        "run_ended",
+                        "setup_test_surrendered",
+                    ):
+                        latest = row
+    except OSError:
+        return None
+
+    if latest is None or latest.get("event") in ("run_ended", "setup_test_surrendered"):
+        return None
+
+    ts = latest.get("ts")
+    if not isinstance(ts, (int, float)):
+        return None
+    cur_now = time.time() if now is None else float(now)
+    if ts > cur_now + 60.0 or (cur_now - float(ts)) > max_age_sec:
+        return None
+
+    exact = latest.get("event") in ("home_battle_tapped", "end_stats_retry_tapped")
+    attrs = latest.get("attributes") if isinstance(latest.get("attributes"), dict) else {}
+    tier = latest.get("tier") if isinstance(latest.get("tier"), int) else attrs.get("tier")
+    return {
+        "started_at": float(ts),
+        "exact": exact,
+        "tier": tier if isinstance(tier, int) and not isinstance(tier, bool) else None,
+        "iteration_id": latest.get("iteration_id"),
+    }
+
+
 class MetricsStore:
     """In-memory + JSONL-rehydrated multi-iteration metrics accumulator and exporter."""
 

@@ -24,7 +24,8 @@ from towerpilot.loadouts import AccountStore
 from towerpilot.nav import MenuNavigator, VerifiedTapContext
 from towerpilot.profiles import ProfileStore
 from towerpilot.scanner import InventoryScanner
-from towerpilot.telemetry import DEFAULT_EVENT_LOG_PATH, Telemetry
+from towerpilot.setup_test import SetupTester
+from towerpilot.telemetry import DEFAULT_EVENT_LOG_PATH, Telemetry, recover_open_run
 
 # Built-in humanization & geometry defaults (kept out of config bloat)
 _TAP_JITTER_PX = 5
@@ -51,7 +52,8 @@ _FAILURE_BACKOFF_SEC = 5.0
 _FLOW_SCAN_INTERVAL_SEC = 3.0
 _FLOW_COOLDOWN_SEC = 15.0
 _FLOW_DELAY_SEC = (2.0, 4.0)
-_WAVE_SCAN_INTERVAL_SEC = 20.0
+_WAVE_SCAN_INTERVAL_SEC = 5.0
+_HUD_META_SCAN_INTERVAL_SEC = 15.0
 _LEGACY_POLICY_HOLDS = frozenset({"finish_and_stop", "max_runs", "no_start_window", "tier_mismatch"})
 
 
@@ -147,13 +149,22 @@ class GemCollector:
         self._last_battle_state: tuple[bool, str] | None = None
         self._last_capture_error: str | None = None
         now_mono = time.monotonic()
-        self._run_started_at: float | None = None
-        self._run_start_exact: bool = False
+        recovered = recover_open_run(event_log_path)
+        self._run_started_at: float | None = recovered["started_at"] if recovered else None
+        self._run_start_exact: bool = bool(recovered["exact"]) if recovered else False
         self._saw_non_battle: bool = False
         self.current_wave: int | None = None
-        self.current_tier: int | None = None
+        self.current_tier: int | None = recovered["tier"] if recovered else None
         self._wave_last_scan: float = now_mono
         self._wave_changed_at: float = now_mono
+        self._hud_meta_last_scan: float = now_mono
+        self._run_start_coins: float | None = None
+        self._run_start_coins_at: float | None = None
+        self.current_coins: float | None = None
+        self.current_coins_raw: str | None = None
+        self.live_coins_per_hour: float | None = None
+        self.live_coins_per_hour_fmt: str | None = None
+        self._battle_is_tournament: bool = False
         self.frozen: bool = False
         self._freeze_notified: bool = False
 
@@ -206,6 +217,16 @@ class GemCollector:
             account_store=self._account_store,
             rng=self._rng,
             step_delay_sec=scan_step_delay_sec,
+        )
+
+        # Explicit user-triggered low-wave setup test / surrender controller (0 extra threads)
+        self._setup_tester = SetupTester(
+            grab_verified_frame=self._grab_verified_frame,
+            check_foreground=self._check_foreground,
+            tap=self._dispatch_menu_tap,
+            log=self.log,
+            notify=self._notify,
+            stop_event=self._stop_event,
         )
 
         self._reset_timers(now_mono)
@@ -264,6 +285,42 @@ class GemCollector:
     def cancel_scan(self) -> dict[str, Any]:
         with self._lock:
             return self._scanner.cancel()
+
+    def setup_test_status(self) -> dict[str, Any]:
+        with self._lock:
+            return self._setup_tester.status()
+
+    def request_setup_test(
+        self,
+        *,
+        action: str = "start",
+        max_wave: int = 50,
+        profile_id: str | None = None,
+        require_running: bool = True,
+    ) -> dict[str, Any]:
+        with self._lock:
+            if action == "cancel":
+                return self._setup_tester.cancel()
+            if require_running and not self.running:
+                raise RuntimeError("Turn Gem Harvesting ON before running a setup test")
+            battle_live = self._effective_battle_live()
+            if action == "surrender":
+                return self._setup_tester.start_surrender(
+                    battle_live=battle_live,
+                    current_wave=self.current_wave,
+                    is_tournament=self._battle_is_tournament,
+                    max_wave=max_wave,
+                )
+            if action == "start":
+                if profile_id:
+                    self._profile_store.queue_next(profile_id, immediate=not battle_live)
+                    self._nav.reset_verified_presets()
+                return self._setup_tester.start_iteration(
+                    battle_live=battle_live,
+                    current_wave=self.current_wave,
+                    max_wave=max_wave,
+                )
+            raise ValueError("action must be 'start', 'surrender', or 'cancel'")
 
     @property
     def flow_status(self) -> str:
@@ -537,6 +594,8 @@ class GemCollector:
             self._nav.reset_verification(clear_presets=False, clear_tier=False, clear_hold=True)
             if self._scanner.running or self._scanner.queued:
                 self._scanner.cancel()
+            if self._setup_tester.active:
+                self._setup_tester.cancel()
             self.frozen = False
             self._freeze_notified = False
             self.ad_status = "stopped" if self._cfg["ad_gems"]["enabled"] else "off"
@@ -927,9 +986,19 @@ class GemCollector:
             )
         return True
 
+    def _reset_live_coins(self) -> None:
+        self._run_start_coins = None
+        self._run_start_coins_at = None
+        self.current_coins = None
+        self.current_coins_raw = None
+        self.live_coins_per_hour = None
+        self.live_coins_per_hour_fmt = None
+        self._battle_is_tournament = False
+
     def _on_battle_started(self, *, exact: bool, tier: int | None, kind: str) -> None:
         self._run_started_at = time.time()
         self._run_start_exact = exact
+        self._reset_live_coins()
         if exact:
             self.current_wave = None
         if kind in ("home_battle", "home_resume"):
@@ -950,6 +1019,10 @@ class GemCollector:
                 self.log(f"Capture error: {msg}", event="capture_error", error=msg)
             return
         self._last_capture_error = None
+
+        if self._setup_tester.active:
+            if self._setup_tester.step(frame, now, known_wave=self.current_wave):
+                return
 
         ok, why = self._check_safety_guard(frame, check_foreground=False)
         in_battle_hud = self.menu_state in ("closed", "open")
@@ -1010,6 +1083,7 @@ class GemCollector:
                 self._run_started_at = time.time()
                 self._run_start_exact = self._saw_non_battle
             self._step_wave_watch(frame, now)
+            self._step_hud_meta(frame, now)
 
         if not ok:
             if self._cfg["ad_gems"]["enabled"]:
@@ -1027,7 +1101,7 @@ class GemCollector:
         self._step_floating_gems(frame, now)
 
     def _step_wave_watch(self, frame: np.ndarray, now: float) -> None:
-        """Passively read current wave every ~20s and alert if the emulator freezes."""
+        """Passively read current wave every ~5s and alert if the emulator freezes."""
         if now - self._wave_last_scan < self._wave_scan_interval_sec:
             return
         self._wave_last_scan = now
@@ -1062,6 +1136,37 @@ class GemCollector:
                 self._freeze_notified = True
                 self._notify(f"Battle frozen at Wave {wave} for {freeze_min}+ min")
 
+    def _step_hud_meta(self, frame: np.ndarray, now: float) -> None:
+        """Passively read battle Tier + top-left HUD coin balance every ~15s for live Coins/hr."""
+        if now - self._hud_meta_last_scan < _HUD_META_SCAN_INTERVAL_SEC:
+            return
+        self._hud_meta_last_scan = now
+        try:
+            meta = detectors.read_battle_hud_meta(frame)
+        except Exception:
+            return
+        if meta.get("tournament"):
+            self._battle_is_tournament = True
+        tier = meta.get("tier")
+        if isinstance(tier, int) and self.current_tier is None:
+            self.current_tier = tier
+        coins = meta.get("coins")
+        coins_raw = meta.get("coins_raw")
+        if isinstance(coins, (int, float)) and coins >= 0:
+            self.current_coins = float(coins)
+            self.current_coins_raw = str(coins_raw) if coins_raw else run_rules.format_coins(float(coins))
+            now_wall = time.time()
+            if self._run_start_coins is None or float(coins) < self._run_start_coins:
+                self._run_start_coins = float(coins)
+                self._run_start_coins_at = now_wall
+            elif self._run_start_coins_at is not None:
+                dt = now_wall - self._run_start_coins_at
+                delta = float(coins) - self._run_start_coins
+                if dt >= 60.0 and delta > 0:
+                    cph = delta / (dt / 3600.0)
+                    self.live_coins_per_hour = cph
+                    self.live_coins_per_hour_fmt = run_rules.format_coins(cph)
+
     def _record_run_ended(self, frame: np.ndarray) -> dict[str, Any] | None:
         """Passively scrape GAME STATS once per run end, log to telemetry, and notify."""
         if self._stats_logged_for_run:
@@ -1081,6 +1186,7 @@ class GemCollector:
             duration_sec = round(now_wall - self._run_started_at, 1)
         self._run_started_at = None
         self._run_start_exact = False
+        self._reset_live_coins()
 
         tier = parsed["tier"] if parsed.get("tier") is not None else self.current_tier
         wave = parsed["wave"] if parsed.get("wave") is not None else self.current_wave
@@ -1379,7 +1485,11 @@ class GemCollector:
                     "tier": self.current_tier,
                     "elapsed_sec": elapsed_sec,
                     "frozen": self.frozen,
+                    "coins_raw": self.current_coins_raw,
+                    "live_coins_per_hour": self.live_coins_per_hour,
+                    "live_coins_per_hour_fmt": self.live_coins_per_hour_fmt,
                 },
                 "scan": self._scanner.status(),
+                "setup_test": self._setup_tester.status(),
                 "recent": self._telemetry.recent(limit=20),
             }

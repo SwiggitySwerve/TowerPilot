@@ -1874,7 +1874,31 @@ function render(data) {
   $("liveElapsed").textContent = battle.elapsed_sec !== null && battle.elapsed_sec !== undefined
     ? fmtDuration(battle.elapsed_sec)
     : "\u2014";
+  const liveCphEl = $("liveCoinsPerHour");
+  if (liveCphEl) {
+    if (battle.live_coins_per_hour_fmt) {
+      liveCphEl.textContent = `${battle.live_coins_per_hour_fmt}/hr`;
+      liveCphEl.title = battle.coins_raw ? `Balance: ${battle.coins_raw}` : "Live in-run rate";
+    } else if (battle.coins_raw) {
+      liveCphEl.textContent = `${battle.coins_raw}`;
+      liveCphEl.title = `Balance: ${battle.coins_raw} (sampling live Coins/hr\u2026)`;
+    } else {
+      liveCphEl.textContent = "\u2014";
+      liveCphEl.title = "Samples live HUD coin rate during battle";
+    }
+  }
   $("freezeBanner").hidden = !battle.frozen;
+
+  const stBanner = $("setupTestBanner");
+  if (stBanner) {
+    const st = data.setup_test || {};
+    if (st.active) {
+      $("setupTestBannerText").textContent = st.detail ? String(st.detail) : `Setup test: ${st.phase || "running"}`;
+      stBanner.hidden = false;
+    } else {
+      stBanner.hidden = true;
+    }
+  }
 
   // Active Profile & Screen Strip
   const profileInfo = data.profile || {};
@@ -2233,6 +2257,11 @@ document.addEventListener("keydown", (e) => {
 // Loadout bindings
 $("scanInventoryBtn").addEventListener("click", scanInventory);
 $("cancelScanBtn").addEventListener("click", cancelInventoryScan);
+if ($("cancelSetupTestBtn")) {
+  $("cancelSetupTestBtn").addEventListener("click", () => {
+    postJson("/api/setup-test", { action: "cancel" }, "Setup test cancelled");
+  });
+}
 $("observeBtn").addEventListener("click", observeScreen);
 $("resetAccountBtn").addEventListener("click", resetAccount);
 $("loadoutOwnerFilter").addEventListener("click", (e) => {

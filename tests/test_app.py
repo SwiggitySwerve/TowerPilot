@@ -61,6 +61,7 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             "stream",
             "battle",
             "scan",
+            "setup_test",
             "recent",
         }
         assert status["profile"]["active_id"] == "farm-default"
@@ -96,6 +97,9 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             "tier": None,
             "elapsed_sec": None,
             "frozen": False,
+            "coins_raw": None,
+            "live_coins_per_hour": None,
+            "live_coins_per_hour_fmt": None,
         }
 
         # Switch to timer mode, update intervals, disable floating gems, and start harvesting

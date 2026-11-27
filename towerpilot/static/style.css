@@ -818,22 +818,27 @@
 
     .run-telemetry {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       border-bottom: 1px solid var(--border);
       background: rgba(255, 255, 255, 0.015);
     }
 
     .stat-cell {
-      padding: 8px 10px;
+      padding: 7px 10px;
       display: flex;
       flex-direction: column;
       gap: 2px;
       border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
       min-width: 0;
     }
 
-    .stat-cell:last-child {
+    .stat-cell:nth-child(2n) {
       border-right: none;
+    }
+
+    .stat-cell:nth-last-child(-n+2) {
+      border-bottom: none;
     }
 
     .stat-label {

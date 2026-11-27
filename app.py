@@ -463,6 +463,30 @@ def create_app(
             return jsonify({"scan": scan_state, "account": {**account_store.snapshot(), "scan": scan_state}})
         return jsonify({"error": "action must be 'observe', 'reset', 'scan', or 'cancel_scan'"}), 400
 
+    @app.route("/api/setup-test", methods=["GET", "POST"])
+    def api_setup_test() -> tuple[Response, int] | Response:
+        if request.method == "GET":
+            return jsonify(gem_collector.setup_test_status())
+        payload = request.get_json(silent=True)
+        if not isinstance(payload, dict):
+            return jsonify({"error": "JSON object expected"}), 400
+        action = payload.get("action", "start")
+        max_wave = payload.get("max_wave", 50)
+        profile_id = payload.get("profile_id")
+        if profile_id is not None and not isinstance(profile_id, str):
+            return jsonify({"error": "profile_id must be a string"}), 400
+        try:
+            st = gem_collector.request_setup_test(
+                action=str(action),
+                max_wave=max_wave,
+                profile_id=profile_id,
+            )
+            return jsonify({"setup_test": st, "status": status_payload()})
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+        except RuntimeError as exc:
+            return jsonify({"error": str(exc)}), 409
+
     @app.route("/api/wiki")
     def api_wiki() -> tuple[Response, int] | Response:
         mode = (request.args.get("mode") or "entry").strip().lower()
