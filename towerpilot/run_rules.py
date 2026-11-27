@@ -385,9 +385,17 @@ def merge_battle_history_runs(
                 item["date"] = h["date"]
             if h.get("tournament"):
                 item["tournament"] = True
-            # Repair inexact/missing duration & Coins/hr from authoritative Battle History
-            if (not item.get("duration_exact", True) or item.get("coins_per_hour") is None) and h.get("duration_sec"):
-                item["duration_sec"] = h["duration_sec"]
+            # Repair inexact/missing or materially drifted (>5%) duration & Coins/hr from authoritative Battle History
+            live_dur = item.get("duration_sec")
+            hist_dur = h.get("duration_sec")
+            drifted = (
+                isinstance(live_dur, (int, float))
+                and isinstance(hist_dur, (int, float))
+                and hist_dur > 0
+                and abs(float(live_dur) - float(hist_dur)) / float(hist_dur) > 0.05
+            )
+            if (not item.get("duration_exact", True) or item.get("coins_per_hour") is None or drifted) and hist_dur:
+                item["duration_sec"] = hist_dur
                 item["duration_exact"] = True
                 if h.get("coins_per_hour") is not None:
                     item["coins_per_hour"] = h["coins_per_hour"]

@@ -2150,7 +2150,7 @@ async function postJson(url, payload, toastLabel) {
     if (!res.ok) {
       throw new Error(data.error || `HTTP ${res.status}`);
     }
-    render(data);
+    render(data && data.status ? data.status : data);
     if (toastLabel) showToast(toastLabel);
   } catch (err) {
     showToast(err.message || "Update failed", true);
@@ -2217,17 +2217,21 @@ async function pollStatus() {
   }
 }
 
-// Sidebar tabs (Runs | Loadout)
+// Workspace tabs (History | Loadout | Telemetry)
 function selectSidebarTab(tabName) {
-  const isLoadout = tabName === "loadout";
-  $("tabRuns").hidden = isLoadout;
-  $("tabLoadout").hidden = !isLoadout;
+  const activeTab = (tabName === "loadout" || tabName === "telemetry") ? tabName : "runs";
+  $("tabRuns").hidden = activeTab !== "runs";
+  $("tabLoadout").hidden = activeTab !== "loadout";
+  if ($("tabTelemetry")) {
+    $("tabTelemetry").hidden = activeTab !== "telemetry";
+  }
   for (const btn of $("sidebarTabs").querySelectorAll("button[data-tab]")) {
-    const active = btn.dataset.tab === tabName;
+    const active = btn.dataset.tab === activeTab;
     btn.classList.toggle("active", active);
     btn.setAttribute("aria-selected", String(active));
   }
-  if (isLoadout) fetchAccount();
+  if (activeTab === "loadout") fetchAccount();
+  if (activeTab === "telemetry") fetchMetrics();
 }
 
 $("sidebarTabs").addEventListener("click", (e) => {
@@ -2235,10 +2239,11 @@ $("sidebarTabs").addEventListener("click", (e) => {
   if (btn) selectSidebarTab(btn.dataset.tab);
 });
 
-// Collapsible left sidebar state
+// Collapsible sidebar helper (only active when collapse button is present)
 function setSidebarCollapsed(collapsed) {
   const grid = $("layoutGrid");
   const btn = $("collapseSidebarBtn");
+  if (!grid || !btn) return;
   grid.classList.toggle("sidebar-collapsed", collapsed);
   btn.setAttribute("aria-expanded", String(!collapsed));
   btn.title = collapsed ? "Expand panel" : "Collapse panel";
@@ -2251,7 +2256,7 @@ function setSidebarCollapsed(collapsed) {
 }
 
 try {
-  if (localStorage.getItem("tp_sidebar_collapsed") === "1") {
+  if ($("collapseSidebarBtn") && localStorage.getItem("tp_sidebar_collapsed") === "1") {
     setSidebarCollapsed(true);
   }
   if (localStorage.getItem("tp_advanced_flow_open") === "1") {
@@ -2261,10 +2266,12 @@ try {
   // ignore
 }
 
-$("collapseSidebarBtn").addEventListener("click", () => {
-  const collapsed = $("layoutGrid").classList.contains("sidebar-collapsed");
-  setSidebarCollapsed(!collapsed);
-});
+if ($("collapseSidebarBtn")) {
+  $("collapseSidebarBtn").addEventListener("click", () => {
+    const collapsed = $("layoutGrid").classList.contains("sidebar-collapsed");
+    setSidebarCollapsed(!collapsed);
+  });
+}
 
 $("advancedFlowDetails").addEventListener("toggle", () => {
   try {

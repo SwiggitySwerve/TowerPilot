@@ -8,232 +8,338 @@
 </head>
 <body>
   <main class="shell">
-    <div id="layoutGrid" class="layout">
-      <!-- Left column: Collapsible Runs & Loadout sidebar -->
-      <aside id="runsSidebar" class="card sidebar" aria-label="Runs and Loadout">
-        <div class="card-header sidebar-header">
+    <!-- Global slim header bar -->
+    <header class="app-header">
+      <div class="brand">
+        <h1>Tower Pilot</h1>
+        <span id="versionTag" class="version"></span>
+        <span id="sidebarStatePill" class="pill"><span class="dot"></span>Off</span>
+      </div>
+      <div class="app-header-right">
+        <span id="connPill" class="pill" hidden><span class="dot"></span>Server Offline</span>
+        <button id="openWikiBtn" class="mini-btn sidebar-wiki-btn" type="button" title="Open Wiki Drawer">Wiki</button>
+      </div>
+    </header>
+
+    <div id="layoutGrid" class="layout cockpit-layout">
+      <!-- Column 1: Sticky Live Emulator Viewport + Live Run Telemetry -->
+      <section class="card stream-card viewport-col" aria-label="Emulator Stream">
+        <div class="card-header">
           <div class="header-left">
-            <span class="title sidebar-title">Farming</span>
-            <span id="sidebarStatePill" class="pill"><span class="dot"></span>Off</span>
+            <span id="backendPill" class="pill"><span class="dot"></span>Offline</span>
           </div>
-          <div class="sidebar-header-actions">
-            <button id="openWikiBtn" class="mini-btn sidebar-wiki-btn" type="button" title="Open Wiki Drawer">Wiki</button>
-            <button id="collapseSidebarBtn" class="icon-btn" type="button" title="Collapse panel" aria-expanded="true" aria-controls="sidebarBody">&laquo;</button>
+          <span id="battlePill" class="pill"><span class="dot"></span>Waiting</span>
+        </div>
+        <div id="streamStage" class="stream-stage">
+          <img id="streamImg" src="/api/stream.mjpg" alt="Emulator live stream" />
+          <div id="streamError" class="stream-error" hidden></div>
+        </div>
+        <div class="run-telemetry docked-telemetry" aria-label="Current Run">
+          <div class="stat-cell">
+            <span class="stat-label">Tier</span>
+            <button id="liveTierBtn" class="stat-value stat-link" type="button" disabled>&mdash;</button>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-label">Wave</span>
+            <span id="liveWave" class="stat-value">&mdash;</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-label">Elapsed</span>
+            <span id="liveElapsed" class="stat-value">&mdash;</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-label">Live Coins/hr</span>
+            <span id="liveCoinsPerHour" class="stat-value">&mdash;</span>
           </div>
         </div>
+        <div id="freezeBanner" class="alert-banner red" hidden>
+          <span>Battle wave appears frozen</span>
+        </div>
+        <div id="holdBanner" class="alert-banner amber" hidden>
+          <span id="holdBannerText">Holding at Home</span>
+          <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
+        </div>
+        <div id="setupTestBanner" class="alert-banner cyan" hidden>
+          <span id="setupTestBannerText">Setup test running&hellip;</span>
+          <button id="cancelSetupTestBtn" class="mini-btn" type="button">Cancel</button>
+        </div>
+      </section>
 
-        <div class="sidebar-rail" aria-hidden="true">
-          <span class="rail-label">RUNS</span>
+      <!-- Column 2: Automation Control Center -->
+      <div class="controls controls-col">
+        <!-- Master Harvesting + Mode row -->
+        <section class="card master-card" aria-label="Master Controls">
+          <button id="harvestBtn" class="harvest-btn" type="button" aria-pressed="false">
+            <span class="harvest-left">
+              <span class="power-dot" aria-hidden="true"></span>
+              <span id="harvestLabel" class="harvest-label">Gem Harvesting: OFF</span>
+            </span>
+            <span id="harvestBadge" class="harvest-badge">STOPPED</span>
+          </button>
+          <div class="mode-strip" aria-label="Collection Mode">
+            <div class="mode-title">
+              <strong>Collection Mode</strong>
+              <span id="modeHint">OCR &amp; vision detection</span>
+            </div>
+            <div id="modeSeg" class="seg" role="group" aria-label="Collection Mode">
+              <button type="button" data-mode="ocr" aria-pressed="true" class="active">OCR</button>
+              <button type="button" data-mode="timer" aria-pressed="false">Timer</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Balanced 2-column Automation Grid: Gem Harvesting | Battle Menu Routines -->
+        <div class="automation-grid">
+          <section class="card gem-list" aria-label="Gem Types">
+            <div class="card-header">
+              <span class="title">Gem Collection</span>
+            </div>
+            <!-- Ad Gems -->
+            <div class="gem-row">
+              <div class="gem-top">
+                <div class="gem-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot ad" aria-hidden="true"></span>
+                    <span class="gem-name">Ad Gems</span>
+                    <span id="adCount" class="gem-count" title="Collected this session">0</span>
+                  </div>
+                  <div id="adStatus" class="gem-status">idle</div>
+                </div>
+                <button id="adToggleBtn" class="toggle-btn ad" type="button" aria-pressed="false">OFF</button>
+              </div>
+              <div id="adTimerRow" class="timer-row" hidden>
+                <label for="adTimerInput">Interval</label>
+                <input id="adTimerInput" class="timer-input" type="number" min="5" max="86400" step="1" inputmode="numeric" />
+                <span class="timer-unit">sec</span>
+                <span id="adTimerHuman" class="timer-human"></span>
+              </div>
+            </div>
+
+            <!-- Floating Gems -->
+            <div class="gem-row">
+              <div class="gem-top">
+                <div class="gem-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot floating" aria-hidden="true"></span>
+                    <span class="gem-name">Floating Gems</span>
+                    <span id="floatingCount" class="gem-count" title="Collected this session">0</span>
+                  </div>
+                  <div id="floatingStatus" class="gem-status">idle</div>
+                </div>
+                <button id="floatingToggleBtn" class="toggle-btn floating" type="button" aria-pressed="false">OFF</button>
+              </div>
+              <div id="floatingTimerRow" class="timer-row" hidden>
+                <label for="floatingTimerInput">Interval</label>
+                <input id="floatingTimerInput" class="timer-input" type="number" min="5" max="86400" step="1" inputmode="numeric" />
+                <span class="timer-unit">sec</span>
+                <span id="floatingTimerHuman" class="timer-human"></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" aria-label="Battle Menu Routines">
+            <div class="card-header">
+              <span class="title">Battle Menu</span>
+              <span id="battleMenuPill" class="pill"><span class="dot"></span>Idle</span>
+            </div>
+            <div id="battleMenuBanner" class="alert-banner cyan" hidden>
+              <span id="battleMenuBannerText">Running routine&hellip;</span>
+              <button id="cancelBattleMenuBtn" class="mini-btn" type="button">Cancel</button>
+            </div>
+            <div class="gem-list">
+              <div class="gem-row routine-row">
+                <div class="gem-top">
+                  <div class="gem-info">
+                    <div class="gem-name">Sync History</div>
+                    <div id="historySyncMeta" class="gem-status">Exact timings &amp; Coins/hr</div>
+                  </div>
+                  <div class="routine-controls">
+                    <button id="runHistoryBtn" class="mini-btn cyan" type="button" title="Open Battle History now">Run</button>
+                    <button id="autoSyncHistoryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+                  </div>
+                </div>
+              </div>
+              <div class="gem-row routine-row">
+                <div class="gem-top">
+                  <div class="gem-info">
+                    <div class="gem-name">Daily Quests</div>
+                    <div class="gem-status">Claim quests &amp; weekly chests</div>
+                  </div>
+                  <div class="routine-controls">
+                    <button id="runDailyBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Daily Quests now">Run</button>
+                    <button id="autoClaimDailyBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+                  </div>
+                </div>
+              </div>
+              <div class="gem-row routine-row">
+                <div class="gem-top">
+                  <div class="gem-info">
+                    <div class="gem-name">Guild Rewards</div>
+                    <div class="gem-status">Claim 100/250/500/750 chests</div>
+                  </div>
+                  <div class="routine-controls">
+                    <button id="runGuildBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Guild Rewards now">Run</button>
+                    <button id="autoClaimGuildBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+                  </div>
+                </div>
+              </div>
+              <div class="gem-row routine-row">
+                <div class="routine-manual-row">
+                  <span class="stat-label">Inspect In-Battle</span>
+                  <div class="routine-controls">
+                    <button id="runCardsBtn" class="mini-btn" type="button" title="Open Cards from Battle Menu &amp; inventory">Cards</button>
+                    <button id="runModulesBtn" class="mini-btn" type="button" title="Open Modules from Battle Menu &amp; inventory">Modules</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
-        <div id="sidebarBody" class="sidebar-body">
-          <!-- 2-tab bar: Runs | Loadout -->
-          <div id="sidebarTabs" class="sidebar-tabs" role="tablist" aria-label="Sidebar Panels">
-            <button type="button" role="tab" data-tab="runs" aria-selected="true" class="active">Runs</button>
-            <button type="button" role="tab" data-tab="loadout" aria-selected="false">Loadout</button>
+        <!-- Profiles & Run Flow Card -->
+        <section class="card" aria-label="Profiles and Flow">
+          <div class="card-header">
+            <span class="title">Profiles &amp; Run Flow</span>
+            <button id="newProfileBtn" class="mini-btn cyan" type="button" title="Create a new profile">+ New</button>
+          </div>
+          <div id="activeProfileStrip" class="profile-screen-strip" aria-label="Active Profile and Screen">
+            <div class="profile-strip-main">
+              <span id="screenBadge" class="screen-badge">unknown</span>
+              <span id="activeKindPill" class="kind-pill farm" hidden>FARM</span>
+              <span id="activeProfileName" class="active-profile-name">&mdash;</span>
+              <span id="navStateText" class="nav-state-text" hidden></span>
+            </div>
+            <div id="queuedChipRow" class="queued-chip-row" hidden>
+              <span class="queued-chip">
+                <span id="queuedProfileText">Next: &mdash;</span>
+                <button id="cancelQueuedBtn" class="queued-cancel-btn" type="button" title="Cancel queued profile" aria-label="Cancel queued profile">&times;</button>
+              </span>
+            </div>
           </div>
 
-          <!-- TAB 1: RUNS -->
+          <div class="sidebar-section" aria-label="Profiles">
+            <div id="profilesList" class="profiles-list profiles-grid">
+              <div class="ledger-empty">Loading profiles&hellip;</div>
+            </div>
+          </div>
+
+          <details id="advancedFlowDetails" class="sidebar-section flow-details">
+            <summary class="section-heading flow-summary">
+              <span class="flow-summary-left">
+                <span class="flow-caret" aria-hidden="true">&#9656;</span>
+                <span>Advanced Flow &amp; Guards</span>
+              </span>
+              <span id="advancedFlowSummaryBadge" class="flow-summary-badge">off</span>
+            </summary>
+
+            <div class="flow-details-body flow-details-grid">
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="rule-name">End Stats &rarr; Home</span>
+                  </div>
+                  <div id="flowStatus" class="gem-status">off</div>
+                </div>
+                <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+              </div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="rule-name">Direct Retry</span>
+                  </div>
+                  <div class="gem-status">Tap RETRY on Game Stats</div>
+                </div>
+                <button id="autoRetryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+              </div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="rule-name">Auto Re-Battle</span>
+                    <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
+                    <button id="resetRunsBtn" class="mini-btn" type="button" title="Reset session run counter">Reset</button>
+                  </div>
+                  <div class="gem-status">Tap BATTLE on main menu</div>
+                </div>
+                <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+              </div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="rule-name">Crash Auto-Resume</span>
+                  </div>
+                  <div class="gem-status">Tap RESUME if run was interrupted</div>
+                </div>
+                <button id="autoResumeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+              </div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="rule-name">Finish Run &amp; Hold</div>
+                  <div class="gem-status">Park at Home after this run</div>
+                </div>
+                <button id="finishStopBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
+              </div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="rule-name">Death Toast</div>
+                  <div class="gem-status">Tray alert with run summary</div>
+                </div>
+                <button id="notifyDeathBtn" class="toggle-btn flow" type="button" aria-pressed="true">ON</button>
+              </div>
+
+              <div class="rule-field-row">
+                <label for="expectedTierInput">Expected tier <span class="hint">(0 = any)</span></label>
+                <input id="expectedTierInput" class="compact-input num" type="number" min="0" max="24" step="1" inputmode="numeric" />
+              </div>
+
+              <div class="rule-field-row">
+                <label for="maxRunsInput">Max runs <span class="hint">(0 = unlimited)</span></label>
+                <input id="maxRunsInput" class="compact-input num" type="number" min="0" max="9999" step="1" inputmode="numeric" />
+              </div>
+
+              <div class="rule-field-row">
+                <label for="freezeMinInput">Freeze alert <span class="hint">(min, 0 = off)</span></label>
+                <input id="freezeMinInput" class="compact-input num" type="number" min="0" max="180" step="1" inputmode="numeric" />
+              </div>
+
+              <div class="rule-row">
+                <div class="rule-info">
+                  <div class="rule-name">Quiet Window</div>
+                  <div class="gem-status">Don&rsquo;t start new runs during hours</div>
+                </div>
+                <button id="noStartBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
+              </div>
+
+              <div id="noStartTimesRow" class="time-window-row flow-span-all" hidden>
+                <label for="noStartFrom">From</label>
+                <input id="noStartFrom" class="compact-input time" type="time" />
+                <label for="noStartUntil">Until</label>
+                <input id="noStartUntil" class="compact-input time" type="time" />
+              </div>
+            </div>
+          </details>
+        </section>
+      </div>
+
+      <!-- Column 3: Tabbed Data & Loadout Workspace (viewport-bounded, zero vertical blob) -->
+      <aside id="runsSidebar" class="card sidebar workspace-col" aria-label="History, Loadout, and Telemetry">
+        <div id="sidebarTabs" class="sidebar-tabs workspace-tabs" role="tablist" aria-label="Workspace Panels">
+          <button type="button" role="tab" data-tab="runs" aria-selected="true" class="active">History</button>
+          <button type="button" role="tab" data-tab="loadout" aria-selected="false">Loadout</button>
+          <button type="button" role="tab" data-tab="telemetry" aria-selected="false">Telemetry</button>
+        </div>
+
+        <div id="sidebarBody" class="sidebar-body workspace-scroll">
+          <!-- TAB 1: HISTORY (Measured Coins/hr + Run Ledger) -->
           <div id="tabRuns" class="tab-panel" role="tabpanel">
-            <div class="run-telemetry" aria-label="Current Run">
-              <div class="stat-cell">
-                <span class="stat-label">Tier</span>
-                <button id="liveTierBtn" class="stat-value stat-link" type="button" disabled>&mdash;</button>
-              </div>
-              <div class="stat-cell">
-                <span class="stat-label">Wave</span>
-                <span id="liveWave" class="stat-value">&mdash;</span>
-              </div>
-              <div class="stat-cell">
-                <span class="stat-label">Elapsed</span>
-                <span id="liveElapsed" class="stat-value">&mdash;</span>
-              </div>
-              <div class="stat-cell">
-                <span class="stat-label">Live Coins/hr</span>
-                <span id="liveCoinsPerHour" class="stat-value">&mdash;</span>
-              </div>
-            </div>
-
-            <div id="activeProfileStrip" class="profile-screen-strip" aria-label="Active Profile and Screen">
-              <div class="profile-strip-main">
-                <span id="screenBadge" class="screen-badge">unknown</span>
-                <span id="activeKindPill" class="kind-pill farm" hidden>FARM</span>
-                <span id="activeProfileName" class="active-profile-name">&mdash;</span>
-                <span id="navStateText" class="nav-state-text" hidden></span>
-              </div>
-              <div id="queuedChipRow" class="queued-chip-row" hidden>
-                <span class="queued-chip">
-                  <span id="queuedProfileText">Next: &mdash;</span>
-                  <button id="cancelQueuedBtn" class="queued-cancel-btn" type="button" title="Cancel queued profile" aria-label="Cancel queued profile">&times;</button>
-                </span>
-              </div>
-            </div>
-
-            <div id="freezeBanner" class="alert-banner red" hidden>
-              <span>Battle wave appears frozen</span>
-            </div>
-
-            <div id="holdBanner" class="alert-banner amber" hidden>
-              <span id="holdBannerText">Holding at Home</span>
-              <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
-            </div>
-
-            <div id="setupTestBanner" class="alert-banner cyan" hidden>
-              <span id="setupTestBannerText">Setup test running&hellip;</span>
-              <button id="cancelSetupTestBtn" class="mini-btn" type="button">Cancel</button>
-            </div>
-
-            <div class="sidebar-section" aria-label="Profiles">
-              <div class="section-heading">
-                <span>Profiles</span>
-                <button id="newProfileBtn" class="mini-btn cyan" type="button" title="Create a new profile">+ New</button>
-              </div>
-              <div id="profilesList" class="profiles-list">
-                <div class="ledger-empty">Loading profiles&hellip;</div>
-              </div>
-            </div>
-
-            <details id="advancedFlowDetails" class="sidebar-section flow-details">
-              <summary class="section-heading flow-summary">
-                <span class="flow-summary-left">
-                  <span class="flow-caret" aria-hidden="true">&#9656;</span>
-                  <span>Advanced Flow &amp; Guards</span>
-                </span>
-                <span id="advancedFlowSummaryBadge" class="flow-summary-badge">off</span>
-              </summary>
-
-              <div class="flow-details-body">
-                <div class="rule-row">
-                  <div class="rule-info">
-                    <div class="gem-name-line">
-                      <span class="gem-dot flow" aria-hidden="true"></span>
-                      <span class="rule-name">End Stats &rarr; Home</span>
-                    </div>
-                    <div id="flowStatus" class="gem-status">off</div>
-                  </div>
-                  <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                </div>
-
-                <div class="rule-row">
-                  <div class="rule-info">
-                    <div class="gem-name-line">
-                      <span class="gem-dot flow" aria-hidden="true"></span>
-                      <span class="rule-name">Direct Retry</span>
-                    </div>
-                    <div class="gem-status">Tap RETRY on Game Stats</div>
-                  </div>
-                  <button id="autoRetryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                </div>
-
-                <div class="rule-row">
-                  <div class="rule-info">
-                    <div class="gem-name-line">
-                      <span class="gem-dot flow" aria-hidden="true"></span>
-                      <span class="rule-name">Auto Re-Battle</span>
-                      <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
-                      <button id="resetRunsBtn" class="mini-btn" type="button" title="Reset session run counter">Reset</button>
-                    </div>
-                    <div class="gem-status">Tap BATTLE on main menu</div>
-                  </div>
-                  <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                </div>
-
-                <div class="rule-row">
-                  <div class="rule-info">
-                    <div class="gem-name-line">
-                      <span class="gem-dot flow" aria-hidden="true"></span>
-                      <span class="rule-name">Crash Auto-Resume</span>
-                    </div>
-                    <div class="gem-status">Tap RESUME if run was interrupted</div>
-                  </div>
-                  <button id="autoResumeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                </div>
-
-                <div class="rule-row">
-                  <div class="rule-info">
-                    <div class="rule-name">Finish Run &amp; Hold</div>
-                    <div class="gem-status">Park at Home after this run</div>
-                  </div>
-                  <button id="finishStopBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
-                </div>
-
-                <div class="rule-field-row">
-                  <label for="expectedTierInput">Expected tier <span class="hint">(0 = any)</span></label>
-                  <input id="expectedTierInput" class="compact-input num" type="number" min="0" max="24" step="1" inputmode="numeric" />
-                </div>
-
-                <div class="rule-field-row">
-                  <label for="maxRunsInput">Max runs <span class="hint">(0 = unlimited)</span></label>
-                  <input id="maxRunsInput" class="compact-input num" type="number" min="0" max="9999" step="1" inputmode="numeric" />
-                </div>
-
-                <div class="rule-row">
-                  <div class="rule-info">
-                    <div class="rule-name">Quiet Window</div>
-                    <div class="gem-status">Don&rsquo;t start new runs during hours</div>
-                  </div>
-                  <button id="noStartBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
-                </div>
-
-                <div id="noStartTimesRow" class="time-window-row" hidden>
-                  <label for="noStartFrom">From</label>
-                  <input id="noStartFrom" class="compact-input time" type="time" />
-                  <label for="noStartUntil">Until</label>
-                  <input id="noStartUntil" class="compact-input time" type="time" />
-                </div>
-
-                <div class="rule-field-row">
-                  <label for="freezeMinInput">Freeze alert <span class="hint">(min, 0 = off)</span></label>
-                  <input id="freezeMinInput" class="compact-input num" type="number" min="0" max="180" step="1" inputmode="numeric" />
-                </div>
-
-                <div class="rule-row">
-                  <div class="rule-info">
-                    <div class="rule-name">Death Toast</div>
-                    <div class="gem-status">Tray alert with run summary</div>
-                  </div>
-                  <button id="notifyDeathBtn" class="toggle-btn flow" type="button" aria-pressed="true">ON</button>
-                </div>
-              </div>
-            </details>
-
-            <div id="metricsSection" class="sidebar-section" aria-label="Telemetry Metrics">
-              <div class="section-heading">
-                <span>Telemetry</span>
-                <div class="metrics-header-actions">
-                  <div id="metricsScopeToggle" class="mini-seg" role="group" aria-label="Metrics scope">
-                    <button type="button" data-scope="all_time" aria-pressed="true" class="active">All-Time</button>
-                    <button type="button" data-scope="session" aria-pressed="false">Session</button>
-                  </div>
-                  <a class="mini-btn metric-link" href="/api/metrics?format=prometheus" target="_blank" rel="noopener noreferrer" title="Prometheus metrics">Prom</a>
-                  <a class="mini-btn metric-link" href="/api/metrics?format=otlp" target="_blank" rel="noopener noreferrer" title="OTLP JSON metrics">OTLP</a>
-                </div>
-              </div>
-
-              <div class="metrics-strip" aria-label="Telemetry Counters">
-                <div class="metric-cell">
-                  <span class="stat-label">Total Gems</span>
-                  <span id="metricTotalGems" class="stat-value">&mdash;</span>
-                </div>
-                <div class="metric-cell">
-                  <span class="stat-label">Runs</span>
-                  <span id="metricRuns" class="stat-value">&mdash;</span>
-                </div>
-                <div class="metric-cell">
-                  <span class="stat-label">Nav Taps</span>
-                  <span id="metricNavTaps" class="stat-value">&mdash;</span>
-                </div>
-                <div class="metric-cell">
-                  <span class="stat-label">Profile Gems/hr</span>
-                  <span id="metricGemsPerHour" class="stat-value">&mdash;</span>
-                </div>
-              </div>
-
-              <div id="metricsByProfileList" class="metrics-profile-list">
-                <div class="ledger-empty">No profile metrics yet.</div>
-              </div>
-            </div>
-
             <div class="sidebar-section">
               <div class="section-heading">Measured Coins / hr</div>
               <div id="tierSummaryList" class="tier-summary-list">
@@ -327,163 +433,57 @@
               </div>
             </div>
           </div>
+
+          <!-- TAB 3: TELEMETRY & ACTIVITY -->
+          <div id="tabTelemetry" class="tab-panel" role="tabpanel" hidden>
+            <div id="metricsSection" class="sidebar-section" aria-label="Telemetry Metrics">
+              <div class="section-heading">
+                <span>Telemetry</span>
+                <div class="metrics-header-actions">
+                  <div id="metricsScopeToggle" class="mini-seg" role="group" aria-label="Metrics scope">
+                    <button type="button" data-scope="all_time" aria-pressed="true" class="active">All-Time</button>
+                    <button type="button" data-scope="session" aria-pressed="false">Session</button>
+                  </div>
+                  <a class="mini-btn metric-link" href="/api/metrics?format=prometheus" target="_blank" rel="noopener noreferrer" title="Prometheus metrics">Prom</a>
+                  <a class="mini-btn metric-link" href="/api/metrics?format=otlp" target="_blank" rel="noopener noreferrer" title="OTLP JSON metrics">OTLP</a>
+                </div>
+              </div>
+
+              <div class="metrics-strip" aria-label="Telemetry Counters">
+                <div class="metric-cell">
+                  <span class="stat-label">Total Gems</span>
+                  <span id="metricTotalGems" class="stat-value">&mdash;</span>
+                </div>
+                <div class="metric-cell">
+                  <span class="stat-label">Runs</span>
+                  <span id="metricRuns" class="stat-value">&mdash;</span>
+                </div>
+                <div class="metric-cell">
+                  <span class="stat-label">Nav Taps</span>
+                  <span id="metricNavTaps" class="stat-value">&mdash;</span>
+                </div>
+                <div class="metric-cell">
+                  <span class="stat-label">Profile Gems/hr</span>
+                  <span id="metricGemsPerHour" class="stat-value">&mdash;</span>
+                </div>
+              </div>
+
+              <div id="metricsByProfileList" class="metrics-profile-list">
+                <div class="ledger-empty">No profile metrics yet.</div>
+              </div>
+            </div>
+
+            <div class="sidebar-section" aria-label="Recent Activity">
+              <div class="section-heading">
+                <span>Recent Activity</span>
+              </div>
+              <ul id="activityList" class="activity-list">
+                <li class="activity-empty">No recent activity yet.</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </aside>
-
-      <!-- Center column: Live emulator stream -->
-      <section class="card stream-card" aria-label="Emulator Stream">
-        <div class="card-header">
-          <div class="header-left">
-            <span id="backendPill" class="pill"><span class="dot"></span>Offline</span>
-          </div>
-          <span id="battlePill" class="pill"><span class="dot"></span>Waiting</span>
-        </div>
-        <div id="streamStage" class="stream-stage">
-          <img id="streamImg" src="/api/stream.mjpg" alt="Emulator live stream" />
-          <div id="streamError" class="stream-error" hidden></div>
-        </div>
-      </section>
-
-      <!-- Right column: Gem harvesting & activity -->
-      <div class="controls">
-        <div class="top-bar">
-          <div class="brand">
-            <h1>Tower Pilot</h1>
-            <span id="versionTag" class="version"></span>
-          </div>
-          <span id="connPill" class="pill" hidden><span class="dot"></span>Server Offline</span>
-        </div>
-
-        <button id="harvestBtn" class="harvest-btn" type="button" aria-pressed="false">
-          <span class="harvest-left">
-            <span class="power-dot" aria-hidden="true"></span>
-            <span id="harvestLabel" class="harvest-label">Gem Harvesting: OFF</span>
-          </span>
-          <span id="harvestBadge" class="harvest-badge">STOPPED</span>
-        </button>
-
-        <section class="card mode-card" aria-label="Collection Mode">
-          <div class="mode-title">
-            <strong>Collection Mode</strong>
-            <span id="modeHint">OCR &amp; vision detection</span>
-          </div>
-          <div id="modeSeg" class="seg" role="group" aria-label="Collection Mode">
-            <button type="button" data-mode="ocr" aria-pressed="true" class="active">OCR</button>
-            <button type="button" data-mode="timer" aria-pressed="false">Timer</button>
-          </div>
-        </section>
-
-        <section class="card gem-list" aria-label="Gem Types">
-          <!-- Ad Gems -->
-          <div class="gem-row">
-            <div class="gem-top">
-              <div class="gem-info">
-                <div class="gem-name-line">
-                  <span class="gem-dot ad" aria-hidden="true"></span>
-                  <span class="gem-name">Ad Gems</span>
-                  <span id="adCount" class="gem-count" title="Collected this session">0</span>
-                </div>
-                <div id="adStatus" class="gem-status">idle</div>
-              </div>
-              <button id="adToggleBtn" class="toggle-btn ad" type="button" aria-pressed="false">OFF</button>
-            </div>
-            <div id="adTimerRow" class="timer-row" hidden>
-              <label for="adTimerInput">Interval</label>
-              <input id="adTimerInput" class="timer-input" type="number" min="5" max="86400" step="1" inputmode="numeric" />
-              <span class="timer-unit">sec</span>
-              <span id="adTimerHuman" class="timer-human"></span>
-            </div>
-          </div>
-
-          <!-- Floating Gems -->
-          <div class="gem-row">
-            <div class="gem-top">
-              <div class="gem-info">
-                <div class="gem-name-line">
-                  <span class="gem-dot floating" aria-hidden="true"></span>
-                  <span class="gem-name">Floating Gems</span>
-                  <span id="floatingCount" class="gem-count" title="Collected this session">0</span>
-                </div>
-                <div id="floatingStatus" class="gem-status">idle</div>
-              </div>
-              <button id="floatingToggleBtn" class="toggle-btn floating" type="button" aria-pressed="false">OFF</button>
-            </div>
-            <div id="floatingTimerRow" class="timer-row" hidden>
-              <label for="floatingTimerInput">Interval</label>
-              <input id="floatingTimerInput" class="timer-input" type="number" min="5" max="86400" step="1" inputmode="numeric" />
-              <span class="timer-unit">sec</span>
-              <span id="floatingTimerHuman" class="timer-human"></span>
-            </div>
-          </div>
-        </section>
-
-        <section class="card" aria-label="Battle Menu Routines">
-          <div class="card-header">
-            <span class="title">Battle Menu Routines</span>
-            <span id="battleMenuPill" class="pill"><span class="dot"></span>Idle</span>
-          </div>
-          <div id="battleMenuBanner" class="alert-banner cyan" hidden>
-            <span id="battleMenuBannerText">Running routine&hellip;</span>
-            <button id="cancelBattleMenuBtn" class="mini-btn" type="button">Cancel</button>
-          </div>
-          <div class="gem-list">
-            <div class="gem-row routine-row">
-              <div class="gem-top">
-                <div class="gem-info">
-                  <div class="gem-name">Auto Sync History</div>
-                  <div id="historySyncMeta" class="gem-status">Authoritative timings &amp; Coins/hr</div>
-                </div>
-                <div class="routine-controls">
-                  <button id="runHistoryBtn" class="mini-btn cyan" type="button" title="Open Battle History now">Run</button>
-                  <button id="autoSyncHistoryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                </div>
-              </div>
-            </div>
-            <div class="gem-row routine-row">
-              <div class="gem-top">
-                <div class="gem-info">
-                  <div class="gem-name">Auto Claim Daily Quests</div>
-                  <div class="gem-status">Claim finished missions &amp; weekly chests</div>
-                </div>
-                <div class="routine-controls">
-                  <button id="runDailyBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Daily Quests now">Run</button>
-                  <button id="autoClaimDailyBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                </div>
-              </div>
-            </div>
-            <div class="gem-row routine-row">
-              <div class="gem-top">
-                <div class="gem-info">
-                  <div class="gem-name">Auto Claim Guild Rewards</div>
-                  <div class="gem-status">Claim unlocked 100/250/500/750 chests</div>
-                </div>
-                <div class="routine-controls">
-                  <button id="runGuildBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Guild Rewards now">Run</button>
-                  <button id="autoClaimGuildBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                </div>
-              </div>
-            </div>
-            <div class="gem-row routine-row">
-              <div class="routine-manual-row">
-                <span class="stat-label">On-Demand Inspect</span>
-                <div class="routine-controls">
-                  <button id="runCardsBtn" class="mini-btn" type="button" title="Open Cards from Battle Menu &amp; inventory">View Cards</button>
-                  <button id="runModulesBtn" class="mini-btn" type="button" title="Open Modules from Battle Menu &amp; inventory">View Modules</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="card" aria-label="Recent Activity">
-          <div class="card-header">
-            <span class="title">Recent Activity</span>
-          </div>
-          <ul id="activityList" class="activity-list">
-            <li class="activity-empty">No recent activity yet.</li>
-          </ul>
-        </section>
-      </div>
     </div>
   </main>
 

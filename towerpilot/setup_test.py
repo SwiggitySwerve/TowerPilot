@@ -90,8 +90,8 @@ class SetupTester:
             raise RuntimeError("No live battle to surrender")
         if is_tournament:
             raise RuntimeError("Refused: setup-test surrender never cancels a tournament run")
-        if current_wave is None:
-            raise RuntimeError("Refused: current wave is unreadable; refusing blind surrender")
+        if current_wave is None or current_wave < 1:
+            raise RuntimeError("Refused: current wave is unreadable or invalid; refusing blind surrender")
         if current_wave > cap:
             raise RuntimeError(
                 f"Refused: live battle is at Wave {current_wave} (exceeds safety cap {cap})"
@@ -119,11 +119,14 @@ class SetupTester:
         *,
         battle_live: bool,
         current_wave: int | None,
+        is_tournament: bool = False,
         max_wave: int = DEFAULT_MAX_WAVE,
     ) -> dict[str, Any]:
         """Start a Home -> Battle -> verify wave <= cap -> Surrender -> Home setup test."""
         cap = self._validate_max_wave(max_wave)
-        if battle_live and (current_wave is None or current_wave > cap):
+        if battle_live and is_tournament:
+            raise RuntimeError("Refused: setup test never cancels a tournament run")
+        if battle_live and (current_wave is None or current_wave < 1 or current_wave > cap):
             raise RuntimeError(
                 f"Live battle in progress (wave={current_wave}); wait until it finishes before running a setup test"
             )
@@ -187,17 +190,20 @@ class SetupTester:
             return None
         return fresh, input_display
 
-    def _check_wave_and_tourney_guard(self, frame: np.ndarray, *, known_wave: int | None) -> tuple[bool, str]:
+    def _check_wave_and_tourney_guard(self, frame: np.ndarray, *, known_wave: int | None = None) -> tuple[bool, str]:
+        """Fail-closed fresh-frame guard: requires readable non-tournament tier and explicit 1 <= Wave <= cap."""
+        _ = known_wave  # Never trust cached wave; CLAUDE.md requires fresh readable wave & tier.
         meta = detectors.read_battle_hud_meta(frame)
+        if not meta.get("readable", True) or meta.get("tier") is None:
+            return False, "battle HUD meta unreadable — refusing blind surrender"
         if meta.get("tournament"):
             return False, "tournament battle detected — surrender strictly forbidden"
-        wave = detectors.read_wave_ocr(frame)
-        eff_wave = wave if wave is not None else known_wave
-        if eff_wave is None:
+        wave = detectors.read_wave_strict(frame)
+        if wave is None or wave < 1:
             return False, "wave unreadable — refusing blind surrender"
-        if eff_wave > self.max_wave:
-            return False, f"Wave {eff_wave} exceeds safety cap {self.max_wave}"
-        return True, f"Wave {eff_wave}"
+        if wave > self.max_wave:
+            return False, f"Wave {wave} exceeds safety cap {self.max_wave}"
+        return True, f"Tier {meta['tier']} Wave {wave}"
 
     def step(self, frame: np.ndarray, now: float, *, known_wave: int | None = None) -> bool:
         """Execute at most one verified setup-test step; returns True when owning control."""

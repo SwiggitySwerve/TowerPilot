@@ -168,6 +168,8 @@ class GemCollector:
         recovered = recover_open_run(event_log_path)
         self._run_started_at: float | None = recovered["started_at"] if recovered else None
         self._run_start_exact: bool = bool(recovered["exact"]) if recovered else False
+        if recovered and recovered.get("iteration_id"):
+            self._telemetry.resume_iteration(recovered["iteration_id"])
         self._saw_non_battle: bool = False
         self.current_wave: int | None = None
         self.current_tier: int | None = recovered["tier"] if recovered else None
@@ -176,6 +178,7 @@ class GemCollector:
         self._hud_meta_last_scan: float = now_mono
         self._run_start_coins: float | None = None
         self._run_start_coins_at: float | None = None
+        self._low_coins_streak: int = 0
         self.current_coins: float | None = None
         self.current_coins_raw: str | None = None
         self.live_coins_per_hour: float | None = None
@@ -374,8 +377,14 @@ class GemCollector:
         with self._lock:
             if action == "cancel":
                 return self._setup_tester.cancel()
+            if action not in ("start", "surrender"):
+                raise ValueError("action must be 'start', 'surrender', or 'cancel'")
+            # Validate max_wave & profile_id BEFORE mutating any profile or state
+            self._setup_tester._validate_max_wave(max_wave)
             if require_running and not self.running:
                 raise RuntimeError("Turn Gem Harvesting ON before running a setup test")
+            if self._battle_menu.active:
+                raise RuntimeError("Cannot start a setup test while a Battle Menu routine is active")
             battle_live = self._effective_battle_live()
             if action == "surrender":
                 return self._setup_tester.start_surrender(
@@ -384,16 +393,18 @@ class GemCollector:
                     is_tournament=self._battle_is_tournament,
                     max_wave=max_wave,
                 )
-            if action == "start":
-                if profile_id:
-                    self._profile_store.queue_next(profile_id, immediate=not battle_live)
-                    self._nav.reset_verified_presets()
-                return self._setup_tester.start_iteration(
-                    battle_live=battle_live,
-                    current_wave=self.current_wave,
-                    max_wave=max_wave,
-                )
-            raise ValueError("action must be 'start', 'surrender', or 'cancel'")
+            if profile_id is not None and self._profile_store.get(profile_id) is None:
+                raise KeyError(f"Unknown profile: {profile_id}")
+            st = self._setup_tester.start_iteration(
+                battle_live=battle_live,
+                current_wave=self.current_wave,
+                is_tournament=self._battle_is_tournament,
+                max_wave=max_wave,
+            )
+            if profile_id:
+                self._profile_store.queue_next(profile_id, immediate=not battle_live)
+                self.on_profile_activated(profile_id, immediate=not battle_live)
+            return st
 
     @property
     def flow_status(self) -> str:
@@ -492,7 +503,7 @@ class GemCollector:
 
     def runs_ledger(self, limit: int = 50) -> dict[str, Any]:
         with self._lock:
-            base = self._telemetry.runs_ledger(limit=max(limit, 100))
+            base = self._telemetry.runs_ledger(limit=1000)
             hist = self._history_store.snapshot().get("runs") or []
             if not hist:
                 return {"runs": base["runs"][:limit], "by_tier": base["by_tier"]}
@@ -685,11 +696,11 @@ class GemCollector:
             self.ad_visible_hit = None
             self._nav.reset_verification(clear_presets=False, clear_tier=False, clear_hold=True)
             if self._scanner.running or self._scanner.queued:
-                self._scanner.cancel()
+                self._scanner.cancel(hard=True)
             if self._setup_tester.active:
                 self._setup_tester.cancel()
             if self._battle_menu.active:
-                self._battle_menu.cancel()
+                self._battle_menu.cancel(hard=True)
             self.frozen = False
             self._freeze_notified = False
             self.ad_status = "stopped" if self._cfg["ad_gems"]["enabled"] else "off"
@@ -1083,6 +1094,7 @@ class GemCollector:
     def _reset_live_coins(self) -> None:
         self._run_start_coins = None
         self._run_start_coins_at = None
+        self._low_coins_streak = 0
         self.current_coins = None
         self.current_coins_raw = None
         self.live_coins_per_hour = None
@@ -1115,7 +1127,14 @@ class GemCollector:
         self._last_capture_error = None
 
         if self._setup_tester.active:
-            if self._setup_tester.step(frame, now, known_wave=self.current_wave):
+            owned = self._setup_tester.step(frame, now, known_wave=self.current_wave)
+            if not self._setup_tester.active:
+                # Clear stale run-start & wave state so the next run never inherits pre-surrender duration
+                self._run_started_at = None
+                self._run_start_exact = False
+                self.current_wave = None
+                self._reset_live_coins()
+            if owned:
                 return
 
         if self._battle_menu.active:
@@ -1208,6 +1227,7 @@ class GemCollector:
         if (
             not self.running
             or not self.battle_live
+            or self._battle_is_tournament
             or self.ad_pending_due_at is not None
             or self._battle_menu.active
             or self._setup_tester.active
@@ -1288,10 +1308,21 @@ class GemCollector:
             self.current_coins = float(coins)
             self.current_coins_raw = str(coins_raw) if coins_raw else run_rules.format_coins(float(coins))
             now_wall = time.time()
-            if self._run_start_coins is None or float(coins) < self._run_start_coins:
+            if self._run_start_coins is None:
                 self._run_start_coins = float(coins)
                 self._run_start_coins_at = now_wall
+                self._low_coins_streak = 0
+            elif float(coins) < self._run_start_coins:
+                # Require two consecutive lower readings before rebasing so one OCR dip never poisons Coins/hr
+                self._low_coins_streak += 1
+                if self._low_coins_streak >= 2:
+                    self._run_start_coins = float(coins)
+                    self._run_start_coins_at = now_wall
+                    self._low_coins_streak = 0
+                    self.live_coins_per_hour = None
+                    self.live_coins_per_hour_fmt = None
             elif self._run_start_coins_at is not None:
+                self._low_coins_streak = 0
                 dt = now_wall - self._run_start_coins_at
                 delta = float(coins) - self._run_start_coins
                 if dt >= 60.0 and delta > 0:

@@ -345,9 +345,9 @@ def test_setup_tester_full_iteration_flow_offline(monkeypatch):
     monkeypatch.setattr(
         detectors,
         "read_battle_hud_meta",
-        lambda f: {"tier": 10, "coins": 100.0, "coins_raw": "100", "tournament": False},
+        lambda f: {"tier": 10, "coins": 100.0, "coins_raw": "100", "tournament": False, "readable": True},
     )
-    monkeypatch.setattr(detectors, "read_wave_ocr", lambda f: 3)
+    monkeypatch.setattr(detectors, "read_wave_strict", lambda f: 3)
     monkeypatch.setattr(
         detectors,
         "detect_exit_battle_button",
@@ -436,6 +436,78 @@ def test_setup_test_flask_api_gates(tmp_path: Path):
         r_cancel = client.post("/api/setup-test", json={"action": "cancel"})
         assert r_cancel.status_code == 200
         assert r_cancel.get_json()["setup_test"]["active"] is False
+
+        # P2-3: unknown profile_id returns 404 without mutating state; valid profile_id works when off-battle
+        collector.battle_live = False
+        frames.frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+        frames.last_frame = frames.frame
+        r_missing = client.post("/api/setup-test", json={"action": "start", "max_wave": 50, "profile_id": "nonexistent"})
+        assert r_missing.status_code == 404
+        r_prof = client.post("/api/setup-test", json={"action": "start", "max_wave": 50, "profile_id": "tier-push"})
+        assert r_prof.status_code == 200
+        assert r_prof.get_json()["setup_test"]["active"] is True
+        client.post("/api/setup-test", json={"action": "cancel"})
     finally:
         collector.running = False
         app.extensions["towerpilot"]["shutdown"]()
+
+
+def test_p1_2_setup_guard_fails_closed_on_ocr_error_split_wave_and_tier_plus(monkeypatch):
+    """P1-2: SetupTester never falls back to cached known_wave, refuses Tier 8+, refuses Wave 0 and split digits."""
+    frame = _battle_frame()
+    # Strict wave rejects split digits & bare numbers
+    assert detectors.read_wave_strict(frame, ocr_fn=lambda c: ["Tier 10 Wave 5 758", ""]) is None
+    assert detectors.read_wave_strict(frame, ocr_fn=lambda c: ["37", "Wavc 5758"]) is None
+    assert detectors.read_wave_strict(frame, ocr_fn=lambda c: ["Tier 10 Wave 12", ""]) == 12
+
+    # Tier N+ is detected as tournament, and coin parser ignores '$' and '25O.3T'
+    meta_t = detectors.read_battle_hud_meta(frame, ocr_fn=lambda c: ["Tier 8+ Wave 12", "", "$1.25M 250.3T"])
+    assert meta_t["tournament"] is True
+    assert meta_t["coins_raw"] == "250.3T"
+    meta_bad = detectors.read_battle_hud_meta(frame, ocr_fn=lambda c: ["Tier 10 Wave 12", "", "25O.3T"])
+    assert meta_bad["coins"] is None
+
+    tester = SetupTester(
+        grab_verified_frame=lambda: (frame, None),
+        check_foreground=lambda d: (True, "ok"),
+        tap=lambda *a, **kw: {"x": 10, "y": 10},
+        log=lambda *a, **kw: None,
+    )
+    # Wave 0 refused
+    with pytest.raises(RuntimeError):
+        tester.start_surrender(battle_live=True, current_wave=0, max_wave=50)
+
+    # OCR failure -> readable=False -> guard refuses EVEN when known_wave=12
+    monkeypatch.setattr(detectors, "read_battle_hud_meta", lambda f: {"tier": None, "coins": None, "coins_raw": None, "tournament": False, "readable": False})
+    monkeypatch.setattr(detectors, "read_wave_strict", lambda f: None)
+    ok, _why = tester._check_wave_and_tourney_guard(frame, known_wave=12)
+    assert ok is False
+
+
+def test_p2_6_live_coins_per_hour_ignores_single_low_ocr_glitch(tmp_path: Path, monkeypatch):
+    """P2-6: One low OCR misread does NOT rebase _run_start_coins or poison live Coins/hr."""
+    cfg = copy.deepcopy(DEFAULT_CONFIG)
+    cfg["ad_gems"]["enabled"] = False
+    cfg["floating_gems"]["enabled"] = False
+    frames = DummyFrames(_battle_frame())
+    collector = GemCollector(frames, cfg, event_log_path=tmp_path / "events.jsonl")
+
+    samples = iter([
+        {"tier": 10, "coins": 250.0e12, "coins_raw": "250.0T", "tournament": False, "readable": True},
+        {"tier": 10, "coins": 25.03e12, "coins_raw": "25.03T", "tournament": False, "readable": True},  # 1-frame glitch!
+        {"tier": 10, "coins": 250.5e12, "coins_raw": "250.5T", "tournament": False, "readable": True},
+    ])
+    monkeypatch.setattr(detectors, "read_battle_hud_meta", lambda frame: next(samples))
+
+    t0 = 1000.0
+    collector._hud_meta_last_scan = 0.0
+    monkeypatch.setattr(time, "time", lambda: 10000.0)
+    collector._step_hud_meta(frames.frame, t0)
+    monkeypatch.setattr(time, "time", lambda: 10120.0)
+    collector._step_hud_meta(frames.frame, t0 + 20.0)
+    monkeypatch.setattr(time, "time", lambda: 10360.0)  # +360s = 0.1 hr -> +0.5T = 5.0T/hr
+    collector._step_hud_meta(frames.frame, t0 + 40.0)
+
+    assert collector.live_coins_per_hour == pytest.approx(5.0e12, rel=1e-2)
+    assert collector.live_coins_per_hour_fmt == "5.00T"
+

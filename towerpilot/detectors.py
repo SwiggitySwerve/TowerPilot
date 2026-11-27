@@ -383,16 +383,22 @@ def orbit_tap_points(
     return pts
 
 
-def _parse_wave_from_text(text: str) -> int | None:
-    """Extract wave integer from OCR text, tolerating progress-bar underscores like '5750___'."""
+def _parse_wave_from_text(text: str, *, strict: bool = False) -> int | None:
+    """Extract wave integer from OCR text, tolerating progress-bar underscores like '5750___'.
+
+    When `strict=True`, requires an explicit `WAVE <n>` label and rejects split digits
+    (e.g. 'Wave 5 758') or bare numbers so fail-closed safety guards never misread noise.
+    """
     if not text:
         return None
     cleaned = text.replace(",", "")
-    m_wave = re.search(r"\bWAVE\s*[:#-]?\s*(\d{1,6})(?!\d)", cleaned, flags=re.IGNORECASE)
+    m_wave = re.search(r"\bWAVE\s*[:#-]?\s*(\d{1,6})(?!\d|\s+\d)", cleaned, flags=re.IGNORECASE)
     if m_wave:
         return int(m_wave.group(1))
+    if strict:
+        return None
     # Strip any 'Tier <n>' token so a partial read never reports Tier as Wave.
-    cleaned_no_tier = re.sub(r"\bTIER\s*[:#-]?\s*\d{1,3}(?!\d)", "", cleaned, flags=re.IGNORECASE)
+    cleaned_no_tier = re.sub(r"\bTIER\s*[:#-]?\s*\d{1,3}\+?(?!\d)", "", cleaned, flags=re.IGNORECASE)
     m_num = re.search(r"(?<!\d)(\d{1,6})(?!\d)", cleaned_no_tier)
     return int(m_num.group(1)) if m_num else None
 
@@ -402,12 +408,13 @@ def read_wave_ocr(
     *,
     ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
     timeout: float = 1.5,
+    strict: bool = False,
 ) -> int | None:
     """Zero-template wave number read via WinRT OCR (immune to progress-bar underscores)."""
     if frame is None or frame.ndim != 3:
         return None
     crops = []
-    # Use the wider wave panel crop first (reads 'Tier 10 Wave 5758' cleanly); fallback to tight wave box
+    # Use the wider wave panel crop first (reads 'Tier 10 Wave 5758' cleanly); fallback to shifted panel
     for shift in (0, REF_ABILITY_ROW_CLOSED_SHIFT):
         x, y, w, h = scale_rect(
             (REF_WAVE_PANEL[0], REF_WAVE_PANEL[1] + shift, REF_WAVE_PANEL[2], REF_WAVE_PANEL[3]),
@@ -422,14 +429,26 @@ def read_wave_ocr(
     except Exception:
         return None
     for text in texts:
-        m_wave = re.search(r"\bWAVE\s*[:#-]?\s*(\d{1,6})(?!\d)", text.replace(",", ""), flags=re.IGNORECASE)
-        if m_wave:
-            return int(m_wave.group(1))
+        val = _parse_wave_from_text(text, strict=True)
+        if val is not None:
+            return val
+    if strict:
+        return None
     for text in texts:
-        val = _parse_wave_from_text(text)
+        val = _parse_wave_from_text(text, strict=False)
         if val is not None:
             return val
     return None
+
+
+def read_wave_strict(
+    frame: np.ndarray,
+    *,
+    ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+    timeout: float = 1.5,
+) -> int | None:
+    """Fail-closed wave reader requiring an explicit `WAVE <n>` label (no bare-number fallback)."""
+    return read_wave_ocr(frame, ocr_fn=ocr_fn, timeout=timeout, strict=True)
 
 
 def read_battle_hud_meta(
@@ -439,7 +458,13 @@ def read_battle_hud_meta(
     timeout: float = 2.0,
 ) -> dict[str, object]:
     """Passively read battle Tier and top-left HUD Coins balance in one WinRT batch."""
-    out: dict[str, object] = {"tier": None, "coins": None, "coins_raw": None, "tournament": False}
+    out: dict[str, object] = {
+        "tier": None,
+        "coins": None,
+        "coins_raw": None,
+        "tournament": False,
+        "readable": False,
+    }
     if frame is None or frame.ndim != 3:
         return out
     rects = [
@@ -463,15 +488,21 @@ def read_battle_hud_meta(
 
     from towerpilot import run_rules
 
+    out["readable"] = True
     for txt in texts[:2]:
         up = txt.upper()
-        if any(tok in up for tok in ("TOURNAMENT", "TOURNEY", "LEAGUE", "CHAMPION", "LEGENDS", "PLATINUM")):
+        if any(tok in up for tok in ("TOURNAMENT", "TOURNEY", "LEAGUE", "CHAMPION", "LEGENDS", "PLATINUM")) or re.search(
+            r"\bTIER\s*[:#-]?\s*\d{1,3}\s*\+", up
+        ):
             out["tournament"] = True
         if out["tier"] is None:
             out["tier"] = parse_tier_from_text(txt)
 
     coins_txt = texts[2]
-    m = re.search(r"(\d[\d,]*(?:\.\d+)?)\s*([kKmMbBtTqQsSoOnNdD])?", coins_txt)
+    # Reject currency/cash ($), Tier/Wave labels, split suffixes, or suffixes followed by decimal/digit (e.g. '25O.3T')
+    cleaned_coins = re.sub(r"\$\s*[\d,.]+[kKmMbBtTqQsSoOnNdD]?", "", coins_txt)
+    cleaned_coins = re.sub(r"\b(?:TIER|WAVE)\s*[:#-]?\s*[\d,]+", "", cleaned_coins, flags=re.IGNORECASE)
+    m = re.search(r"(?<![A-Za-z0-9.])(\d[\d,]*(?:\.\d+)?)([kKmMbBtTqQsSoOnNdD])?(?![A-Za-z0-9.])", cleaned_coins)
     if m:
         raw = f"{m.group(1).replace(',', '')}{m.group(2) or ''}"
         val = run_rules.parse_coins(raw)

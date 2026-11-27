@@ -259,9 +259,16 @@ def test_battle_menu_routine_history_sync_end_to_end(tmp_path: Path, monkeypatch
         (327, 184, "Tier 10 Wave 8186"),
         (400, 185, "Coins: 18.94T Coins/Hour: 1.74T"),
         (401, 789, "Cells: 210.45K"),
+        (2438, 235, "Tap To Return To Game"),
     ]
     hstore = battle_menu.BattleHistoryStore(tmp_path / "battle_history.json")
     astore = loadouts.AccountStore(tmp_path / "account.json")
+
+    def fake_lines(imgs):
+        crop = imgs[0]
+        if crop.shape[0] <= 150:
+            return [[(10, 10, "BATTLE HISTORY")]] if crop.shape[1] > 760 else [[(10, 10, "Tap To Return To Game")]]
+        return [page_lines]
 
     routine = battle_menu.BattleMenuRoutine(
         grab_verified_frame=lambda: (current_f(), None),
@@ -272,7 +279,7 @@ def test_battle_menu_routine_history_sync_end_to_end(tmp_path: Path, monkeypatch
         history_store=hstore,
         account_store=astore,
         step_delay_sec=0.0,
-        lines_fn=lambda imgs: [page_lines],
+        lines_fn=fake_lines,
     )
 
     routine.start("history", battle_live=True, trigger="manual")
@@ -348,3 +355,172 @@ def test_routines_api_toggles_and_manual_trigger(tmp_path: Path):
     finally:
         collector.running = False
         app.extensions["towerpilot"]["shutdown"]()
+
+
+# --- 5. Fable Audit Regression Tests (P1-1, P2-1, P2-2, P2-5, P2-7) ------
+
+
+def test_p1_1_zero_blind_taps_on_purchase_or_unidentified_overlay(tmp_path: Path, monkeypatch):
+    """P1-1: Never tap dismiss/return on a purchase dialog, GAME STATS, or unidentified overlay."""
+    taps: list[str] = []
+    notified: list[str] = []
+    promo_frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+
+    monkeypatch.setattr(detectors, "side_menu_state", lambda f: "obscured")
+    routine = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (promo_frame, None),
+        check_foreground=lambda d: (True, "ok"),
+        tap=lambda pt, f, **kw: taps.append(kw.get("reason", "")) or {"x": pt[0], "y": pt[1]},
+        swipe=lambda *a, **kw: None,
+        log=lambda *a, **kw: None,
+        notify=lambda msg: notified.append(msg),
+        history_store=battle_menu.BattleHistoryStore(tmp_path / "h.json"),
+        account_store=loadouts.AccountStore(tmp_path / "a.json"),
+        step_delay_sec=0.0,
+        lines_fn=lambda imgs: [[(20, 20, "SPECIAL OFFER $4.99 BUY")]],
+    )
+    routine.start("guild_rewards", battle_live=True)
+    routine.phase = "work"  # Simulate landing directly on a promo popup
+    routine.step(promo_frame, 100.0)
+
+    assert routine.active is False
+    assert routine.phase == "aborted"
+    assert taps == []  # ZERO blind taps!
+    assert len(notified) == 1
+
+    # Also refuses to enter work when open_target sees an unexpected obscured frame
+    routine2 = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (promo_frame, None),
+        check_foreground=lambda d: (True, "ok"),
+        tap=lambda pt, f, **kw: taps.append(kw.get("reason", "")) or {"x": pt[0], "y": pt[1]},
+        swipe=lambda *a, **kw: None,
+        log=lambda *a, **kw: None,
+        history_store=battle_menu.BattleHistoryStore(tmp_path / "h2.json"),
+        account_store=loadouts.AccountStore(tmp_path / "a2.json"),
+        step_delay_sec=0.0,
+        lines_fn=lambda imgs: [[(20, 20, "UNKNOWN")]],
+    )
+    routine2.start("history", battle_live=True)
+    routine2.phase = "open_target"
+    routine2.step(promo_frame, 100.0)
+    assert routine2.active is False
+    assert routine2.phase == "aborted"
+    assert taps == []
+
+
+def test_p2_2_in_battle_cards_and_modules_persist_to_account_store(tmp_path: Path, monkeypatch):
+    """P2-2: In-battle Cards and Modules routines record into AccountStore via record_cards_scan/record_module_slot."""
+    astore = loadouts.AccountStore(tmp_path / "account.json")
+    hstore = battle_menu.BattleHistoryStore(tmp_path / "history.json")
+    dummy_f = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    stage = {"s": "overlay"}
+
+    monkeypatch.setattr(detectors, "side_menu_state", lambda f: "closed" if stage["s"] == "closed" else "obscured")
+    monkeypatch.setattr(
+        loadouts,
+        "parse_cards_page",
+        lambda f: {
+            "active_preset": "Preset 1",
+            "active_slots": "20/20",
+            "cards": [{"slug": "card:damage", "name": "Damage", "equipped": True, "maxed": True}],
+        },
+    )
+    monkeypatch.setattr(
+        loadouts,
+        "parse_modules_equipped",
+        lambda f: {
+            "active_preset": "Preset 1",
+            "slots": {
+                "cannon": {"slug": "module:death_penalty", "name": "Death Penalty", "level": 120, "rarity": "Ancestral"},
+            },
+        },
+    )
+
+    def tap_close(pt, f, **kw):
+        if "return_" in kw.get("reason", ""):
+            stage["s"] = "closed"
+        return {"x": pt[0], "y": pt[1]}
+
+    # Cards scan
+    r_cards = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (dummy_f, None),
+        check_foreground=lambda d: (True, "ok"),
+        tap=tap_close,
+        swipe=lambda *a, **kw: None,
+        log=lambda *a, **kw: None,
+        history_store=hstore,
+        account_store=astore,
+        step_delay_sec=0.0,
+        lines_fn=lambda imgs: [[(10, 10, "CARDS")] if imgs[0].shape[1] > 760 else [(10, 10, "Tap To Return To Game")]],
+    )
+    r_cards.start("cards", battle_live=True)
+    r_cards.phase = "work"
+    now = 100.0
+    for _ in range(8):
+        if not r_cards.active:
+            break
+        r_cards.step(dummy_f, now)
+        now += 2.0
+    snap = astore.snapshot()
+    assert snap["total_items"] >= 1
+    assert any(c["slug"] == "card:damage" for c in snap["cards"])
+    assert snap["active_card_slots"] == "20/20"
+
+    # Modules scan
+    stage["s"] = "overlay"
+    r_mods = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (dummy_f, None),
+        check_foreground=lambda d: (True, "ok"),
+        tap=tap_close,
+        swipe=lambda *a, **kw: None,
+        log=lambda *a, **kw: None,
+        history_store=hstore,
+        account_store=astore,
+        step_delay_sec=0.0,
+        lines_fn=lambda imgs: [[(10, 10, "MODULES")] if imgs[0].shape[1] > 760 else [(10, 10, "Tap To Return To Game")]],
+    )
+    r_mods.start("modules", battle_live=True)
+    r_mods.phase = "work"
+    for _ in range(8):
+        if not r_mods.active:
+            break
+        r_mods.step(dummy_f, now)
+        now += 2.0
+    snap2 = astore.snapshot()
+    assert any(m["slug"] == "module:death_penalty" for m in snap2["modules"])
+
+
+def test_p2_5_battle_history_skips_clipped_coinless_card_and_parses_zero_o():
+    """P2-5: Clipped bottom card without Coins line is skipped; 'Coins: O' parses as 0."""
+    lines = [
+        (327, 184, "Tier 10 Wave 8186"),
+        (400, 185, "Coins: O Coins/Hour: O Cells: O"),
+        (2295, 184, "Tier 10 Wave 9999"),  # Clipped at bottom — no Coins line!
+    ]
+    rows = battle_menu.parse_battle_history_page(lines, frame_height=2560)
+    assert len(rows) == 1
+    assert rows[0]["wave"] == 8186
+    assert rows[0]["total_coins"] == 0.0
+
+
+def test_p2_7_merged_chest_lines_map_distinct_rects_and_unverified_claims_not_counted(tmp_path: Path, monkeypatch):
+    """P2-7: Merged '100 250 500 750' line maps to 4 distinct x rects, and persistent claim isn't counted."""
+    frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    lines = [
+        (760, 110, "100 250 500 750"),
+        (840, 660, "Total Contribution: 800"),
+    ]
+    res = battle_menu.detect_guild_claimables(frame, lines)
+    xs = [rect[0] for _, rect in res["chest_claims"]]
+    assert len(xs) == 4
+    assert len(set(xs)) == 4  # Four distinct chest positions!
+
+    # Also verify merged description + CLAIM aims near CLAIM token, not description start
+    daily_res = battle_menu.detect_daily_missions_claimables(
+        frame,
+        [(780, 60, "Destroy 5000 Enemies CLAIM")],
+    )
+    assert len(daily_res["mission_claims"]) == 1
+    rx, _ry, rw, _rh = daily_res["mission_claims"][0]
+    assert rx + rw // 2 > 300  # Aimed at CLAIM, NOT at 'Destroy' (x=60)
+

@@ -521,6 +521,17 @@ class EventLogger:
         with self._lock:
             self._iteration_id, self._iter_has_battle = None, False
 
+    def resume_iteration(self, iteration_id: str | None) -> None:
+        """Re-attach an in-progress iteration_id recovered across a process restart."""
+        if not isinstance(iteration_id, str) or not iteration_id.strip():
+            return
+        with self._lock:
+            self._iteration_id = iteration_id.strip()
+            self._iter_has_battle = True
+            m = _ITER_ID_RE.match(self._iteration_id)
+            if m:
+                self._iter_seq = max(self._iter_seq, int(m.group(1)))
+
     def _resolve_iteration(self, event: str, explicit_id: str | None) -> str | None:
         if explicit_id is not None:
             return explicit_id

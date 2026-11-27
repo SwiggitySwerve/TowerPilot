@@ -499,6 +499,8 @@ def create_app(
             return jsonify({"setup_test": st, "status": status_payload()})
         except ValueError as exc:
             return jsonify({"error": str(exc)}), 400
+        except KeyError as exc:
+            return jsonify({"error": str(exc)}), 404
         except RuntimeError as exc:
             return jsonify({"error": str(exc)}), 409
 

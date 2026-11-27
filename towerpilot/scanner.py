@@ -146,6 +146,8 @@ class InventoryScanner:
         self._failures: int = 0
         self._next_step_at: float = 0.0
         self._awaiting_preset: str | None = None
+        self._cancelling: bool = False
+        self._abort_after_restore: tuple[str, str] | None = None
 
         self._orig_card_preset: str | None = None
         self._card_presets: list[str | None] = []
@@ -202,7 +204,27 @@ class InventoryScanner:
         self._log(f"Inventory scan started ({scope})", event="inventory_scan_started", scope=scope)
         return self.status()
 
-    def cancel(self) -> dict[str, Any]:
+    def cancel(self, *, hard: bool = False) -> dict[str, Any]:
+        if (
+            not hard
+            and self.running
+            and not self._stop_event.is_set()
+            and self._substate != "restore"
+            and (
+                (self.phase == "cards" and self._orig_card_preset)
+                or (self.phase == "modules" and self._orig_mod_preset)
+            )
+        ):
+            self._cancelling = True
+            self._abort_after_restore = None
+            self._phase_queue = []
+            self._substate = "restore"
+            self._failures = 0
+            self._awaiting_preset = None
+            self._next_step_at = 0.0
+            self.detail = "Cancelling — restoring original preset"
+            self._log("Inventory scan cancelling (restoring preset)", event="inventory_scan_cancelled", scope=self.scope)
+            return self.status()
         self._reset_cursor()
         self.running = self.queued = False
         self.phase, self.detail, self.progress, self.error = "idle", "", "", None
@@ -214,6 +236,25 @@ class InventoryScanner:
             self._abort("Paused: live battle detected", reason="battle_live")
 
     def _abort(self, error_msg: str, *, reason: str = "aborted", notify: bool = True) -> None:
+        if (
+            reason not in ("battle_live", "forbidden_prompt", "forbidden_target", "home_resume_pending", "unsafe_swipe")
+            and self.running
+            and not self._stop_event.is_set()
+            and self._substate != "restore"
+            and self._abort_after_restore is None
+            and (
+                (self.phase == "cards" and self._orig_card_preset)
+                or (self.phase == "modules" and self._orig_mod_preset)
+            )
+        ):
+            self._abort_after_restore = (error_msg, reason)
+            self._phase_queue = []
+            self._substate = "restore"
+            self._failures = 0
+            self._awaiting_preset = None
+            self._next_step_at = 0.0
+            self.detail = f"Restoring preset before pausing ({error_msg})"
+            return
         self._reset_cursor()
         self.running = self.queued = False
         self.phase, self.detail, self.progress, self.error = "error", "", "", error_msg
@@ -375,6 +416,13 @@ class InventoryScanner:
         return (int(round(dx)), int(round(dy)))
 
     def _advance_phase(self) -> None:
+        if self._cancelling:
+            self.cancel(hard=True)
+            return
+        if self._abort_after_restore is not None:
+            err_msg, err_reason = self._abort_after_restore
+            self._abort(err_msg, reason=err_reason, notify=True)
+            return
         self.phase = self._phase_queue.pop(0) if self._phase_queue else "returning"
         self._substate = "route"
         self._failures = 0
