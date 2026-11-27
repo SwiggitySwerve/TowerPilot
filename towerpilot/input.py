@@ -33,6 +33,7 @@ class Tapper:
         input_display: int | None = None,
         reason: str = "",
         frame_size: tuple[int, int] | None = None,
+        stop_event: threading.Event | None = None,
     ) -> dict[str, Any]:
         """Dispatch one human-like tap over ADB socket (or simulate in dry_run)."""
         safety = cfg["safety"]
@@ -62,9 +63,17 @@ class Tapper:
 
         min_interval = 1.0 / float(safety["max_taps_per_sec"])
         with self._lock:
+            if stop_event is not None and stop_event.is_set():
+                raise TapRefused("Tap cancelled before rate-limit wait")
             wait = min_interval - (time.monotonic() - self._last_tap)
             if wait > 0:
-                time.sleep(wait)
+                if stop_event is not None:
+                    if stop_event.wait(wait):
+                        raise TapRefused("Tap cancelled during rate-limit wait")
+                else:
+                    time.sleep(wait)
+            if stop_event is not None and stop_event.is_set():
+                raise TapRefused("Tap cancelled before dispatch")
 
             pmin, pmax = safety["press_ms"]
             dur = self._rng.randint(int(pmin), int(pmax))

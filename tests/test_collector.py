@@ -406,10 +406,11 @@ def test_collector_stop_cancels_in_flight_tap_dispatch(monkeypatch):
     assert tapped == []
 
 
-def test_run_flow_still_runs_when_battle_only_is_false(monkeypatch):
+def test_run_flow_still_runs_when_battle_only_is_false_and_does_not_fall_through(monkeypatch):
     cfg = copy.deepcopy(DEFAULT_CONFIG)
     cfg["safety"]["battle_only"] = False
-    cfg["ad_gems"]["enabled"] = False
+    cfg["mode"] = "timer"
+    cfg["ad_gems"]["enabled"] = True
     cfg["floating_gems"]["enabled"] = False
     cfg["run_flow"]["auto_home"] = True
 
@@ -421,6 +422,9 @@ def test_run_flow_still_runs_when_battle_only_is_false(monkeypatch):
     monkeypatch.setattr(adb, "shell", lambda serial, cmd, **kw: tapped.append(cmd) or b"")
 
     collector = GemCollector(frames, cfg, flow_delay_sec=(0.0, 0.0), max_taps_per_sec=100.0)
+    collector.ad_next_timer_at = 0.0
     collector.step_once()
+    # Only the HOME tap fires; gem collection does NOT fall through on the stale End Stats frame
     assert len(tapped) == 1
+    assert collector.flow_status == "tapped HOME"
 

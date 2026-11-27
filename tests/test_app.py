@@ -210,7 +210,22 @@ def test_loopback_host_and_origin_enforcement_and_static_assets(tmp_path: Path):
             headers={"Referer": "https://evil.example/page"},
         ).status_code == 403
 
-        # Loopback Origin allowed
+        # Malformed Host or Origin returns 403 (never 500)
+        assert client.get("/api/status", headers={"Host": "[::1:bad"}).status_code == 403
+        assert client.post(
+            "/api/harvest",
+            json={"mode": "timer"},
+            headers={"Host": "127.0.0.1:8620", "Origin": "http://[::1:bad"},
+        ).status_code == 403
+
+        # Different loopback port rejected on POST
+        assert client.post(
+            "/api/harvest",
+            json={"mode": "timer"},
+            headers={"Host": "127.0.0.1:8620", "Origin": "http://127.0.0.1:9999"},
+        ).status_code == 403
+
+        # Exact matching loopback Origin allowed
         ok = client.post(
             "/api/harvest",
             json={"mode": "timer"},

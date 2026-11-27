@@ -23,11 +23,6 @@ from towerpilot.mumu_worker import find_mumu_dll, validate_dimensions
 
 _START_TIMEOUT = 8.0
 _MAX_MESSAGE = 16 * 1024
-_DEFAULT_MUMU_DIRS = (
-    Path(r"C:\Program Files\Netease\MuMuPlayer"),
-    Path(r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0"),
-    Path(r"C:\Program Files\Netease\MuMu Player 12"),
-)
 
 
 class CaptureError(RuntimeError):
@@ -89,26 +84,6 @@ def _vm_ports(vm_dir: Path) -> set[int]:
     return ports
 
 
-def _candidate_mumu_roots(install_dir: str, adb_exe: str) -> list[Path]:
-    roots: list[Path] = []
-    if install_dir:
-        roots.append(Path(install_dir).expanduser().resolve())
-    if adb_exe:
-        adb_path = Path(adb_exe).expanduser().resolve()
-        if adb_path.name.lower() == "adb.exe" and adb_path.parent.name.lower() in {"nx_main", "shell"}:
-            roots.append(adb_path.parent.parent)
-    for candidate in _DEFAULT_MUMU_DIRS:
-        if candidate.is_dir():
-            roots.append(candidate)
-    seen: set[Path] = set()
-    unique: list[Path] = []
-    for root in roots:
-        if root not in seen:
-            seen.add(root)
-            unique.append(root)
-    return unique
-
-
 def discover_mumu_target(
     serial: str,
     *,
@@ -121,7 +96,7 @@ def discover_mumu_target(
     if match is None:
         raise MuMuUnavailable("MuMu native stream requires a loopback TCP serial")
     requested_port = _port(match[1])
-    roots = _candidate_mumu_roots(install_dir, adb_exe)
+    roots = adb.candidate_mumu_roots(install_dir, adb_exe)
     if not roots:
         raise MuMuUnavailable("MuMu installation directory not found")
 
@@ -351,39 +326,51 @@ class FrameSource:
     @property
     def input_display(self) -> int | None:
         with self._lock:
-            self._ensure_display_locked()
-            if self._physical_display is not None and self._input_display is None:
-                # Re-try once before refusing input so we never tap display 0 when capturing a secondary display.
-                self._ensure_display_locked(force=True)
-            if self._physical_display is not None and self._input_display is None:
-                raise CaptureError(
-                    f"Secondary display {self._physical_display} has no matching logical input display"
-                )
-            return self._input_display
+            _, logical = self._resolve_display_pair_locked()
+            return logical
 
-    def _ensure_display_locked(self, force: bool = False) -> str | None:
+    def _resolve_display_pair_locked(self, force: bool = False) -> tuple[str | None, int | None]:
+        """Resolve and validate the (physical, logical) display pair, failing closed on error."""
         serial = self._cfg["adb"]["serial"]
         if not serial:
-            return None
-        if force or self._display_serial != serial:
+            raise CaptureError("No ADB serial configured")
+        if force or self._display_serial != serial or (
+            self._physical_display is not None and self._input_display is None
+        ):
             try:
-                self._physical_display, self._input_display = adb.resolve_game_display(serial)
-                self._display_serial = serial
-            except (OSError, adb.AdbError):
+                physical, logical = adb.resolve_game_display(serial)
+            except (OSError, adb.AdbError) as exc:
                 self._physical_display, self._input_display = None, None
                 self._display_serial = None
-        return self._physical_display
+                raise CaptureError(f"Display lookup failed: {exc}") from exc
+            if physical is not None and logical is None:
+                self._physical_display, self._input_display = physical, None
+                self._display_serial = None
+                raise CaptureError(
+                    f"Secondary display {physical} has no matching logical input display"
+                )
+            self._physical_display, self._input_display = physical, logical
+            self._display_serial = serial
+        return self._physical_display, self._input_display
 
-    def grab_adb(self) -> np.ndarray:
-        """Capture a fresh frame over ADB socket screencap (with display auto-refresh)."""
+    def grab_adb_with_display(self) -> tuple[np.ndarray, int | None]:
+        """Capture a fresh ADB frame paired atomically with its verified logical input display."""
         with self._lock:
             serial = self._cfg["adb"]["serial"]
             adb_exe = self._cfg["adb"].get("exe", "")
-            display = self._ensure_display_locked()
+            mumu_dir = self._cfg["stream"].get("mumu_install_dir", "")
             exp_w = self._cfg["screen"]["width"]
             exp_h = self._cfg["screen"]["height"]
         if not serial:
             raise CaptureError("No ADB serial configured")
+
+        try:
+            with self._lock:
+                display, input_disp = self._resolve_display_pair_locked()
+        except CaptureError:
+            adb.recover(serial, adb_exe=adb_exe, mumu_install_dir=mumu_dir)
+            with self._lock:
+                display, input_disp = self._resolve_display_pair_locked(force=True)
 
         cmd = "screencap" + (f" -d {display}" if display else "")
         raw = b""
@@ -395,16 +382,17 @@ class FrameSource:
             except (OSError, adb.AdbError) as exc:
                 if attempt == 2:
                     raise CaptureError(f"ADB screencap failed: {exc}") from exc
-                adb.recover(serial, adb_exe=adb_exe)
+                adb.recover(serial, adb_exe=adb_exe, mumu_install_dir=mumu_dir)
                 with self._lock:
-                    display = self._ensure_display_locked(force=True)
+                    display, input_disp = self._resolve_display_pair_locked(force=True)
                 cmd = "screencap" + (f" -d {display}" if display else "")
 
         if len(raw) < 1000:
             with self._lock:
-                new_display = self._ensure_display_locked(force=True)
+                new_display, new_input = self._resolve_display_pair_locked(force=True)
             if new_display != display:
-                cmd = "screencap" + (f" -d {new_display}" if new_display else "")
+                display, input_disp = new_display, new_input
+                cmd = "screencap" + (f" -d {display}" if display else "")
                 raw = adb.exec_out(serial, cmd, timeout=12.0)
 
         frame = decode_raw_screencap(raw)
@@ -412,10 +400,16 @@ class FrameSource:
         if (w, h) != (exp_w, exp_h) and display is None:
             # First capture on a multi-display MuMu might have hit landscape launcher.
             with self._lock:
-                new_display = self._ensure_display_locked(force=True)
+                new_display, new_input = self._resolve_display_pair_locked(force=True)
             if new_display is not None:
-                raw = adb.exec_out(serial, f"screencap -d {new_display}", timeout=12.0)
+                display, input_disp = new_display, new_input
+                raw = adb.exec_out(serial, f"screencap -d {display}", timeout=12.0)
                 frame = decode_raw_screencap(raw)
+        return frame, input_disp
+
+    def grab_adb(self) -> np.ndarray:
+        """Capture a fresh frame over ADB socket screencap (with display auto-refresh)."""
+        frame, _ = self.grab_adb_with_display()
         return frame
 
     def _try_mumu(self, timeout: float = 2.0) -> np.ndarray:

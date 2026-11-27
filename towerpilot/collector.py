@@ -255,6 +255,14 @@ class GemCollector:
             )
             return True
 
+    def _grab_verified_frame(self) -> tuple[np.ndarray, int | None]:
+        """Capture a fresh ADB frame atomically paired with its logical input display."""
+        grab_paired = getattr(self._frames, "grab_adb_with_display", None)
+        if callable(grab_paired):
+            return grab_paired()
+        frame = self._frames.grab_adb()
+        return frame, self._frames.input_display
+
     def _resolve_input_display(self) -> tuple[bool, int | None, str]:
         try:
             return True, self._frames.input_display, "ok"
@@ -343,6 +351,7 @@ class GemCollector:
                 input_display=input_display,
                 reason=reason,
                 frame_size=(int(frame.shape[1]), int(frame.shape[0])),
+                stop_event=self._stop_event,
             )
         except TapRefused as exc:
             self.log(f"Tap refused ({reason}): {exc}", event="tap_refused", reason=reason, error=str(exc), point=list(pt))
@@ -353,16 +362,10 @@ class GemCollector:
         if self._stop_event.is_set():
             return False
         try:
-            fresh = self._frames.grab_adb()
+            fresh, input_display = self._grab_verified_frame()
         except Exception as exc:
             self.ad_status = "capture error"
             self.log(f"Ad Gem capture failed: {exc}", event="ad_gem_error", trigger=trigger, error=str(exc))
-            return False
-
-        disp_ok, input_display, disp_why = self._resolve_input_display()
-        if not disp_ok:
-            self.ad_status = "skipped (unpaired display)"
-            self.log(f"Ad Gem skipped ({trigger}): {disp_why}", event="ad_gem_skipped", trigger=trigger, reason=disp_why)
             return False
 
         ok, why = self._check_safety_guard(fresh, check_foreground=True, input_display=input_display)
@@ -443,16 +446,10 @@ class GemCollector:
         if self._stop_event.is_set():
             return False
         try:
-            fresh = self._frames.grab_adb()
+            fresh, input_display = self._grab_verified_frame()
         except Exception as exc:
             self.fg_status = "capture error"
             self.log(f"Floating Gem capture failed: {exc}", event="floating_gem_error", trigger=trigger, error=str(exc))
-            return False
-
-        disp_ok, input_display, disp_why = self._resolve_input_display()
-        if not disp_ok:
-            self.fg_status = "skipped (unpaired display)"
-            self.log(f"Floating Gem skipped ({trigger}): {disp_why}", event="floating_gem_skipped", trigger=trigger, reason=disp_why)
             return False
 
         ok, why = self._check_safety_guard(fresh, check_foreground=True, input_display=input_display)
@@ -500,22 +497,13 @@ class GemCollector:
                 break
             if idx > 0:
                 try:
-                    current_frame = self._frames.grab_adb()
+                    current_frame, input_display = self._grab_verified_frame()
                 except Exception as exc:
                     self.log(
                         f"Floating Gem burst aborted on capture: {exc}",
                         event="floating_gem_error",
                         trigger=trigger,
                         error=str(exc),
-                    )
-                    break
-                disp_ok, input_display, disp_why = self._resolve_input_display()
-                if not disp_ok:
-                    self.log(
-                        f"Floating Gem burst aborted: {disp_why}",
-                        event="floating_gem_skipped",
-                        trigger=trigger,
-                        reason=disp_why,
                     )
                     break
                 ok_step, why_step = self._check_safety_guard(
@@ -589,7 +577,8 @@ class GemCollector:
                 self.log(f"Waiting for battle ({why})", event="battle_waiting", reason=why, menu_state=self.menu_state)
 
         if not in_battle_hud:
-            self._step_run_flow(frame, now)
+            if self._step_run_flow(frame, now):
+                return
         else:
             self.flow_pending_action = None
             flow_cfg = self._cfg.get("run_flow", {})
@@ -616,18 +605,11 @@ class GemCollector:
             self.flow_pending_action = None
             return False
         try:
-            fresh = self._frames.grab_adb()
+            fresh, input_display = self._grab_verified_frame()
         except Exception as exc:
             self.flow_status = "capture error"
             self.flow_pending_action = None
             self.log(f"Auto-restart capture failed: {exc}", event="auto_restart_error", action=kind, error=str(exc))
-            return False
-
-        disp_ok, input_display, disp_why = self._resolve_input_display()
-        if not disp_ok:
-            self.flow_status = "skipped (unpaired display)"
-            self.flow_pending_action = None
-            self.log(f"Auto-restart skipped ({kind}): {disp_why}", event="auto_restart_skipped", action=kind, reason=disp_why)
             return False
 
         fg_ok, fg_why = self._check_foreground(input_display)
@@ -670,6 +652,7 @@ class GemCollector:
                 input_display=input_display,
                 reason=f"run_flow:{kind}",
                 frame_size=(int(fresh.shape[1]), int(fresh.shape[0])),
+                stop_event=self._stop_event,
             )
         except TapRefused as exc:
             self.flow_pending_action = None
@@ -700,18 +683,19 @@ class GemCollector:
             )
         return True
 
-    def _step_run_flow(self, frame: np.ndarray, now: float) -> None:
+    def _step_run_flow(self, frame: np.ndarray, now: float) -> bool:
+        """Check End Stats -> HOME or Home -> BATTLE; return True when input was dispatched."""
         flow_cfg = self._cfg.get("run_flow", {})
         auto_home = bool(flow_cfg.get("auto_home"))
         auto_battle = bool(flow_cfg.get("auto_battle"))
         if not (auto_home or auto_battle):
             self.flow_pending_action = None
             self.flow_status = "off"
-            return
+            return False
 
         if now < self.flow_cooldown_until:
             self.flow_status = f"cooldown ({int(self.flow_cooldown_until - now)}s)"
-            return
+            return False
 
         if self.flow_pending_action is not None:
             kind, hit, due_at = self.flow_pending_action
@@ -719,17 +703,16 @@ class GemCollector:
             if not still_enabled:
                 self.flow_pending_action = None
                 self.flow_status = "watching"
-                return
+                return False
             if now >= due_at:
-                self._execute_flow_action(kind)
-                return
+                return self._execute_flow_action(kind)
             self.flow_status = f"tapping {hit.label} in {due_at - now:.1f}s"
-            return
+            return False
 
         if now - self.flow_last_scan < _FLOW_SCAN_INTERVAL_SEC:
             if self.flow_status in ("off", "stopped", "in battle"):
                 self.flow_status = "watching"
-            return
+            return False
         self.flow_last_scan = now
 
         if auto_home:
@@ -751,8 +734,8 @@ class GemCollector:
                     delay_sec=round(delay, 2),
                 )
                 if delay <= 0.05:
-                    self._execute_flow_action("end_stats_home")
-                return
+                    return self._execute_flow_action("end_stats_home")
+                return False
 
         if auto_battle:
             try:
@@ -773,10 +756,11 @@ class GemCollector:
                     delay_sec=round(delay, 2),
                 )
                 if delay <= 0.05:
-                    self._execute_flow_action("home_battle")
-                return
+                    return self._execute_flow_action("home_battle")
+                return False
 
         self.flow_status = "watching"
+        return False
 
     def _step_ad_gems(self, frame: np.ndarray, now: float) -> None:
         ad_cfg = self._cfg["ad_gems"]

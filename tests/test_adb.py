@@ -157,11 +157,79 @@ def test_adb_recover_starts_server_when_refused(monkeypatch):
     started = []
     monkeypatch.setattr(adb, "get_state", lambda serial, timeout=2.0: next(states))
     monkeypatch.setattr(adb, "_server_refuses", lambda timeout=3.0: True)
-    monkeypatch.setattr(adb, "start_server", lambda adb_exe="": started.append(adb_exe) or True)
+    monkeypatch.setattr(
+        adb,
+        "start_server",
+        lambda adb_exe="", mumu_install_dir="": started.append((adb_exe, mumu_install_dir)) or True,
+    )
     monkeypatch.setattr(adb, "reconnect", lambda serial: True)
 
-    assert adb.recover("127.0.0.1:16384", adb_exe="C:/adb.exe", attempts=1) == "device"
-    assert started == ["C:/adb.exe"]
+    assert (
+        adb.recover("127.0.0.1:16384", adb_exe="C:/adb.exe", mumu_install_dir="D:/MuMu", attempts=1)
+        == "device"
+    )
+    assert started == [("C:/adb.exe", "D:/MuMu")]
+
+
+def test_adb_start_server_backs_off_and_uses_custom_mumu_dir(tmp_path: Path, monkeypatch):
+    adb_path = tmp_path / "nx_main" / "adb.exe"
+    adb_path.parent.mkdir(parents=True)
+    adb_path.write_text("", encoding="utf-8")
+
+    monkeypatch.setattr(adb, "_start_failed_until", 0.0)
+    monkeypatch.setattr(adb, "_server_refuses", lambda timeout=1.0: True)
+    calls = []
+
+    class FakeProc:
+        returncode = 1
+
+    monkeypatch.setattr(adb.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or FakeProc())
+
+    # First call attempts custom mumu_install_dir's bundled adb.exe and backs off on failure
+    assert adb.start_server("", mumu_install_dir=str(tmp_path)) is False
+    assert adb.start_server("", mumu_install_dir=str(tmp_path)) is False
+    assert adb.start_server("", mumu_install_dir=str(tmp_path)) is False
+    assert calls == [[str(adb_path), "start-server"]]
+
+
+def test_frame_source_refuses_display_lookup_failure_closed(monkeypatch):
+    cfg = config.validate_config({"adb": {"serial": "127.0.0.1:16384"}})
+    monkeypatch.setattr(
+        adb,
+        "resolve_game_display",
+        lambda serial: (_ for _ in ()).throw(adb.AdbError("display lookup failed")),
+    )
+    monkeypatch.setattr(adb, "recover", lambda *a, **kw: "missing")
+    fs = capture.FrameSource(cfg)
+    with pytest.raises(capture.CaptureError, match="Display lookup failed"):
+        fs.grab_adb_with_display()
+
+
+def test_tapper_cancels_during_rate_limit_wait(monkeypatch):
+    import threading
+    from towerpilot.input import TapRefused, Tapper
+
+    cfg = {
+        "screen": {"width": 1080, "height": 2560},
+        "safety": {
+            "allow_taps": True,
+            "dry_run": False,
+            "jitter_px": 0,
+            "press_ms": [60, 60],
+            "max_taps_per_sec": 0.5,  # 2s wait between taps
+        },
+    }
+    shell_calls = []
+    monkeypatch.setattr(adb, "shell", lambda *a, **kw: shell_calls.append(a) or b"")
+    tapper = Tapper()
+    tapper.tap("127.0.0.1:16384", 100, 200, cfg=cfg)
+    assert len(shell_calls) == 1
+
+    stop_ev = threading.Event()
+    threading.Timer(0.05, stop_ev.set).start()
+    with pytest.raises(TapRefused, match="cancelled"):
+        tapper.tap("127.0.0.1:16384", 100, 200, cfg=cfg, stop_event=stop_ev)
+    assert len(shell_calls) == 1
 
 
 def test_tapper_refuses_on_android_input_error_output(monkeypatch):

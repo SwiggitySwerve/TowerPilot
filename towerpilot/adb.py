@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 import socket
 import subprocess
+import threading
 import time
 from pathlib import Path
 
@@ -16,14 +17,17 @@ HOST = ("127.0.0.1", 5037)
 DEFAULT_TIMEOUT = 15.0
 GAME_PKG = "com.TechTreeGames.TheTower"
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-_DEFAULT_ADB_PATHS = (
-    Path(r"C:\Program Files\Netease\MuMuPlayer\nx_main\adb.exe"),
-    Path(r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0\shell\adb.exe"),
-    Path(r"C:\Program Files\Netease\MuMu Player 12\shell\adb.exe"),
+DEFAULT_MUMU_DIRS = (
+    Path(r"C:\Program Files\Netease\MuMuPlayer"),
+    Path(r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0"),
+    Path(r"C:\Program Files\Netease\MuMu Player 12"),
 )
 
 _OFFLINE_STALE_S = 30.0
 _offline_since: dict[tuple[tuple[str, int], str], float] = {}
+_START_LOCK = threading.Lock()
+_START_BACKOFF_SEC = 30.0
+_start_failed_until = 0.0
 
 
 class AdbError(RuntimeError):
@@ -157,41 +161,84 @@ def _server_refuses(timeout: float = 3.0) -> bool:
     return False
 
 
-def _resolve_adb_exe(adb_exe: str = "") -> Path | None:
+def candidate_mumu_roots(install_dir: str = "", adb_exe: str = "") -> list[Path]:
+    """Return ordered unique candidate MuMu installation directories."""
+    roots: list[Path] = []
+    if install_dir:
+        roots.append(Path(install_dir).expanduser().resolve())
+    if adb_exe:
+        adb_path = Path(adb_exe).expanduser().resolve()
+        if adb_path.name.lower() == "adb.exe" and adb_path.parent.name.lower() in {"nx_main", "shell"}:
+            roots.append(adb_path.parent.parent)
+    for candidate in DEFAULT_MUMU_DIRS:
+        if candidate.is_dir():
+            roots.append(candidate)
+    seen: set[Path] = set()
+    unique: list[Path] = []
+    for root in roots:
+        if root not in seen:
+            seen.add(root)
+            unique.append(root)
+    return unique
+
+
+def _resolve_adb_exe(adb_exe: str = "", mumu_install_dir: str = "") -> Path | None:
     if adb_exe:
         path = Path(adb_exe).expanduser()
         if path.is_file():
             return path
-    for candidate in _DEFAULT_ADB_PATHS:
-        if candidate.is_file():
-            return candidate
+    for root in candidate_mumu_roots(mumu_install_dir, adb_exe):
+        for sub in ("nx_main", "shell"):
+            candidate = root / sub / "adb.exe"
+            if candidate.is_file():
+                return candidate
     return None
 
 
-def start_server(adb_exe: str = "", timeout: float = 10.0) -> bool:
-    """Sanctioned one-time hidden `adb start-server` when no daemon listens on 5037."""
-    exe = _resolve_adb_exe(adb_exe)
-    if exe is None:
-        return False
-    try:
-        proc = subprocess.run(
-            [str(exe), "start-server"],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=timeout,
-            creationflags=NO_WINDOW,
-        )
-        return proc.returncode == 0
-    except (OSError, subprocess.SubprocessError):
-        return False
+def start_server(adb_exe: str = "", mumu_install_dir: str = "", timeout: float = 10.0) -> bool:
+    """Serialized, backed-off hidden `adb start-server` when no daemon listens on 5037."""
+    global _start_failed_until
+    with _START_LOCK:
+        now = time.monotonic()
+        if now < _start_failed_until:
+            return False
+        if not _server_refuses(timeout=1.0):
+            return True
+        exe = _resolve_adb_exe(adb_exe, mumu_install_dir)
+        if exe is None:
+            _start_failed_until = time.monotonic() + _START_BACKOFF_SEC
+            return False
+        try:
+            proc = subprocess.run(
+                [str(exe), "start-server"],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=timeout,
+                creationflags=NO_WINDOW,
+            )
+            ok = proc.returncode == 0
+        except (OSError, subprocess.SubprocessError):
+            ok = False
+        if not ok:
+            _start_failed_until = time.monotonic() + _START_BACKOFF_SEC
+        else:
+            _start_failed_until = 0.0
+        return ok
 
 
-def recover(serial: str, *, adb_exe: str = "", attempts: int = 2, settle: float = 1.5) -> str:
+def recover(
+    serial: str,
+    *,
+    adb_exe: str = "",
+    mumu_install_dir: str = "",
+    attempts: int = 2,
+    settle: float = 1.5,
+) -> str:
     """Reconnect a dropped TCP emulator serial without killing the ADB server."""
     state = get_state(serial)
     if state == "no_server" and _server_refuses():
-        if start_server(adb_exe):
+        if start_server(adb_exe, mumu_install_dir=mumu_install_dir):
             state = get_state(serial)
     if ":" not in serial:
         return state

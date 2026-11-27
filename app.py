@@ -27,18 +27,38 @@ _HARVEST_FLOW_KEYS = frozenset({"auto_home", "auto_battle"})
 _LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 
 
-def _is_loopback_host(host_header: str) -> bool:
-    """True when a Host header or URL authority names a loopback host only."""
+def _parse_host_port(host_header: str, default_port: int) -> tuple[str, int] | None:
+    """Parse a Host header into (lowercase_hostname, effective_port), or None if invalid/non-loopback."""
     raw = host_header.strip()
-    if not raw or any(ch in raw for ch in ("/", "\\", "@", " ")):
+    if not raw or any(ch in raw for ch in ("/", "\\", "@", " ", "\t", "\r", "\n")):
+        return None
+    try:
+        parsed = urlparse(f"http://{raw}")
+        hostname = (parsed.hostname or "").lower()
+        port = parsed.port if parsed.port is not None else default_port
+    except ValueError:
+        return None
+    if hostname not in _LOOPBACK_HOSTS:
+        return None
+    return hostname, port
+
+
+def _origin_matches_request(url_header: str, expected_scheme: str, expected_host: tuple[str, int]) -> bool:
+    """True when Origin/Referer parses cleanly and matches the request's exact loopback origin."""
+    raw = url_header.strip()
+    if not raw:
         return False
-    parsed = urlparse(f"http://{raw}")
-    return (parsed.hostname or "").lower() in _LOOPBACK_HOSTS
-
-
-def _is_loopback_origin(url_header: str) -> bool:
-    parsed = urlparse(url_header.strip())
-    return parsed.scheme in ("http", "https") and (parsed.hostname or "").lower() in _LOOPBACK_HOSTS
+    try:
+        parsed = urlparse(raw)
+        scheme = parsed.scheme.lower()
+        hostname = (parsed.hostname or "").lower()
+        default_port = 443 if scheme == "https" else 80
+        port = parsed.port if parsed.port is not None else default_port
+    except ValueError:
+        return False
+    if scheme != expected_scheme or hostname not in _LOOPBACK_HOSTS:
+        return False
+    return (hostname, port) == expected_host
 
 
 def _error_frame(message: str, width: int = 540, height: int = 960) -> bytes:
@@ -175,14 +195,17 @@ def create_app(
 
     @app.before_request
     def _enforce_loopback_origin() -> tuple[Response, int] | None:
-        if not _is_loopback_host(request.host or ""):
+        scheme = (request.scheme or "http").lower()
+        default_port = 443 if scheme == "https" else 80
+        host_pair = _parse_host_port(request.host or "", default_port)
+        if host_pair is None:
             return jsonify({"error": "Untrusted Host header"}), 403
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
             origin = request.headers.get("Origin")
-            if origin is not None and not _is_loopback_origin(origin):
+            if origin is not None and not _origin_matches_request(origin, scheme, host_pair):
                 return jsonify({"error": "Cross-origin request rejected"}), 403
             referer = request.headers.get("Referer")
-            if origin is None and referer is not None and not _is_loopback_origin(referer):
+            if origin is None and referer is not None and not _origin_matches_request(referer, scheme, host_pair):
                 return jsonify({"error": "Cross-origin referer rejected"}), 403
         return None
 
