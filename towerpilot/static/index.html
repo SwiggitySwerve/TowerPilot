@@ -50,6 +50,21 @@
               </div>
             </div>
 
+            <div id="activeProfileStrip" class="profile-screen-strip" aria-label="Active Profile and Screen">
+              <div class="profile-strip-main">
+                <span id="screenBadge" class="screen-badge">unknown</span>
+                <span id="activeKindPill" class="kind-pill farm" hidden>FARM</span>
+                <span id="activeProfileName" class="active-profile-name">&mdash;</span>
+                <span id="navStateText" class="nav-state-text" hidden></span>
+              </div>
+              <div id="queuedChipRow" class="queued-chip-row" hidden>
+                <span class="queued-chip">
+                  <span id="queuedProfileText">Next: &mdash;</span>
+                  <button id="cancelQueuedBtn" class="queued-cancel-btn" type="button" title="Cancel queued profile" aria-label="Cancel queued profile">&times;</button>
+                </span>
+              </div>
+            </div>
+
             <div id="freezeBanner" class="alert-banner red" hidden>
               <span>Battle wave appears frozen</span>
             </div>
@@ -59,104 +74,154 @@
               <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
             </div>
 
-            <div class="sidebar-section">
-              <div class="section-heading">Auto-Restart</div>
+            <div class="sidebar-section" aria-label="Profiles">
+              <div class="section-heading">
+                <span>Profiles</span>
+                <button id="newProfileBtn" class="mini-btn cyan" type="button" title="Create a new profile">+ New</button>
+              </div>
+              <div id="profilesList" class="profiles-list">
+                <div class="ledger-empty">Loading profiles&hellip;</div>
+              </div>
+            </div>
 
-              <div class="rule-row">
-                <div class="rule-info">
-                  <div class="gem-name-line">
-                    <span class="gem-dot flow" aria-hidden="true"></span>
-                    <span class="rule-name">End Stats &rarr; Home</span>
+            <details id="advancedFlowDetails" class="sidebar-section flow-details">
+              <summary class="section-heading flow-summary">
+                <span class="flow-summary-left">
+                  <span class="flow-caret" aria-hidden="true">&#9656;</span>
+                  <span>Advanced Flow &amp; Guards</span>
+                </span>
+                <span id="advancedFlowSummaryBadge" class="flow-summary-badge">off</span>
+              </summary>
+
+              <div class="flow-details-body">
+                <div class="rule-row">
+                  <div class="rule-info">
+                    <div class="gem-name-line">
+                      <span class="gem-dot flow" aria-hidden="true"></span>
+                      <span class="rule-name">End Stats &rarr; Home</span>
+                    </div>
+                    <div id="flowStatus" class="gem-status">off</div>
                   </div>
-                  <div id="flowStatus" class="gem-status">off</div>
+                  <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
                 </div>
-                <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-              </div>
 
-              <div class="rule-row">
-                <div class="rule-info">
-                  <div class="gem-name-line">
-                    <span class="gem-dot flow" aria-hidden="true"></span>
-                    <span class="rule-name">Direct Retry</span>
+                <div class="rule-row">
+                  <div class="rule-info">
+                    <div class="gem-name-line">
+                      <span class="gem-dot flow" aria-hidden="true"></span>
+                      <span class="rule-name">Direct Retry</span>
+                    </div>
+                    <div class="gem-status">Tap RETRY on Game Stats</div>
                   </div>
-                  <div class="gem-status">Tap RETRY on Game Stats</div>
+                  <button id="autoRetryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
                 </div>
-                <button id="autoRetryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-              </div>
 
-              <div class="rule-row">
-                <div class="rule-info">
-                  <div class="gem-name-line">
-                    <span class="gem-dot flow" aria-hidden="true"></span>
-                    <span class="rule-name">Auto Re-Battle</span>
-                    <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
-                    <button id="resetRunsBtn" class="mini-btn" type="button" title="Reset session run counter">Reset</button>
+                <div class="rule-row">
+                  <div class="rule-info">
+                    <div class="gem-name-line">
+                      <span class="gem-dot flow" aria-hidden="true"></span>
+                      <span class="rule-name">Auto Re-Battle</span>
+                      <span id="runsRestarted" class="gem-count" title="Runs restarted this session">0</span>
+                      <button id="resetRunsBtn" class="mini-btn" type="button" title="Reset session run counter">Reset</button>
+                    </div>
+                    <div class="gem-status">Tap BATTLE on main menu</div>
                   </div>
-                  <div class="gem-status">Tap BATTLE on main menu</div>
+                  <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
                 </div>
-                <button id="autoBattleBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-              </div>
 
-              <div class="rule-row">
-                <div class="rule-info">
-                  <div class="gem-name-line">
-                    <span class="gem-dot flow" aria-hidden="true"></span>
-                    <span class="rule-name">Crash Auto-Resume</span>
+                <div class="rule-row">
+                  <div class="rule-info">
+                    <div class="gem-name-line">
+                      <span class="gem-dot flow" aria-hidden="true"></span>
+                      <span class="rule-name">Crash Auto-Resume</span>
+                    </div>
+                    <div class="gem-status">Tap RESUME if run was interrupted</div>
                   </div>
-                  <div class="gem-status">Tap RESUME if run was interrupted</div>
+                  <button id="autoResumeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
                 </div>
-                <button id="autoResumeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-              </div>
 
-              <div class="rule-row">
-                <div class="rule-info">
-                  <div class="rule-name">Finish Run &amp; Hold</div>
-                  <div class="gem-status">Park at Home after this run</div>
+                <div class="rule-row">
+                  <div class="rule-info">
+                    <div class="rule-name">Finish Run &amp; Hold</div>
+                    <div class="gem-status">Park at Home after this run</div>
+                  </div>
+                  <button id="finishStopBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
                 </div>
-                <button id="finishStopBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
-              </div>
 
-              <div class="rule-field-row">
-                <label for="expectedTierInput">Expected tier <span class="hint">(0 = any)</span></label>
-                <input id="expectedTierInput" class="compact-input num" type="number" min="0" max="24" step="1" inputmode="numeric" />
-              </div>
-
-              <div class="rule-field-row">
-                <label for="maxRunsInput">Max runs <span class="hint">(0 = unlimited)</span></label>
-                <input id="maxRunsInput" class="compact-input num" type="number" min="0" max="9999" step="1" inputmode="numeric" />
-              </div>
-
-              <div class="rule-row">
-                <div class="rule-info">
-                  <div class="rule-name">Quiet Window</div>
-                  <div class="gem-status">Don&rsquo;t start new runs during hours</div>
+                <div class="rule-field-row">
+                  <label for="expectedTierInput">Expected tier <span class="hint">(0 = any)</span></label>
+                  <input id="expectedTierInput" class="compact-input num" type="number" min="0" max="24" step="1" inputmode="numeric" />
                 </div>
-                <button id="noStartBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
-              </div>
 
-              <div id="noStartTimesRow" class="time-window-row" hidden>
-                <label for="noStartFrom">From</label>
-                <input id="noStartFrom" class="compact-input time" type="time" />
-                <label for="noStartUntil">Until</label>
-                <input id="noStartUntil" class="compact-input time" type="time" />
-              </div>
-
-              <div class="rule-field-row stacked">
-                <label for="profileInput">Profile / Build Tag</label>
-                <input id="profileInput" class="compact-input text" type="text" maxlength="40" placeholder="e.g. T9 eHP Farm" />
-              </div>
-
-              <div class="rule-field-row">
-                <label for="freezeMinInput">Freeze alert <span class="hint">(min, 0 = off)</span></label>
-                <input id="freezeMinInput" class="compact-input num" type="number" min="0" max="180" step="1" inputmode="numeric" />
-              </div>
-
-              <div class="rule-row">
-                <div class="rule-info">
-                  <div class="rule-name">Death Toast</div>
-                  <div class="gem-status">Tray alert with run summary</div>
+                <div class="rule-field-row">
+                  <label for="maxRunsInput">Max runs <span class="hint">(0 = unlimited)</span></label>
+                  <input id="maxRunsInput" class="compact-input num" type="number" min="0" max="9999" step="1" inputmode="numeric" />
                 </div>
-                <button id="notifyDeathBtn" class="toggle-btn flow" type="button" aria-pressed="true">ON</button>
+
+                <div class="rule-row">
+                  <div class="rule-info">
+                    <div class="rule-name">Quiet Window</div>
+                    <div class="gem-status">Don&rsquo;t start new runs during hours</div>
+                  </div>
+                  <button id="noStartBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
+                </div>
+
+                <div id="noStartTimesRow" class="time-window-row" hidden>
+                  <label for="noStartFrom">From</label>
+                  <input id="noStartFrom" class="compact-input time" type="time" />
+                  <label for="noStartUntil">Until</label>
+                  <input id="noStartUntil" class="compact-input time" type="time" />
+                </div>
+
+                <div class="rule-field-row">
+                  <label for="freezeMinInput">Freeze alert <span class="hint">(min, 0 = off)</span></label>
+                  <input id="freezeMinInput" class="compact-input num" type="number" min="0" max="180" step="1" inputmode="numeric" />
+                </div>
+
+                <div class="rule-row">
+                  <div class="rule-info">
+                    <div class="rule-name">Death Toast</div>
+                    <div class="gem-status">Tray alert with run summary</div>
+                  </div>
+                  <button id="notifyDeathBtn" class="toggle-btn flow" type="button" aria-pressed="true">ON</button>
+                </div>
+              </div>
+            </details>
+
+            <div id="metricsSection" class="sidebar-section" aria-label="Telemetry Metrics">
+              <div class="section-heading">
+                <span>Telemetry</span>
+                <div class="metrics-header-actions">
+                  <div id="metricsScopeToggle" class="mini-seg" role="group" aria-label="Metrics scope">
+                    <button type="button" data-scope="all_time" aria-pressed="true" class="active">All-Time</button>
+                    <button type="button" data-scope="session" aria-pressed="false">Session</button>
+                  </div>
+                  <a class="mini-btn metric-link" href="/api/metrics?format=prometheus" target="_blank" rel="noopener noreferrer" title="Prometheus metrics">Prom</a>
+                  <a class="mini-btn metric-link" href="/api/metrics?format=otlp" target="_blank" rel="noopener noreferrer" title="OTLP JSON metrics">OTLP</a>
+                </div>
+              </div>
+
+              <div class="metrics-strip" aria-label="Telemetry Counters">
+                <div class="metric-cell">
+                  <span class="stat-label">Total Gems</span>
+                  <span id="metricTotalGems" class="stat-value">&mdash;</span>
+                </div>
+                <div class="metric-cell">
+                  <span class="stat-label">Runs</span>
+                  <span id="metricRuns" class="stat-value">&mdash;</span>
+                </div>
+                <div class="metric-cell">
+                  <span class="stat-label">Nav Taps</span>
+                  <span id="metricNavTaps" class="stat-value">&mdash;</span>
+                </div>
+                <div class="metric-cell">
+                  <span class="stat-label">Profile Gems/hr</span>
+                  <span id="metricGemsPerHour" class="stat-value">&mdash;</span>
+                </div>
+              </div>
+
+              <div id="metricsByProfileList" class="metrics-profile-list">
+                <div class="ledger-empty">No profile metrics yet.</div>
               </div>
             </div>
 
@@ -365,6 +430,130 @@
         <div id="wikiContent" class="wiki-content"></div>
       </article>
     </div>
+  </aside>
+
+  <!-- Slide-over Profile Editor Drawer -->
+  <aside id="profileDrawer" class="wiki-drawer profile-drawer" aria-label="Profile Editor Drawer" hidden>
+    <div class="card-header">
+      <div class="header-left">
+        <span id="profileDrawerTitle" class="title">Edit Profile</span>
+        <span id="profileDrawerIdBadge" class="version" hidden></span>
+      </div>
+      <div class="sidebar-header-actions">
+        <button id="closeProfileDrawerBtn" class="icon-btn" type="button" title="Close Profile Editor">&times;</button>
+      </div>
+    </div>
+
+    <form id="profileForm" class="profile-form" novalidate>
+      <div class="profile-form-body">
+        <div class="rule-field-row stacked">
+          <label for="profName">Name</label>
+          <input id="profName" class="compact-input text" type="text" maxlength="40" required placeholder="e.g. T9 eHP Farm" autocomplete="off" />
+        </div>
+
+        <div class="drawer-two-col">
+          <div class="rule-field-row stacked">
+            <label for="profKind">Kind</label>
+            <select id="profKind" class="compact-input select">
+              <option value="farm">Farm</option>
+              <option value="push">Tier Push</option>
+              <option value="tournament">Tournament</option>
+            </select>
+          </div>
+          <div class="rule-field-row stacked">
+            <label for="profPriority">Priority <span class="hint">(1&ndash;100)</span></label>
+            <input id="profPriority" class="compact-input num full" type="number" min="1" max="100" step="1" inputmode="numeric" />
+          </div>
+        </div>
+
+        <div class="rule-row drawer-toggle-row">
+          <div class="rule-info">
+            <div class="rule-name">Enabled</div>
+            <div class="gem-status">Allow scheduler to run this profile</div>
+          </div>
+          <button id="profEnabledBtn" class="toggle-btn flow on" type="button" aria-pressed="true">ON</button>
+        </div>
+
+        <div class="drawer-divider"></div>
+
+        <div class="rule-field-row stacked">
+          <label for="profTierMode">Tier Mode</label>
+          <select id="profTierMode" class="compact-input select">
+            <option value="current">Current Tier</option>
+            <option value="fixed">Fixed Tier</option>
+            <option value="highest_unlocked">Highest Unlocked</option>
+            <option value="ignore">Ignore (Tournament)</option>
+          </select>
+        </div>
+
+        <div id="profTierValueRow" class="rule-field-row" hidden>
+          <label for="profTierValue">Fixed Tier <span class="hint">(1&ndash;24)</span></label>
+          <input id="profTierValue" class="compact-input num" type="number" min="1" max="24" step="1" inputmode="numeric" />
+        </div>
+
+        <div class="drawer-two-col">
+          <div class="rule-field-row stacked">
+            <label for="profCardsPreset">Card Preset</label>
+            <select id="profCardsPreset" class="compact-input select">
+              <option value="">None</option>
+              <option value="Preset 1">Preset 1</option>
+              <option value="Preset 2">Preset 2</option>
+              <option value="Preset 3">Preset 3</option>
+              <option value="Preset 4">Preset 4</option>
+              <option value="Preset 5">Preset 5</option>
+            </select>
+          </div>
+          <div class="rule-field-row stacked">
+            <label for="profModulesPreset">Module Preset</label>
+            <select id="profModulesPreset" class="compact-input select">
+              <option value="">None</option>
+              <option value="Preset 1">Preset 1</option>
+              <option value="Preset 2">Preset 2</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="drawer-divider"></div>
+
+        <div class="drawer-two-col">
+          <div class="rule-field-row stacked">
+            <label for="profMaxRuns">Max Runs <span class="hint">(0 = &infin;)</span></label>
+            <input id="profMaxRuns" class="compact-input num full" type="number" min="0" max="9999" step="1" inputmode="numeric" />
+          </div>
+          <div class="rule-field-row stacked">
+            <label for="profThen">Fallback Profile</label>
+            <select id="profThen" class="compact-input select">
+              <option value="">None</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="rule-row drawer-toggle-row">
+          <div class="rule-info">
+            <div class="rule-name">Quiet Window</div>
+            <div class="gem-status">Skip starting this profile during hours</div>
+          </div>
+          <button id="profQuietEnabledBtn" class="toggle-btn amber" type="button" aria-pressed="false">OFF</button>
+        </div>
+
+        <div id="profQuietTimesRow" class="time-window-row" hidden>
+          <label for="profQuietFrom">From</label>
+          <input id="profQuietFrom" class="compact-input time" type="time" />
+          <label for="profQuietUntil">Until</label>
+          <input id="profQuietUntil" class="compact-input time" type="time" />
+        </div>
+
+        <div id="profRuntimeInfo" class="runtime-info-box" hidden></div>
+      </div>
+
+      <div class="drawer-footer">
+        <div class="drawer-footer-left">
+          <button id="resetProfileStatsBtn" class="mini-btn amber" type="button" hidden>Reset Stats</button>
+          <button id="deleteProfileBtn" class="mini-btn red" type="button" hidden>Delete</button>
+        </div>
+        <button id="saveProfileBtn" class="primary-btn drawer-save-btn" type="submit">Save</button>
+      </div>
+    </form>
   </aside>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>

@@ -1,17 +1,16 @@
 """Minimal background gem collector supporting OCR/vision detection or timer mode.
 
-Only taps Ad Gems and Floating Gems during verified battles, plus optional
-OCR-verified End Stats -> HOME and Home -> BATTLE transitions when `run_flow`
-is enabled. Never surrenders or cancels an active run.
+Only taps Ad Gems and Floating Gems during verified battles, and delegates all
+off-battle navigation (GAME STATS -> HOME/RETRY, Home -> Cards/Modules/Tier/BATTLE/RESUME)
+to `towerpilot.nav.MenuNavigator`. Never surrenders or cancels an active run.
 """
 from __future__ import annotations
 
-import json
+import copy
 import math
 import random
 import threading
 import time
-from collections import deque
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
@@ -21,8 +20,9 @@ import numpy as np
 from towerpilot import adb, detectors, run_rules
 from towerpilot.capture import CaptureError, FrameSource
 from towerpilot.input import TapRefused, Tapper
-
-DEFAULT_EVENT_LOG_PATH = Path(__file__).resolve().parents[1] / "logs" / "events.jsonl"
+from towerpilot.nav import MenuNavigator, VerifiedTapContext
+from towerpilot.profiles import ProfileStore
+from towerpilot.telemetry import DEFAULT_EVENT_LOG_PATH, Telemetry
 
 # Built-in humanization & geometry defaults (kept out of config bloat)
 _TAP_JITTER_PX = 5
@@ -50,10 +50,32 @@ _FLOW_SCAN_INTERVAL_SEC = 3.0
 _FLOW_COOLDOWN_SEC = 15.0
 _FLOW_DELAY_SEC = (2.0, 4.0)
 _WAVE_SCAN_INTERVAL_SEC = 20.0
+_LEGACY_POLICY_HOLDS = frozenset({"finish_and_stop", "max_runs", "no_start_window", "tier_mismatch"})
+
+
+class _MemoryProfileStore(ProfileStore):
+    """In-memory ProfileStore used when GemCollector is constructed without an explicit store."""
+
+    def __init__(self, cfg: dict[str, Any] | None = None) -> None:
+        super().__init__(path=Path("__memory_profiles__.json"))
+        self._mem_data: dict[str, Any] | None = None
+        self.seed_from_config(cfg)
+
+    def _read_unlocked(self) -> dict[str, Any]:
+        return copy.deepcopy(self._mem_data) if self._mem_data is not None else self._empty()
+
+    def _write_unlocked(self, data: dict[str, Any]) -> None:
+        self._mem_data = copy.deepcopy(data)
+
+    def seed_from_config(self, cfg: dict[str, Any] | None = None) -> dict[str, Any]:
+        with self._lock:
+            if self._mem_data is not None and self._mem_data.get("profiles"):
+                return copy.deepcopy(self._mem_data)
+            return super().seed_from_config(cfg)
 
 
 class GemCollector:
-    """Owns the background gem-collection thread, timers, detection state, and recent log."""
+    """Owns the background gem-collection thread, timers, detection state, and telemetry."""
 
     def __init__(
         self,
@@ -70,6 +92,8 @@ class GemCollector:
         event_log_path: Path | None = None,
         now_local_fn: Callable[[], datetime] | None = None,
         on_notify: Callable[[str, str], None] | None = None,
+        profile_store: ProfileStore | None = None,
+        telemetry: Telemetry | None = None,
     ) -> None:
         self._frames = frame_source
         self._cfg = cfg
@@ -89,6 +113,14 @@ class GemCollector:
         self._thread: threading.Thread | None = None
 
         self.running = False
+
+        # Telemetry & modular profile store
+        self._telemetry = telemetry if telemetry is not None else Telemetry(event_log_path=event_log_path)
+        self._profile_store = profile_store if profile_store is not None else _MemoryProfileStore(cfg)
+        snap = self._profile_store.snapshot()
+        active_prof = self._profile_store.get(snap.get("active_id"))
+        if active_prof is not None:
+            self._telemetry.set_profile(active_prof["id"], active_prof["name"])
 
         # Live battle observation & freeze-watch state
         self.battle_live = False
@@ -123,24 +155,93 @@ class GemCollector:
         self.fg_status = "stopped" if cfg["floating_gems"]["enabled"] else "off"
         self.fg_count = 0
 
-        # End-of-run continuity & run ledger state (GAME STATS -> HOME/RETRY, Home -> BATTLE/RESUME)
-        flow_cfg = cfg.get("run_flow", {})
-        self.flow_last_scan = 0.0
-        self.flow_cooldown_until = 0.0
-        self.flow_pending_action: tuple[str, detectors.ButtonHit, float] | None = None
-        self.flow_status = "stopped" if self._flow_any_enabled(flow_cfg) else "off"
-        self.flow_hold_reason: str | None = None
-        self._last_hold_reason: str | None = None
-        self.runs_restarted = 0
+        # Out-of-battle navigation state machine
         self._stats_logged_for_run = False
-        self._runs: deque[dict[str, Any]] = deque(
-            run_rules.load_run_ledger(event_log_path, limit=100),
-            maxlen=100,
+        nav_ctx = VerifiedTapContext(
+            grab_verified_frame=self._grab_verified_frame,
+            check_foreground=self._check_foreground,
+            tap=self._dispatch_menu_tap,
+            log=self.log,
+            notify=self._notify,
+            stop_event=self._stop_event,
+            rng=self._rng,
+            now_local_fn=self._now_local_fn,
+            delay_sec=flow_delay_sec,
+            scan_interval_sec=_FLOW_SCAN_INTERVAL_SEC,
+            cooldown_sec=_FLOW_COOLDOWN_SEC,
+            failure_backoff_sec=_FAILURE_BACKOFF_SEC,
         )
-        self.runs_logged = len(self._runs)
+        self._nav = MenuNavigator(nav_ctx)
+        flow_cfg = cfg.get("run_flow", {})
+        self._nav.nav_state = "stopped" if self._flow_any_enabled(flow_cfg) else "off"
 
-        self._recent: deque[dict[str, Any]] = deque(maxlen=30)
         self._reset_timers(now_mono)
+
+    # --- Compatibility properties delegating to MenuNavigator / Telemetry ---
+
+    @property
+    def telemetry(self) -> Telemetry:
+        return self._telemetry
+
+    @property
+    def profile_store(self) -> ProfileStore:
+        return self._profile_store
+
+    @property
+    def navigator(self) -> MenuNavigator:
+        return self._nav
+
+    @property
+    def flow_status(self) -> str:
+        return self._nav.nav_state
+
+    @flow_status.setter
+    def flow_status(self, value: str) -> None:
+        self._nav.nav_state = value
+
+    @property
+    def flow_hold_reason(self) -> str | None:
+        return self._nav.hold_reason
+
+    @flow_hold_reason.setter
+    def flow_hold_reason(self, value: str | None) -> None:
+        self._nav.hold_reason = value
+
+    @property
+    def flow_pending_action(self) -> tuple[str, Any, float] | None:
+        return self._nav.pending_action
+
+    @flow_pending_action.setter
+    def flow_pending_action(self, value: tuple[str, Any, float] | None) -> None:
+        self._nav.pending_action = value
+
+    @property
+    def flow_last_scan(self) -> float:
+        return self._nav.last_scan
+
+    @flow_last_scan.setter
+    def flow_last_scan(self, value: float) -> None:
+        self._nav.last_scan = value
+
+    @property
+    def flow_cooldown_until(self) -> float:
+        return self._nav.cooldown_until
+
+    @flow_cooldown_until.setter
+    def flow_cooldown_until(self, value: float) -> None:
+        self._nav.cooldown_until = value
+
+    @property
+    def runs_restarted(self) -> int:
+        return self._nav.runs_restarted
+
+    @runs_restarted.setter
+    def runs_restarted(self, value: int) -> None:
+        self._nav.runs_restarted = value
+
+    @property
+    def runs_logged(self) -> int:
+        return int(self._telemetry.snapshot()["all_time"]["runs_completed"])
 
     def set_notifier(self, fn: Callable[[str, str], None] | None) -> None:
         with self._lock:
@@ -154,23 +255,39 @@ class GemCollector:
             except Exception:
                 pass
 
+    def on_profile_activated(self, profile_id: str | None, *, immediate: bool = False) -> None:
+        """React to a profile activation/switch from the API."""
+        with self._lock:
+            if immediate:
+                self._nav.reset_verification(clear_presets=True, clear_tier=True, clear_hold=True)
+                self._nav._active_profile_id = profile_id
+                prof = self._profile_store.get(profile_id)
+                if prof is not None:
+                    self._telemetry.set_profile(prof["id"], prof["name"])
+                if self.running and not self.battle_live:
+                    self._nav.nav_state = "watching"
+
     def reset_runs_restarted(self) -> None:
         with self._lock:
-            self.runs_restarted = 0
-            if self.flow_hold_reason == "max_runs":
-                self.flow_hold_reason = None
-                self._last_hold_reason = None
+            self._nav.runs_restarted = 0
+            snap = self._profile_store.snapshot()
+            for pid in {snap.get("active_id"), snap.get("queued_id")}:
+                if not pid:
+                    continue
+                prof = self._profile_store.get(pid)
+                if prof is not None and int((prof.get("runtime") or {}).get("runs_completed", 0) or 0) > 0:
+                    prof["runtime"]["runs_completed"] = 0
+                    self._profile_store.upsert(prof)
+            if self._nav.hold_reason == "max_runs":
+                self._nav.hold_reason = None
+                self._nav._last_hold_reason = None
+                self._nav._last_hold_profile = None
                 if self.running:
-                    self.flow_status = "watching"
+                    self._nav.nav_state = "watching"
             self.log("Run counter reset to 0", event="run_count_reset")
 
     def runs_ledger(self, limit: int = 50) -> dict[str, Any]:
-        with self._lock:
-            all_runs = list(self._runs)
-        return {
-            "runs": all_runs[:limit],
-            "by_tier": run_rules.summarize_by_tier(all_runs),
-        }
+        return self._telemetry.runs_ledger(limit=limit)
 
     @staticmethod
     def _flow_any_enabled(flow_cfg: dict[str, Any]) -> bool:
@@ -203,30 +320,15 @@ class GemCollector:
         }
 
     def log(self, msg: str, *, event: str = "info", **data: Any) -> None:
-        now = time.time()
-        entry: dict[str, Any] = {
-            "ts": round(now, 3),
-            "iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(now)),
-            "event": event,
-            "msg": msg,
-        }
-        if data:
-            entry.update(data)
-        with self._lock:
-            self._recent.appendleft({"ts": entry["ts"], "event": event, "msg": msg})
-            if self._event_log_path is not None:
-                try:
-                    self._event_log_path.parent.mkdir(parents=True, exist_ok=True)
-                    with open(self._event_log_path, "a", encoding="utf-8") as fh:
-                        fh.write(json.dumps(entry, separators=(",", ":")) + "\n")
-                except OSError:
-                    pass
+        self._telemetry.log(msg, event=event, **data)
 
     def reconfigure(self, cfg: dict[str, Any]) -> None:
         with self._lock:
             old_mode = self._cfg["mode"]
             old_ad = self._cfg["ad_gems"]
             old_fg = self._cfg["floating_gems"]
+            old_flow = self._cfg.get("run_flow")
+            old_rules = self._cfg.get("run_rules")
             self._cfg = cfg
             now = time.monotonic()
 
@@ -264,37 +366,48 @@ class GemCollector:
                 self.fg_status = "stopped"
 
             flow_cfg = cfg.get("run_flow", {})
+            flow_or_rules_changed = (flow_cfg != old_flow) or (cfg.get("run_rules") != old_rules)
+            is_legacy_hold = self._nav.hold_reason in _LEGACY_POLICY_HOLDS
+            is_safety_hold = self._nav.hold_reason is not None and not is_legacy_hold
+            if flow_or_rules_changed and not is_safety_hold:
+                self._nav.reset_verification(clear_presets=False, clear_tier=False)
+
             if not self._flow_any_enabled(flow_cfg):
-                self.flow_pending_action = None
-                self.flow_hold_reason = None
-                self._last_hold_reason = None
-                self.flow_status = "off"
+                if is_legacy_hold:
+                    self._nav.hold_reason = None
+                    self._nav._last_hold_reason = None
+                if not is_safety_hold:
+                    self._nav.nav_state = "off"
             elif not self.running:
-                self.flow_hold_reason = None
-                self._last_hold_reason = None
-                self.flow_status = "stopped"
+                if is_legacy_hold:
+                    self._nav.hold_reason = None
+                    self._nav._last_hold_reason = None
+                if not is_safety_hold:
+                    self._nav.nav_state = "stopped"
             elif (flow_cfg.get("auto_battle") or flow_cfg.get("auto_retry")) and not self.battle_live:
-                # Re-evaluate hold immediately when rules change while off-battle
                 action, reason = run_rules.decide_home_action(
                     self._now_local_fn(),
-                    runs_restarted=self.runs_restarted,
+                    runs_restarted=self._nav.runs_restarted,
                     rules=self._rules_cfg(),
                     detected_tier=self.current_tier,
-                    check_tier=(self.flow_hold_reason == "tier_mismatch"),
+                    check_tier=(self._nav.hold_reason == "tier_mismatch"),
                 )
                 if action != "hold":
-                    if self.flow_hold_reason is not None:
-                        self.flow_hold_reason = None
-                        self._last_hold_reason = None
-                        self.flow_status = "watching"
-                else:
-                    if self.flow_pending_action is not None and self.flow_pending_action[0] in ("home_battle", "end_stats_retry"):
-                        self.flow_pending_action = None
-                    self.flow_hold_reason = reason
-                    self.flow_status = run_rules.hold_label(
+                    if is_legacy_hold:
+                        self._nav.hold_reason = None
+                        self._nav._last_hold_reason = None
+                        self._nav.nav_state = "watching"
+                elif not is_safety_hold:
+                    if (
+                        self._nav.pending_action is not None
+                        and self._nav.pending_action[0] in ("home_battle", "end_stats_retry")
+                    ):
+                        self._nav.pending_action = None
+                    self._nav.hold_reason = reason
+                    self._nav.nav_state = run_rules.hold_label(
                         reason,
                         self._rules_cfg(),
-                        self.runs_restarted,
+                        self._nav.runs_restarted,
                         detected_tier=self.current_tier,
                     )
 
@@ -311,9 +424,7 @@ class GemCollector:
             self._last_capture_error = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
-            self.flow_pending_action = None
-            self.flow_hold_reason = None
-            self._last_hold_reason = None
+            self._nav.reset_verification(clear_presets=False, clear_tier=False, clear_hold=True)
             self._wave_last_scan = now_mono
             self._wave_changed_at = now_mono
             self.frozen = False
@@ -321,7 +432,7 @@ class GemCollector:
             self.ad_status = "starting" if self._cfg["ad_gems"]["enabled"] else "off"
             self.fg_status = "starting" if self._cfg["floating_gems"]["enabled"] else "off"
             flow_cfg = self._cfg.get("run_flow", {})
-            self.flow_status = "watching" if self._flow_any_enabled(flow_cfg) else "off"
+            self._nav.nav_state = "watching" if self._flow_any_enabled(flow_cfg) else "off"
             self._thread = threading.Thread(target=self._run_loop, name="gem-collector", daemon=True)
             self._thread.start()
             self.log(
@@ -334,8 +445,6 @@ class GemCollector:
             return True
 
     def stop(self) -> bool:
-        # Signal cancellation before acquiring self._lock so an in-flight capture/OCR
-        # pass aborts immediately before dispatching any tap.
         self._stop_event.set()
         with self._lock:
             if not self.running:
@@ -351,15 +460,13 @@ class GemCollector:
             self._last_capture_error = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
-            self.flow_pending_action = None
-            self.flow_hold_reason = None
-            self._last_hold_reason = None
+            self._nav.reset_verification(clear_presets=False, clear_tier=False, clear_hold=True)
             self.frozen = False
             self._freeze_notified = False
             self.ad_status = "stopped" if self._cfg["ad_gems"]["enabled"] else "off"
             self.fg_status = "stopped" if self._cfg["floating_gems"]["enabled"] else "off"
             flow_cfg = self._cfg.get("run_flow", {})
-            self.flow_status = "stopped" if self._flow_any_enabled(flow_cfg) else "off"
+            self._nav.nav_state = "stopped" if self._flow_any_enabled(flow_cfg) else "off"
             self.log(
                 "Harvesting OFF",
                 event="harvest_stopped",
@@ -453,6 +560,32 @@ class GemCollector:
         if not ok:
             self.log(f"Skipped {reason}: {why}", event="tap_skipped", reason=reason, why=why, point=list(pt))
             return None
+        if self._stop_event.is_set():
+            return None
+        try:
+            return self._tapper.tap(
+                self._cfg["adb"]["serial"],
+                pt[0],
+                pt[1],
+                cfg=self._tap_cfg(),
+                input_display=input_display,
+                reason=reason,
+                frame_size=(int(frame.shape[1]), int(frame.shape[0])),
+                stop_event=self._stop_event,
+            )
+        except TapRefused as exc:
+            self.log(f"Tap refused ({reason}): {exc}", event="tap_refused", reason=reason, error=str(exc), point=list(pt))
+            return None
+
+    def _dispatch_menu_tap(
+        self,
+        pt: tuple[int, int],
+        frame: np.ndarray,
+        *,
+        reason: str,
+        input_display: int | None = None,
+    ) -> dict[str, Any] | None:
+        """Dispatch a MenuNavigator-validated off-battle tap through Tapper."""
         if self._stop_event.is_set():
             return None
         try:
@@ -680,6 +813,16 @@ class GemCollector:
             )
         return True
 
+    def _on_battle_started(self, *, exact: bool, tier: int | None, kind: str) -> None:
+        self._run_started_at = time.time()
+        self._run_start_exact = exact
+        if exact:
+            self.current_wave = None
+        if kind in ("home_battle", "home_resume"):
+            self._stats_logged_for_run = False
+        if tier is not None:
+            self.current_tier = tier
+
     def step_once(self) -> None:
         """Execute one observation + decision pass (directly unit-testable)."""
         now = time.monotonic()
@@ -708,18 +851,26 @@ class GemCollector:
             self.frozen = False
             self._freeze_notified = False
             self._saw_non_battle = True
-            if self._step_run_flow(frame, now):
+            self._nav.current_tier = self.current_tier
+            acted = self._nav.step(
+                frame,
+                now,
+                cfg=self._cfg,
+                profile_store=self._profile_store,
+                on_run_ended_fn=self._record_run_ended,
+                on_battle_started_fn=self._on_battle_started,
+            )
+            if self._nav.current_tier is not None:
+                self.current_tier = self._nav.current_tier
+            if acted:
                 return
         else:
-            self.flow_pending_action = None
-            self.flow_hold_reason = None
-            self._last_hold_reason = None
+            flow_cfg = self._cfg.get("run_flow", {})
+            self._nav.on_enter_battle(flow_enabled=self._flow_any_enabled(flow_cfg))
             self._stats_logged_for_run = False
             if self._run_started_at is None:
                 self._run_started_at = time.time()
                 self._run_start_exact = self._saw_non_battle
-            flow_cfg = self._cfg.get("run_flow", {})
-            self.flow_status = "in battle" if self._flow_any_enabled(flow_cfg) else "off"
             self._step_wave_watch(frame, now)
 
         if not ok:
@@ -774,7 +925,7 @@ class GemCollector:
                 self._notify(f"Battle frozen at Wave {wave} for {freeze_min}+ min")
 
     def _record_run_ended(self, frame: np.ndarray) -> dict[str, Any] | None:
-        """Passively scrape GAME STATS once per run end, log to JSONL, and notify."""
+        """Passively scrape GAME STATS once per run end, log to telemetry, and notify."""
         if self._stats_logged_for_run:
             return None
         try:
@@ -811,7 +962,14 @@ class GemCollector:
             coins_per_hour = total_coins / (duration_sec / 3600.0)
 
         rules = self._rules_cfg()
-        profile = str(rules.get("profile_name") or "").strip()
+        snap = self._profile_store.snapshot()
+        active_prof = self._profile_store.get(snap.get("active_id"))
+        profile_label = (
+            active_prof["name"]
+            if active_prof is not None
+            else str(rules.get("profile_name") or "").strip()
+        )
+        profile_id = active_prof["id"] if active_prof is not None else None
         record: dict[str, Any] = {
             "ts": round(now_wall, 3),
             "iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(now_wall)),
@@ -831,16 +989,18 @@ class GemCollector:
             "duration_exact": duration_exact,
             "coins_per_hour": coins_per_hour,
             "coins_per_hour_fmt": run_rules.format_coins(coins_per_hour) if coins_per_hour else None,
-            "profile": profile,
+            "profile": profile_label,
+            "profile_id": profile_id,
+            "profile_name": profile_label or None,
         }
         summary = run_rules.format_death_toast(record)
         record["msg"] = f"Run ended: {summary}"
 
-        self._runs.appendleft(record)
-        self.runs_logged += 1
         self.log(
             record["msg"],
             event="run_ended",
+            profile_id=profile_id,
+            profile_name=profile_label or None,
             tier=tier,
             wave=wave,
             highest_wave=parsed.get("highest_wave"),
@@ -856,407 +1016,11 @@ class GemCollector:
             duration_exact=duration_exact,
             coins_per_hour=coins_per_hour,
             coins_per_hour_fmt=record["coins_per_hour_fmt"],
-            profile=profile,
+            profile=profile_label,
         )
         if bool(rules.get("notify_on_death", True)):
             self._notify(summary)
         return record
-
-    def _set_hold(self, reason: str, rules: dict[str, Any], *, detected_tier: int | None = None) -> None:
-        self.flow_hold_reason = reason
-        self.flow_status = run_rules.hold_label(
-            reason,
-            rules,
-            self.runs_restarted,
-            detected_tier=detected_tier,
-        )
-        if self._last_hold_reason != reason:
-            self._last_hold_reason = reason
-            self.log(f"Auto-restart holding: {self.flow_status}", event="run_hold", reason=reason, tier=detected_tier)
-
-    def _execute_flow_action(self, kind: str) -> bool:
-        """Verify foreground game window and target OCR on a fresh ADB frame, then tap."""
-        if self._stop_event.is_set():
-            self.flow_pending_action = None
-            return False
-        rules = self._rules_cfg()
-        if kind in ("home_battle", "end_stats_retry"):
-            action, reason = run_rules.decide_home_action(
-                self._now_local_fn(),
-                runs_restarted=self.runs_restarted,
-                rules=rules,
-            )
-            if action == "hold":
-                self.flow_pending_action = None
-                self._set_hold(reason, rules)
-                return False
-        try:
-            fresh, input_display = self._grab_verified_frame()
-        except Exception as exc:
-            self.flow_status = "capture error"
-            self.flow_pending_action = None
-            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
-            self.log(f"Auto-restart capture failed: {exc}", event="auto_restart_error", action=kind, error=str(exc))
-            return False
-
-        fg_ok, fg_why = self._check_foreground(input_display)
-        if not fg_ok:
-            self.flow_status = f"skipped ({fg_why})"
-            self.flow_pending_action = None
-            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
-            self.log(f"Auto-restart skipped ({kind}): {fg_why}", event="auto_restart_skipped", action=kind, reason=fg_why)
-            return False
-
-        try:
-            if kind == "end_stats_home":
-                hit = detectors.detect_end_stats_home(fresh)
-            elif kind == "end_stats_retry":
-                hit = detectors.detect_end_stats_retry(fresh)
-            elif kind == "home_resume":
-                candidate = detectors.detect_home_battle(fresh, allow_resume=True)
-                hit = candidate if (candidate is not None and candidate.label == "RESUME") else None
-            else:
-                hit = detectors.detect_home_battle(fresh)
-        except Exception as exc:
-            self.flow_status = "ocr error"
-            self.flow_pending_action = None
-            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
-            self.log(f"Auto-restart OCR failed: {exc}", event="auto_restart_error", action=kind, error=str(exc))
-            return False
-
-        if hit is None:
-            self.flow_pending_action = None
-            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
-            self.flow_status = "target gone"
-            self.log(f"Auto-restart target disappeared ({kind})", event="auto_restart_gone", action=kind)
-            return False
-
-        if kind in ("end_stats_home", "end_stats_retry") and not self._stats_logged_for_run:
-            self._record_run_ended(fresh)
-        elif kind in ("home_battle", "home_resume") and hit.tier is not None:
-            self.current_tier = hit.tier
-
-        if kind in ("home_battle", "end_stats_retry"):
-            tier_to_check = hit.tier if kind == "home_battle" else self.current_tier
-            action, reason = run_rules.decide_home_action(
-                self._now_local_fn(),
-                runs_restarted=self.runs_restarted,
-                rules=rules,
-                detected_tier=tier_to_check,
-                check_tier=True,
-            )
-            if action == "hold":
-                self.flow_pending_action = None
-                self._set_hold(reason, rules, detected_tier=tier_to_check)
-                return False
-
-        if self._stop_event.is_set():
-            self.flow_pending_action = None
-            return False
-
-        pt = detectors.sample_interior_point(hit.rect, inset_px=16, rng=self._rng)
-        serial = self._cfg["adb"]["serial"]
-        try:
-            res = self._tapper.tap(
-                serial,
-                pt[0],
-                pt[1],
-                cfg=self._tap_cfg(),
-                input_display=input_display,
-                reason=f"run_flow:{kind}",
-                frame_size=(int(fresh.shape[1]), int(fresh.shape[0])),
-                stop_event=self._stop_event,
-            )
-        except TapRefused as exc:
-            self.flow_pending_action = None
-            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
-            self.flow_status = "tap refused"
-            self.log(f"Auto-restart tap refused ({kind}): {exc}", event="tap_refused", reason=kind, error=str(exc))
-            return False
-
-        now = time.monotonic()
-        self.flow_pending_action = None
-        self.flow_cooldown_until = now + _FLOW_COOLDOWN_SEC
-        if kind == "end_stats_home":
-            if self.flow_hold_reason:
-                self.flow_status = run_rules.hold_label(
-                    self.flow_hold_reason,
-                    rules,
-                    self.runs_restarted,
-                    detected_tier=self.current_tier,
-                )
-            else:
-                self.flow_status = "tapped HOME"
-            self.log(
-                f"End Stats -> HOME tapped at {res['x']},{res['y']}",
-                event="end_stats_home_tapped",
-                x=res["x"],
-                y=res["y"],
-            )
-        elif kind == "end_stats_retry":
-            self.runs_restarted += 1
-            self._run_started_at = time.time()
-            self._run_start_exact = True
-            self.current_wave = None
-            self.flow_hold_reason = None
-            self._last_hold_reason = None
-            self.flow_status = "tapped RETRY"
-            self.log(
-                f"End Stats -> RETRY tapped at {res['x']},{res['y']}",
-                event="end_stats_retry_tapped",
-                x=res["x"],
-                y=res["y"],
-                tier=self.current_tier,
-                runs_restarted=self.runs_restarted,
-            )
-        elif kind == "home_resume":
-            self._run_started_at = time.time()
-            self._run_start_exact = False
-            self._stats_logged_for_run = False
-            self.flow_hold_reason = None
-            self._last_hold_reason = None
-            self.flow_status = "tapped RESUME"
-            self.log(
-                f"Home -> RESUME tapped at {res['x']},{res['y']}",
-                event="home_resume_tapped",
-                x=res["x"],
-                y=res["y"],
-                tier=self.current_tier,
-            )
-        else:
-            self.runs_restarted += 1
-            self._run_started_at = time.time()
-            self._run_start_exact = True
-            self.current_wave = None
-            self._stats_logged_for_run = False
-            self.flow_hold_reason = None
-            self._last_hold_reason = None
-            self.flow_status = "tapped BATTLE"
-            self.log(
-                f"Home -> BATTLE tapped at {res['x']},{res['y']}",
-                event="home_battle_tapped",
-                x=res["x"],
-                y=res["y"],
-                tier=self.current_tier,
-                runs_restarted=self.runs_restarted,
-            )
-        return True
-
-    def _step_run_flow(self, frame: np.ndarray, now: float) -> bool:
-        """Scrape GAME STATS passively, and handle HOME/RETRY/BATTLE/RESUME boundaries."""
-        flow_cfg = self._cfg.get("run_flow", {})
-        auto_home = bool(flow_cfg.get("auto_home"))
-        auto_battle = bool(flow_cfg.get("auto_battle"))
-        auto_retry = bool(flow_cfg.get("auto_retry"))
-        auto_resume = bool(flow_cfg.get("auto_resume"))
-        rules = self._rules_cfg()
-
-        if not self._flow_any_enabled(flow_cfg):
-            self.flow_pending_action = None
-            self.flow_hold_reason = None
-            self._last_hold_reason = None
-            self.flow_status = "off"
-            # Still passively scrape GAME STATS once when a run ends (zero taps)
-            if not self._stats_logged_for_run and now - self.flow_last_scan >= _FLOW_SCAN_INTERVAL_SEC:
-                self.flow_last_scan = now
-                try:
-                    if detectors.detect_end_stats_home(frame) is not None:
-                        self._record_run_ended(frame)
-                except Exception:
-                    pass
-            return False
-
-        if now < self.flow_cooldown_until:
-            self.flow_status = f"cooldown ({int(self.flow_cooldown_until - now)}s)"
-            return False
-
-        if self.flow_pending_action is not None:
-            kind, hit, due_at = self.flow_pending_action
-            enabled_map = {
-                "end_stats_home": auto_home,
-                "end_stats_retry": auto_retry,
-                "home_battle": auto_battle,
-                "home_resume": auto_resume,
-            }
-            if not enabled_map.get(kind, False):
-                self.flow_pending_action = None
-                self.flow_status = "watching"
-                return False
-            if kind in ("home_battle", "end_stats_retry"):
-                action, reason = run_rules.decide_home_action(
-                    self._now_local_fn(),
-                    runs_restarted=self.runs_restarted,
-                    rules=rules,
-                )
-                if action == "hold":
-                    self.flow_pending_action = None
-                    self._set_hold(reason, rules)
-                    return False
-            if now >= due_at:
-                return self._execute_flow_action(kind)
-            self.flow_status = f"tapping {hit.label} in {due_at - now:.1f}s"
-            return False
-
-        if now - self.flow_last_scan < _FLOW_SCAN_INTERVAL_SEC:
-            if self.flow_status in ("off", "stopped", "in battle"):
-                self.flow_status = "watching"
-            return False
-        self.flow_last_scan = now
-
-        if auto_home or auto_retry or not self._stats_logged_for_run:
-            try:
-                stats_hit = detectors.detect_end_stats_home(frame)
-            except Exception as exc:
-                if auto_home or auto_retry:
-                    self.flow_status = "ocr error"
-                    self.log(
-                        f"End Stats OCR failed: {exc}",
-                        event="auto_restart_error",
-                        action="end_stats_home",
-                        error=str(exc),
-                    )
-                stats_hit = None
-            if stats_hit is not None:
-                rec = self._record_run_ended(frame)
-                ended_tier = rec["tier"] if (rec and rec.get("tier") is not None) else self.current_tier
-
-                if auto_retry and stats_hit.retry_rect is not None:
-                    action, reason = run_rules.decide_home_action(
-                        self._now_local_fn(),
-                        runs_restarted=self.runs_restarted,
-                        rules=rules,
-                        detected_tier=ended_tier,
-                        check_tier=True,
-                    )
-                    if action == "battle":
-                        self.flow_hold_reason = None
-                        self._last_hold_reason = None
-                        rx, ry, rw, rh = stats_hit.retry_rect
-                        retry_hit = detectors.ButtonHit(
-                            rect=stats_hit.retry_rect,
-                            center=(rx + rw // 2, ry + rh // 2),
-                            label="RETRY",
-                            screen="game_stats",
-                            retry_rect=stats_hit.retry_rect,
-                        )
-                        dmin, dmax = self._flow_delay_sec
-                        delay = self._rng.uniform(float(dmin), float(dmax))
-                        self.flow_pending_action = ("end_stats_retry", retry_hit, now + delay)
-                        self.flow_status = f"tapping RETRY in {delay:.1f}s"
-                        self.log(
-                            f"GAME STATS detected -> RETRY in {delay:.1f}s",
-                            event="end_stats_retry_detected",
-                            rect=list(retry_hit.rect),
-                            delay_sec=round(delay, 2),
-                        )
-                        if delay <= 0.05:
-                            return self._execute_flow_action("end_stats_retry")
-                        return False
-                    self._set_hold(reason, rules, detected_tier=ended_tier)
-                    if not auto_home:
-                        return False
-                    # Holding with auto_home ON: fall through to tap HOME and park safely while preserving hold state
-
-                if auto_home:
-                    dmin, dmax = self._flow_delay_sec
-                    delay = self._rng.uniform(float(dmin), float(dmax))
-                    self.flow_pending_action = ("end_stats_home", stats_hit, now + delay)
-                    self.flow_status = f"tapping HOME in {delay:.1f}s"
-                    self.log(
-                        f"GAME STATS detected -> HOME in {delay:.1f}s",
-                        event="end_stats_detected",
-                        rect=list(stats_hit.rect),
-                        delay_sec=round(delay, 2),
-                    )
-                    if delay <= 0.05:
-                        return self._execute_flow_action("end_stats_home")
-                    return False
-
-        if auto_battle or auto_resume:
-            pre_action, pre_reason = run_rules.decide_home_action(
-                self._now_local_fn(),
-                runs_restarted=self.runs_restarted,
-                rules=rules,
-            )
-            if not auto_resume and pre_action == "hold":
-                self._set_hold(pre_reason, rules)
-                return False
-
-            try:
-                home_hit = (
-                    detectors.detect_home_battle(frame, allow_resume=True)
-                    if auto_resume
-                    else detectors.detect_home_battle(frame)
-                )
-            except Exception as exc:
-                self.flow_status = "ocr error"
-                self.log(f"Home BATTLE OCR failed: {exc}", event="auto_restart_error", action="home_battle", error=str(exc))
-                home_hit = None
-
-            if home_hit is not None:
-                if home_hit.tier is not None:
-                    self.current_tier = home_hit.tier
-                if home_hit.label == "RESUME" and auto_resume:
-                    self.flow_hold_reason = None
-                    self._last_hold_reason = None
-                    dmin, dmax = self._flow_delay_sec
-                    delay = self._rng.uniform(float(dmin), float(dmax))
-                    self.flow_pending_action = ("home_resume", home_hit, now + delay)
-                    self.flow_status = f"tapping RESUME in {delay:.1f}s"
-                    self.log(
-                        f"Crashed run detected -> RESUME in {delay:.1f}s",
-                        event="home_resume_detected",
-                        rect=list(home_hit.rect),
-                        tier=home_hit.tier,
-                        delay_sec=round(delay, 2),
-                    )
-                    if delay <= 0.05:
-                        return self._execute_flow_action("home_resume")
-                    return False
-
-                if home_hit.label == "BATTLE" and auto_battle:
-                    action, reason = run_rules.decide_home_action(
-                        self._now_local_fn(),
-                        runs_restarted=self.runs_restarted,
-                        rules=rules,
-                        detected_tier=home_hit.tier,
-                        check_tier=True,
-                    )
-                    if action == "hold":
-                        self._set_hold(reason, rules, detected_tier=home_hit.tier)
-                        return False
-                    self.flow_hold_reason = None
-                    self._last_hold_reason = None
-                    dmin, dmax = self._flow_delay_sec
-                    delay = self._rng.uniform(float(dmin), float(dmax))
-                    self.flow_pending_action = ("home_battle", home_hit, now + delay)
-                    self.flow_status = f"tapping BATTLE in {delay:.1f}s"
-                    self.log(
-                        f"Home screen detected -> BATTLE in {delay:.1f}s",
-                        event="home_battle_detected",
-                        rect=list(home_hit.rect),
-                        tier=home_hit.tier,
-                        delay_sec=round(delay, 2),
-                    )
-                    if delay <= 0.05:
-                        return self._execute_flow_action("home_battle")
-                    return False
-
-            if auto_battle and pre_action == "hold":
-                self._set_hold(pre_reason, rules)
-                return False
-
-        if self.flow_hold_reason:
-            self.flow_status = run_rules.hold_label(
-                self.flow_hold_reason,
-                rules,
-                self.runs_restarted,
-                detected_tier=self.current_tier,
-            )
-            return False
-
-        self.flow_status = "watching"
-        return False
 
     def _step_ad_gems(self, frame: np.ndarray, now: float) -> None:
         ad_cfg = self._cfg["ad_gems"]
@@ -1306,7 +1070,6 @@ class GemCollector:
             self.ad_status = "watching"
             return
 
-        # Timer mode
         if now >= self.ad_next_timer_at:
             self._collect_ad_gem(trigger="timer")
             return
@@ -1338,7 +1101,6 @@ class GemCollector:
             self.fg_status = "watching"
             return
 
-        # Timer mode
         if now >= self.fg_next_timer_at:
             self._collect_floating_gem(trigger="timer")
             return
@@ -1385,11 +1147,26 @@ class GemCollector:
             fg_status = "off" if not fg_cfg["enabled"] else (self.fg_status if self.running else "stopped")
             flow_cfg = self._cfg.get("run_flow", {})
             flow_any = self._flow_any_enabled(flow_cfg)
-            flow_status = "off" if not flow_any else (self.flow_status if self.running else "stopped")
+            flow_status = "off" if not flow_any else (self._nav.nav_state if self.running else "stopped")
             rules_cfg = self._rules_cfg()
             elapsed_sec: float | None = None
             if battle_live and self._run_started_at is not None:
                 elapsed_sec = max(0.0, round(time.time() - self._run_started_at, 1))
+
+            store_snap = self._profile_store.snapshot()
+            by_id = {p["id"]: p for p in store_snap.get("profiles") or []}
+            active_id = store_snap.get("active_id")
+            queued_id = store_snap.get("queued_id")
+            active_prof = by_id.get(active_id)
+            queued_prof = by_id.get(queued_id)
+
+            metrics_snap = self._telemetry.snapshot()
+            all_time = metrics_snap["all_time"]
+            screen_name = (
+                "battle"
+                if (not self.running and menu_state in ("closed", "open") and self._nav.current_screen == "unknown")
+                else self._nav.current_screen
+            )
 
             return {
                 "running": self.running,
@@ -1418,10 +1195,10 @@ class GemCollector:
                     "auto_retry": bool(flow_cfg.get("auto_retry")),
                     "auto_resume": bool(flow_cfg.get("auto_resume")),
                     "status": flow_status,
-                    "runs_restarted": self.runs_restarted,
-                    "holding": bool(self.flow_hold_reason),
-                    "hold_reason": self.flow_hold_reason,
-                    "runs_logged": self.runs_logged,
+                    "runs_restarted": self._nav.runs_restarted,
+                    "holding": bool(self._nav.hold_reason),
+                    "hold_reason": self._nav.hold_reason,
+                    "runs_logged": int(all_time["runs_completed"]),
                 },
                 "run_rules": {
                     "profile_name": str(rules_cfg.get("profile_name", "")),
@@ -1433,6 +1210,23 @@ class GemCollector:
                     "no_start_until": str(rules_cfg.get("no_start_until", "07:00")),
                     "freeze_timeout_min": int(rules_cfg.get("freeze_timeout_min", 10) or 0),
                     "notify_on_death": bool(rules_cfg.get("notify_on_death", True)),
+                },
+                "profile": {
+                    "active_id": active_id,
+                    "active_name": active_prof["name"] if active_prof else None,
+                    "active_kind": active_prof["kind"] if active_prof else None,
+                    "queued_id": queued_id,
+                    "queued_name": queued_prof["name"] if queued_prof else None,
+                    "screen": screen_name,
+                    "nav_state": self._nav.nav_state,
+                    "verified_cards": self._nav.verified_cards_preset,
+                    "verified_modules": self._nav.verified_modules_preset,
+                },
+                "telemetry": {
+                    "session_id": self._telemetry.session_id,
+                    "iteration_id": self._telemetry.iteration_id,
+                    "all_time_gems": int(all_time["total_gems"]),
+                    "all_time_runs": int(all_time["runs_completed"]),
                 },
                 "stream": {
                     "backend": self._frames.active_backend,
@@ -1448,5 +1242,5 @@ class GemCollector:
                     "elapsed_sec": elapsed_sec,
                     "frozen": self.frozen,
                 },
-                "recent": list(self._recent)[:20],
+                "recent": self._telemetry.recent(limit=20),
             }

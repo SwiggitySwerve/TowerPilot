@@ -6,12 +6,10 @@ ADB socket / MuMu native frames in, human-like ADB socket taps out. No memory re
 ## Hard rules
 
 1. **ADB via socket only.** Every screencap, tap, and `dumpsys` command goes through `towerpilot/adb.py` (socket client to `127.0.0.1:5037`). Never spawn `adb.exe` per command: spawning `adb.exe` repeatedly flashes console windows and exhausts Windows socket buffers on long runs.
-2. **Never end, surrender, or cancel a live run.** This app only collects gems during active battles and, when `run_flow` is explicitly enabled, performs OCR-verified boundary transitions outside battles: `GAME STATS -> HOME` or `GAME STATS -> RETRY`, `Home -> BATTLE` (optionally gated by `expected_tier`), and crash-recovery `Home -> RESUME` — always rejecting tournaments. It never surrenders, exits battles, or enters tournaments.
-3. **Tower on screen or hands off.** When `safety.battle_only` is enabled, every tap requires:
-   - `safety.allow_taps` enabled (unless `dry_run`),
-   - a fresh ADB screencap showing an undimmed battle HUD (`detectors.menu_toggle_visible`),
-   - `com.TechTreeGames.TheTower` unobstructed in front (`adb.foreground_blocker`),
-   - tap coordinates outside the ability row (`detectors.in_ability_row`) and any open side menu (`detectors.in_open_side_menu`).
+2. **Never end a live run and never spend.** Never end, surrender, exit, or cancel a live run (farm or tournament); no code may target those controls. Never spend: no target may show a price or read `BUY`, `MERGE`, `SHATTER`, `CLAIM` (outside battle Ad Gem), or `Dissonant Run`. Tournament entry is permitted only under an active `tournament` profile on an OCR-verified tournament screen; any ticket or purchase dialog means hold and notify, with no tap.
+3. **Tower on screen or hands off.** Every tap requires `safety.allow_taps` enabled (unless `dry_run`), a fresh ADB screencap, and `com.TechTreeGames.TheTower` unobstructed in front (`adb.foreground_blocker`), split into two tap classes:
+   - **Battle taps:** require an undimmed battle HUD (`detectors.menu_toggle_visible`) and coordinates outside the ability row (`detectors.in_ability_row`) and any open side menu (`detectors.in_open_side_menu`).
+   - **Menu taps:** require an identified off-battle screen via `screens.identify()`, an allowlisted target whose text is re-read on that frame and passes `screens.validate_target()`, a 16px inset, and a verified post-condition.
 4. **MuMu native capture is preview-only for safety.** `FrameSource` uses MuMu native DLL capture for fast streaming and idle scans, but every tap verifies the live screen via ADB socket screencap + `dumpsys window windows`.
 5. **No machine/account state or game images in git.** `config.yaml`, logs, and any screenshots/PNGs stay git-ignored. `config.example.yaml` holds generic defaults only.
 

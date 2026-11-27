@@ -2,11 +2,32 @@ const $ = (id) => document.getElementById(id);
 
 let lastStatus = null;
 let lastRunsLogged = -1;
+let lastProfilesStore = null;
+let lastMetrics = null;
+let lastRunsPayload = null;
+let metricsScope = "all_time";
+let lastMetricsSig = "";
+let lastMetricsFetchTs = 0;
+let lastProfileSig = "";
+let editingProfileId = null;
+let priorityTouched = false;
 let pollTimer = null;
 let inFlight = 0;
 let serverWasOffline = false;
 let activeWikiQuery = "";
 let activeWikiCategory = "";
+
+const KIND_LABELS = {
+  farm: "FARM",
+  push: "PUSH",
+  tournament: "TOURNEY",
+};
+
+const DEFAULT_PRIORITIES = {
+  farm: 10,
+  push: 20,
+  tournament: 30,
+};
 
 function showToast(msg, isError = false) {
   const el = $("toast");
@@ -30,8 +51,42 @@ function fmtDuration(sec) {
 }
 
 function fmtTime(ts) {
+  if (ts === null || ts === undefined) return "--:--:--";
+  if (typeof ts === "string" && ts.includes("T")) {
+    const parsed = Date.parse(ts);
+    if (Number.isFinite(parsed)) {
+      return new Date(parsed).toTimeString().slice(0, 8);
+    }
+  }
   if (!Number.isFinite(Number(ts))) return "--:--:--";
   return new Date(Number(ts) * 1000).toTimeString().slice(0, 8);
+}
+
+function fmtInt(val) {
+  if (val === null || val === undefined || !Number.isFinite(Number(val))) return "\u2014";
+  return Math.round(Number(val)).toLocaleString();
+}
+
+function fmtRate(val) {
+  if (val === null || val === undefined || !Number.isFinite(Number(val))) return "\u2014";
+  const n = Number(val);
+  if (n <= 0) return "0";
+  return n >= 100 ? Math.round(n).toLocaleString() : n.toFixed(1);
+}
+
+function kindClass(kind) {
+  if (kind === "push" || kind === "tournament" || kind === "farm") return kind;
+  return "farm";
+}
+
+function kindLabel(kind) {
+  return KIND_LABELS[kind] || String(kind || "FARM").toUpperCase();
+}
+
+function shortPreset(preset, prefix) {
+  if (!preset) return "";
+  const m = String(preset).match(/(\d+)/);
+  return m ? `${prefix}${m[1]}` : `${prefix}:${preset}`;
 }
 
 function setPill(el, text, tone) {
@@ -52,7 +107,7 @@ function setToggle(btn, isOn, variant) {
 function formatGemStatus(gem, mode) {
   const base = (gem && gem.status) ? String(gem.status) : "idle";
   if (mode === "timer" && gem && gem.enabled && gem.next_timer_sec !== null && gem.next_timer_sec !== undefined) {
-    return `${base} · next in ${fmtDuration(gem.next_timer_sec)}`;
+    return `${base} \u00b7 next in ${fmtDuration(gem.next_timer_sec)}`;
   }
   return base;
 }
@@ -122,7 +177,693 @@ function renderActivity(recent) {
   }
 }
 
+// --- Profiles UI & Slide-over Editor Drawer ----------------------------
+
+function buildProfileSummary(profile, byId) {
+  const parts = [];
+  const tier = profile.tier || {};
+  if (tier.mode === "fixed" && tier.value) {
+    parts.push(`T${tier.value}`);
+  } else if (tier.mode === "highest_unlocked") {
+    parts.push("Max Tier");
+  } else if (tier.mode === "ignore" || profile.kind === "tournament") {
+    parts.push("Tourney");
+  } else {
+    parts.push("Curr T");
+  }
+
+  const presets = profile.presets || {};
+  const cShort = shortPreset(presets.cards, "C");
+  const mShort = shortPreset(presets.modules, "M");
+  if (cShort) parts.push(cShort);
+  if (mShort) parts.push(mShort);
+
+  const runsDone = Number((profile.runtime && profile.runtime.runs_completed) || 0);
+  const maxRuns = Number(profile.max_runs || 0);
+  if (maxRuns > 0) {
+    const runPart = runsDone > 0 ? `${runsDone}/${maxRuns}r` : `${maxRuns}r`;
+    const thenProf = profile.then && byId[profile.then];
+    if (thenProf) {
+      parts.push(`${runPart} -> ${thenProf.name}`);
+    } else if (profile.then) {
+      parts.push(`${runPart} -> ${profile.then}`);
+    } else {
+      parts.push(runPart);
+    }
+  } else if (runsDone > 0) {
+    parts.push(`${runsDone}r`);
+  }
+
+  const qw = profile.quiet_window || {};
+  if (qw.enabled && qw.from && qw.until) {
+    parts.push(`Quiet ${qw.from}-${qw.until}`);
+  }
+
+  if (!profile.enabled) {
+    parts.push("disabled");
+  }
+
+  return parts.join(" \u00b7 ");
+}
+
+function renderActiveProfileStrip(profileInfo) {
+  const info = profileInfo || {};
+  const screenEl = $("screenBadge");
+  const screen = info.screen ? String(info.screen).toLowerCase() : "unknown";
+  screenEl.textContent = screen;
+  screenEl.className = "screen-badge" + (screen ? ` ${screen.replace(/[^a-z0-9_-]/g, "")}` : "");
+
+  const kindEl = $("activeKindPill");
+  const nameEl = $("activeProfileName");
+  const activeName = info.active_name || "";
+  const activeKind = info.active_kind || "";
+  if (activeName) {
+    kindEl.textContent = kindLabel(activeKind);
+    kindEl.className = `kind-pill ${kindClass(activeKind)}`;
+    kindEl.hidden = false;
+    nameEl.textContent = activeName;
+    nameEl.title = activeName;
+  } else {
+    kindEl.hidden = true;
+    nameEl.textContent = "\u2014";
+    nameEl.title = "";
+  }
+
+  const navEl = $("navStateText");
+  const navBits = [];
+  if (info.nav_state && info.nav_state !== "idle") {
+    navBits.push(String(info.nav_state));
+  }
+  const vc = shortPreset(info.verified_cards, "C");
+  const vm = shortPreset(info.verified_modules, "M");
+  if (vc) navBits.push(vc);
+  if (vm) navBits.push(vm);
+  if (navBits.length > 0) {
+    navEl.textContent = navBits.join(" \u00b7 ");
+    navEl.title = navBits.join(" \u00b7 ");
+    navEl.hidden = false;
+  } else {
+    navEl.textContent = "";
+    navEl.hidden = true;
+  }
+
+  const queuedRow = $("queuedChipRow");
+  if (info.queued_id && info.queued_id !== info.active_id) {
+    const qLabel = info.queued_name || info.queued_id;
+    $("queuedProfileText").textContent = `Next: ${qLabel}`;
+    $("cancelQueuedBtn").dataset.profileId = String(info.queued_id);
+    queuedRow.hidden = false;
+  } else {
+    queuedRow.hidden = true;
+    delete $("cancelQueuedBtn").dataset.profileId;
+  }
+}
+
+function renderProfiles(store) {
+  const container = $("profilesList");
+  container.textContent = "";
+  if (!store || !Array.isArray(store.profiles) || store.profiles.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "ledger-empty";
+    empty.textContent = store ? "No profiles configured." : "Profiles unavailable.";
+    container.appendChild(empty);
+    return;
+  }
+
+  const statusProfile = (lastStatus && lastStatus.profile) || {};
+  const activeId = statusProfile.active_id || store.active_id || null;
+  const queuedId = statusProfile.queued_id !== undefined ? statusProfile.queued_id : (store.queued_id || null);
+  const inBattle = Boolean(lastStatus && lastStatus.battle && lastStatus.battle.live);
+
+  const byId = {};
+  for (const p of store.profiles) {
+    byId[p.id] = p;
+  }
+
+  for (const prof of store.profiles) {
+    const isActive = prof.id === activeId;
+    const isQueued = Boolean(queuedId && prof.id === queuedId && prof.id !== activeId);
+
+    const row = document.createElement("div");
+    row.className = "profile-row"
+      + (isActive ? " is-active" : "")
+      + (isQueued ? " is-queued" : "")
+      + (!prof.enabled ? " is-disabled" : "");
+
+    const top = document.createElement("div");
+    top.className = "profile-row-top";
+
+    const titleWrap = document.createElement("div");
+    titleWrap.className = "profile-row-title";
+
+    const pill = document.createElement("span");
+    pill.className = `kind-pill ${kindClass(prof.kind)}`;
+    pill.textContent = kindLabel(prof.kind);
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "profile-row-name";
+    nameEl.textContent = prof.name || prof.id;
+    nameEl.title = prof.name || prof.id;
+
+    titleWrap.appendChild(pill);
+    titleWrap.appendChild(nameEl);
+
+    const actions = document.createElement("div");
+    actions.className = "profile-row-actions";
+
+    const actBtn = document.createElement("button");
+    actBtn.type = "button";
+    if (isQueued) {
+      actBtn.className = "mini-btn amber";
+      actBtn.textContent = "Queued";
+      actBtn.title = "Queued next \u2014 click to cancel";
+      actBtn.addEventListener("click", () => activateProfile(prof.id, "cancel", prof.name));
+    } else if (isActive) {
+      actBtn.className = "mini-btn green";
+      actBtn.textContent = "Active";
+      actBtn.disabled = true;
+      actBtn.title = "Currently active profile";
+    } else {
+      actBtn.className = "mini-btn cyan";
+      actBtn.textContent = "Run";
+      actBtn.title = inBattle ? "Queue for next run (in battle)" : "Switch to this profile now";
+      actBtn.addEventListener("click", () => {
+        const liveNow = Boolean(lastStatus && lastStatus.battle && lastStatus.battle.live);
+        activateProfile(prof.id, liveNow ? "next" : "now", prof.name);
+      });
+    }
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "mini-btn";
+    editBtn.textContent = "Edit";
+    editBtn.title = `Edit ${prof.name || prof.id}`;
+    editBtn.addEventListener("click", () => openProfileDrawer(prof));
+
+    actions.appendChild(actBtn);
+    actions.appendChild(editBtn);
+
+    top.appendChild(titleWrap);
+    top.appendChild(actions);
+
+    const summary = document.createElement("div");
+    summary.className = "profile-row-summary";
+    const summaryText = buildProfileSummary(prof, byId);
+    summary.textContent = summaryText;
+    summary.title = summaryText;
+
+    row.appendChild(top);
+    row.appendChild(summary);
+    container.appendChild(row);
+  }
+}
+
+async function fetchProfiles() {
+  try {
+    const res = await fetch("/api/profiles", { cache: "no-store" });
+    if (!res.ok) {
+      if (!lastProfilesStore) renderProfiles(null);
+      return;
+    }
+    const data = await res.json();
+    lastProfilesStore = data;
+    renderProfiles(data);
+  } catch (_) {
+    if (!lastProfilesStore) renderProfiles(null);
+  }
+}
+
+async function activateProfile(profileId, mode, displayName) {
+  if (!profileId) return;
+  inFlight += 1;
+  try {
+    const res = await fetch(`/api/profiles/${encodeURIComponent(profileId)}/activate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (data.store) {
+      lastProfilesStore = data.store;
+    }
+    if (data.status) {
+      render(data.status);
+    }
+    if (lastProfilesStore) {
+      renderProfiles(lastProfilesStore);
+    }
+    const label = displayName || profileId;
+    if (mode === "cancel") {
+      showToast("Queued profile cancelled");
+    } else if (data.store && data.store.active_id === profileId) {
+      showToast(`Switched to ${label}`);
+    } else if (data.store && data.store.queued_id === profileId) {
+      showToast(`Queued next: ${label}`);
+    } else if (mode === "now") {
+      showToast(`Switched to ${label}`);
+    } else {
+      showToast(`Queued next: ${label}`);
+    }
+  } catch (err) {
+    showToast(err.message || "Profile switch failed", true);
+  } finally {
+    inFlight = Math.max(0, inFlight - 1);
+  }
+}
+
+function closeProfileDrawer() {
+  $("profileDrawer").hidden = true;
+  if ($("wikiDrawer").hidden) {
+    $("wikiBackdrop").hidden = true;
+  }
+  editingProfileId = null;
+}
+
+function syncProfileDrawerVisibility() {
+  $("profTierValueRow").hidden = $("profTierMode").value !== "fixed";
+  const quietOn = $("profQuietEnabledBtn").getAttribute("aria-pressed") === "true";
+  $("profQuietTimesRow").hidden = !quietOn;
+}
+
+function populateThenOptions(excludeId, selectedThen) {
+  const sel = $("profThen");
+  sel.textContent = "";
+  const noneOpt = document.createElement("option");
+  noneOpt.value = "";
+  noneOpt.textContent = "None";
+  sel.appendChild(noneOpt);
+
+  const list = (lastProfilesStore && Array.isArray(lastProfilesStore.profiles))
+    ? lastProfilesStore.profiles
+    : [];
+  for (const p of list) {
+    if (excludeId && p.id === excludeId) continue;
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.name || p.id;
+    sel.appendChild(opt);
+  }
+  sel.value = selectedThen || "";
+}
+
+function renderProfileRuntimeInfo(profile) {
+  const box = $("profRuntimeInfo");
+  if (!profile || !profile.runtime) {
+    box.hidden = true;
+    box.textContent = "";
+    return;
+  }
+  const rt = profile.runtime;
+  const bits = [`Completed: ${rt.runs_completed ?? 0}r`];
+  if (rt.baseline_highest_wave !== null && rt.baseline_highest_wave !== undefined) {
+    bits.push(`Baseline W${rt.baseline_highest_wave}`);
+  }
+  if (rt.last_tourney_cycle) {
+    bits.push(`Last cycle: ${rt.last_tourney_cycle}`);
+  }
+  box.textContent = bits.join(" \u00b7 ");
+  box.hidden = false;
+}
+
+function openProfileDrawer(profile = null) {
+  // Coordinate cleanly with Wiki drawer so only one drawer is open at a time
+  $("wikiDrawer").hidden = true;
+  $("wikiBackdrop").hidden = false;
+  $("profileDrawer").hidden = false;
+
+  const isEdit = Boolean(profile && profile.id);
+  editingProfileId = isEdit ? profile.id : null;
+  priorityTouched = isEdit;
+
+  $("profileDrawerTitle").textContent = isEdit ? "Edit Profile" : "New Profile";
+  const idBadge = $("profileDrawerIdBadge");
+  if (isEdit) {
+    idBadge.textContent = profile.id;
+    idBadge.hidden = false;
+  } else {
+    idBadge.textContent = "";
+    idBadge.hidden = true;
+  }
+
+  const kind = (profile && profile.kind) || "farm";
+  $("profName").value = (profile && profile.name) || "";
+  $("profKind").value = kind;
+  $("profPriority").value = String(
+    profile && profile.priority !== undefined && profile.priority !== null
+      ? profile.priority
+      : (DEFAULT_PRIORITIES[kind] || 10)
+  );
+  setToggle($("profEnabledBtn"), profile ? Boolean(profile.enabled) : true, "flow");
+
+  const tier = (profile && profile.tier) || {};
+  const tierMode = tier.mode || (kind === "tournament" ? "ignore" : "current");
+  $("profTierMode").value = tierMode;
+  $("profTierValue").value = String(tier.value && Number(tier.value) >= 1 ? tier.value : 1);
+
+  const presets = (profile && profile.presets) || {};
+  $("profCardsPreset").value = presets.cards || "";
+  $("profModulesPreset").value = presets.modules || "";
+
+  $("profMaxRuns").value = String(profile && profile.max_runs !== undefined ? profile.max_runs : 0);
+  populateThenOptions(editingProfileId, (profile && profile.then) || "");
+
+  const qw = (profile && profile.quiet_window) || {};
+  setToggle($("profQuietEnabledBtn"), Boolean(qw.enabled), "amber");
+  $("profQuietFrom").value = qw.from || "23:00";
+  $("profQuietUntil").value = qw.until || "07:00";
+
+  syncProfileDrawerVisibility();
+  renderProfileRuntimeInfo(isEdit ? profile : null);
+
+  const totalCount = (lastProfilesStore && Array.isArray(lastProfilesStore.profiles))
+    ? lastProfilesStore.profiles.length
+    : 0;
+  $("resetProfileStatsBtn").hidden = !isEdit;
+  $("deleteProfileBtn").hidden = !isEdit || totalCount <= 1;
+
+  $("profName").focus();
+}
+
+async function saveProfileForm(e) {
+  e.preventDefault();
+  const name = $("profName").value.trim();
+  if (!name || name.length > 40) {
+    showToast("Name must be 1\u201340 characters", true);
+    $("profName").focus();
+    return;
+  }
+
+  const kind = $("profKind").value;
+  const priority = parseInt($("profPriority").value, 10);
+  if (!Number.isInteger(priority) || priority < 1 || priority > 100) {
+    showToast("Priority must be 1\u2013100", true);
+    $("profPriority").focus();
+    return;
+  }
+
+  const tierMode = $("profTierMode").value;
+  let tierValue = 0;
+  if (tierMode === "fixed") {
+    tierValue = parseInt($("profTierValue").value, 10);
+    if (!Number.isInteger(tierValue) || tierValue < 1 || tierValue > 24) {
+      showToast("Fixed tier must be 1\u201324", true);
+      $("profTierValue").focus();
+      return;
+    }
+  }
+
+  const maxRuns = parseInt($("profMaxRuns").value || "0", 10);
+  if (!Number.isInteger(maxRuns) || maxRuns < 0 || maxRuns > 9999) {
+    showToast("Max runs must be 0\u20139999", true);
+    $("profMaxRuns").focus();
+    return;
+  }
+
+  const quietEnabled = $("profQuietEnabledBtn").getAttribute("aria-pressed") === "true";
+  const quietFrom = $("profQuietFrom").value || "23:00";
+  const quietUntil = $("profQuietUntil").value || "07:00";
+
+  const payload = {
+    name,
+    kind,
+    enabled: $("profEnabledBtn").getAttribute("aria-pressed") === "true",
+    priority,
+    tier: { mode: tierMode, value: tierValue },
+    presets: {
+      cards: $("profCardsPreset").value || null,
+      modules: $("profModulesPreset").value || null,
+    },
+    max_runs: maxRuns,
+    quiet_window: {
+      enabled: quietEnabled,
+      from: quietFrom,
+      until: quietUntil,
+    },
+    then: $("profThen").value || null,
+  };
+  if (editingProfileId) {
+    payload.id = editingProfileId;
+  }
+
+  const saveBtn = $("saveProfileBtn");
+  saveBtn.disabled = true;
+  try {
+    const res = await fetch("/api/profiles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const wasEdit = Boolean(editingProfileId);
+    if (data.store) {
+      lastProfilesStore = data.store;
+      renderProfiles(data.store);
+    } else {
+      fetchProfiles();
+    }
+    closeProfileDrawer();
+    showToast(wasEdit ? "Profile saved" : "Profile created");
+    pollStatus();
+  } catch (err) {
+    showToast(err.message || "Failed to save profile", true);
+  } finally {
+    saveBtn.disabled = false;
+  }
+}
+
+async function resetEditingProfileStats() {
+  if (!editingProfileId) return;
+  try {
+    const res = await fetch(`/api/profiles/${encodeURIComponent(editingProfileId)}/reset`, {
+      method: "POST",
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (data.store) {
+      lastProfilesStore = data.store;
+      renderProfiles(data.store);
+    }
+    if (data.profile) {
+      renderProfileRuntimeInfo(data.profile);
+    }
+    showToast("Profile stats reset");
+  } catch (err) {
+    showToast(err.message || "Reset stats failed", true);
+  }
+}
+
+async function deleteEditingProfile() {
+  if (!editingProfileId) return;
+  const totalCount = (lastProfilesStore && Array.isArray(lastProfilesStore.profiles))
+    ? lastProfilesStore.profiles.length
+    : 0;
+  if (totalCount <= 1) return;
+  try {
+    const res = await fetch(`/api/profiles/${encodeURIComponent(editingProfileId)}`, {
+      method: "DELETE",
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    if (data.store) {
+      lastProfilesStore = data.store;
+      renderProfiles(data.store);
+    } else {
+      fetchProfiles();
+    }
+    closeProfileDrawer();
+    showToast("Profile deleted");
+    pollStatus();
+  } catch (err) {
+    showToast(err.message || "Delete failed", true);
+  }
+}
+
+// --- Persistent Telemetry & Multi-Iteration Metrics --------------------
+
+function computeProfileGemsPerHour(metrics, bucket) {
+  const byProfile = (metrics && metrics.by_profile && typeof metrics.by_profile === "object")
+    ? metrics.by_profile
+    : {};
+  const activeId = (lastStatus && lastStatus.profile && lastStatus.profile.active_id)
+    || (metrics && metrics.active_profile && metrics.active_profile.profile_id)
+    || null;
+  const activeName = (lastStatus && lastStatus.profile && lastStatus.profile.active_name)
+    || (metrics && metrics.active_profile && metrics.active_profile.profile_name)
+    || null;
+
+  const entries = Object.values(byProfile);
+  let matched = null;
+  if (activeId) {
+    matched = entries.find((e) => e && e.profile_id === activeId) || null;
+  }
+  if (!matched && activeName) {
+    matched = entries.find((e) => e && e.profile_name === activeName) || null;
+  }
+  if (matched && Number.isFinite(Number(matched.gems_per_hour)) && Number(matched.gems_per_hour) > 0) {
+    return `${fmtRate(matched.gems_per_hour)}/hr`;
+  }
+  if (bucket && Number(bucket.total_duration_sec) > 0 && Number(bucket.total_gems) >= 0) {
+    const gph = Number(bucket.total_gems) / (Number(bucket.total_duration_sec) / 3600);
+    return `${fmtRate(gph)}/hr`;
+  }
+  return "\u2014";
+}
+
+function renderMetrics(metrics) {
+  const totalGemsEl = $("metricTotalGems");
+  const runsEl = $("metricRuns");
+  const navTapsEl = $("metricNavTaps");
+  const gphEl = $("metricGemsPerHour");
+  const profileBox = $("metricsByProfileList");
+
+  if (!metrics) {
+    totalGemsEl.textContent = "\u2014";
+    runsEl.textContent = "\u2014";
+    navTapsEl.textContent = "\u2014";
+    gphEl.textContent = "\u2014";
+    profileBox.textContent = "";
+    const empty = document.createElement("div");
+    empty.className = "ledger-empty";
+    empty.textContent = "Telemetry unavailable.";
+    profileBox.appendChild(empty);
+    return;
+  }
+
+  const bucket = metricsScope === "session"
+    ? (metrics.session || {})
+    : (metrics.all_time || {});
+
+  const totalGems = bucket.total_gems ?? ((bucket.ad_gems || 0) + (bucket.floating_gems || 0));
+  totalGemsEl.textContent = fmtInt(totalGems);
+  totalGemsEl.title = `Ad: ${fmtInt(bucket.ad_gems ?? 0)} \u00b7 Floating: ${fmtInt(bucket.floating_gems ?? 0)}`;
+  runsEl.textContent = fmtInt(bucket.runs_completed ?? 0);
+  runsEl.title = `Restarted: ${fmtInt(bucket.runs_restarted ?? 0)}`;
+  navTapsEl.textContent = fmtInt(bucket.nav_taps ?? 0);
+  navTapsEl.title = `Holds: ${fmtInt(bucket.holds ?? 0)} \u00b7 Freezes: ${fmtInt(bucket.freezes ?? 0)}`;
+  gphEl.textContent = computeProfileGemsPerHour(metrics, bucket);
+
+  profileBox.textContent = "";
+  const byProfile = (metrics.by_profile && typeof metrics.by_profile === "object")
+    ? Object.values(metrics.by_profile)
+    : [];
+  byProfile.sort((a, b) => Number((b && b.runs) || 0) - Number((a && a.runs) || 0));
+
+  if (byProfile.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "ledger-empty";
+    empty.textContent = "Complete a run to see per-profile stats.";
+    profileBox.appendChild(empty);
+    return;
+  }
+
+  for (const row of byProfile.slice(0, 6)) {
+    const el = document.createElement("div");
+    el.className = "metric-profile-row";
+
+    const left = document.createElement("div");
+    left.className = "metric-profile-left";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "metric-profile-name";
+    nameSpan.textContent = row.profile_name || row.profile_id || "default";
+    nameSpan.title = nameSpan.textContent;
+
+    const runsSpan = document.createElement("span");
+    runsSpan.style.color = "var(--muted)";
+    runsSpan.textContent = `${row.runs ?? 0}r`;
+
+    left.appendChild(nameSpan);
+    left.appendChild(runsSpan);
+
+    const right = document.createElement("div");
+    right.className = "metric-profile-stats";
+
+    if (row.coins_per_hour_fmt) {
+      const cph = document.createElement("span");
+      cph.className = "cph-val";
+      cph.textContent = `${row.coins_per_hour_fmt}/hr`;
+      right.appendChild(cph);
+    }
+
+    const gph = document.createElement("span");
+    gph.className = "metric-gph";
+    gph.textContent = `${fmtRate(row.gems_per_hour ?? 0)} g/hr`;
+    gph.title = `${row.total_gems ?? 0} gems (${row.ad_gems ?? 0} ad, ${row.floating_gems ?? 0} float)`;
+    right.appendChild(gph);
+
+    el.appendChild(left);
+    el.appendChild(right);
+    profileBox.appendChild(el);
+  }
+}
+
+async function fetchMetrics() {
+  lastMetricsFetchTs = Date.now();
+  try {
+    const res = await fetch("/api/metrics", { cache: "no-store" });
+    if (!res.ok) {
+      if (!lastMetrics) renderMetrics(null);
+      return;
+    }
+    const data = await res.json();
+    lastMetrics = data;
+    renderMetrics(data);
+    // Re-render ledger so per-iteration gem badges stay in sync with metrics
+    if (lastRunsPayload) {
+      renderLedger(lastRunsPayload);
+    } else if (Array.isArray(data.iterations) && data.iterations.length > 0) {
+      renderLedger({
+        by_tier: Array.isArray(data.by_tier) ? data.by_tier : [],
+        runs: data.iterations,
+      });
+    }
+  } catch (_) {
+    if (!lastMetrics) renderMetrics(null);
+  }
+}
+
+// --- Run Ledger & Measured Coins/hr ------------------------------------
+
+function findIterationGems(run) {
+  let ad = Number(run.ad_gems || 0);
+  let fg = Number(run.floating_gems || 0);
+  if (ad > 0 || fg > 0) {
+    return { ad, fg, total: ad + fg };
+  }
+  const iterations = (lastMetrics && Array.isArray(lastMetrics.iterations))
+    ? lastMetrics.iterations
+    : [];
+  if (iterations.length === 0) return null;
+
+  let match = null;
+  if (run.iteration_id) {
+    match = iterations.find((it) => it && it.iteration_id === run.iteration_id) || null;
+  }
+  if (!match && (run.iso || run.ts || run.ended_at)) {
+    const tsNum = Number(run.ts);
+    match = iterations.find((it) => {
+      if (!it || it.tier !== run.tier || it.wave !== run.wave) return false;
+      if (run.iso && it.ended_at && it.ended_at === run.iso) return true;
+      if (run.ended_at && it.ended_at && it.ended_at === run.ended_at) return true;
+      if (Number.isFinite(tsNum) && it.ended_at !== null && it.ended_at !== undefined) {
+        const itSec = typeof it.ended_at === "string"
+          ? Date.parse(it.ended_at) / 1000
+          : Number(it.ended_at);
+        if (Number.isFinite(itSec) && Math.abs(itSec - tsNum) < 3) return true;
+      }
+      return false;
+    }) || null;
+  }
+  if (!match) return null;
+  ad = Number(match.ad_gems || 0);
+  fg = Number(match.floating_gems || 0);
+  return (ad + fg) > 0 ? { ad, fg, total: ad + fg } : null;
+}
+
 function renderLedger(payload) {
+  lastRunsPayload = payload;
   const tierBox = $("tierSummaryList");
   const ledgerList = $("runLedgerList");
   const byTier = Array.isArray(payload && payload.by_tier) ? payload.by_tier : [];
@@ -156,13 +897,13 @@ function renderLedger(payload) {
 
       const meta = document.createElement("span");
       meta.style.color = "var(--muted)";
-      const wavePart = row.avg_wave ? `avg W${row.avg_wave} · ` : "";
+      const wavePart = row.avg_wave ? `avg W${row.avg_wave} \u00b7 ` : "";
       meta.textContent = `${wavePart}${row.runs}r`;
       left.appendChild(meta);
 
       const right = document.createElement("span");
       right.className = "cph-val";
-      right.textContent = row.coins_per_hour_fmt ? `${row.coins_per_hour_fmt}/hr` : "—";
+      right.textContent = row.coins_per_hour_fmt ? `${row.coins_per_hour_fmt}/hr` : "\u2014";
 
       el.appendChild(left);
       el.appendChild(right);
@@ -196,10 +937,19 @@ function renderLedger(payload) {
     const wStr = run.wave !== null && run.wave !== undefined ? ` W${run.wave}` : " W?";
     head.appendChild(document.createTextNode(wStr));
 
+    const gemInfo = findIterationGems(run);
+    if (gemInfo) {
+      const gemBadge = document.createElement("span");
+      gemBadge.className = "ledger-gem-badge";
+      gemBadge.textContent = `+${gemInfo.total}g`;
+      gemBadge.title = `Ad: ${gemInfo.ad} + Floating: ${gemInfo.fg}`;
+      head.appendChild(gemBadge);
+    }
+
     const coins = document.createElement("span");
     const totalStr = run.total_coins_raw || "";
     const cphStr = run.coins_per_hour_fmt ? ` (${run.coins_per_hour_fmt}/hr)` : "";
-    coins.textContent = totalStr ? `${totalStr}${cphStr}` : "—";
+    coins.textContent = totalStr ? `${totalStr}${cphStr}` : "\u2014";
     coins.style.color = run.coins_verified === false ? "var(--amber)" : "var(--green)";
 
     top.appendChild(head);
@@ -215,19 +965,20 @@ function renderLedger(payload) {
       hasPart = true;
     }
     if (run.killed_by) {
-      if (hasPart) leftMeta.appendChild(document.createTextNode(" · "));
+      if (hasPart) leftMeta.appendChild(document.createTextNode(" \u00b7 "));
       leftMeta.appendChild(makeInlineWikiButton(run.killed_by, run.killed_by));
       hasPart = true;
     }
-    if (run.profile) {
-      if (hasPart) leftMeta.appendChild(document.createTextNode(" · "));
-      leftMeta.appendChild(document.createTextNode(`[${run.profile}]`));
+    const profileLabel = run.profile_name || run.profile;
+    if (profileLabel) {
+      if (hasPart) leftMeta.appendChild(document.createTextNode(" \u00b7 "));
+      leftMeta.appendChild(document.createTextNode(`[${profileLabel}]`));
       hasPart = true;
     }
-    if (!hasPart) leftMeta.textContent = "—";
+    if (!hasPart) leftMeta.textContent = "\u2014";
 
     const timeMeta = document.createElement("span");
-    timeMeta.textContent = fmtTime(run.ts);
+    timeMeta.textContent = fmtTime(run.ts ?? run.ended_at);
 
     meta.appendChild(leftMeta);
     meta.appendChild(timeMeta);
@@ -369,8 +1120,17 @@ async function resetAccount() {
 // --- Contextual Wiki Drawer --------------------------------------------
 
 function closeWiki() {
-  $("wikiBackdrop").hidden = true;
   $("wikiDrawer").hidden = true;
+  if ($("profileDrawer").hidden) {
+    $("wikiBackdrop").hidden = true;
+  }
+}
+
+function closeAllDrawers() {
+  $("wikiDrawer").hidden = true;
+  $("profileDrawer").hidden = true;
+  $("wikiBackdrop").hidden = true;
+  editingProfileId = null;
 }
 
 async function searchWikiIndex(q, category) {
@@ -463,7 +1223,7 @@ async function loadWikiEntry(query, refresh = false) {
     if (Array.isArray(data.aliases) && data.aliases.length > 0) metaBits.push(data.aliases.join(" / "));
     if (data.page_title && data.page_title !== data.name) metaBits.push(`Page: ${data.page_title}`);
     if (data.revid) metaBits.push(`rev ${data.revid}`);
-    $("wikiMeta").textContent = metaBits.join(" · ");
+    $("wikiMeta").textContent = metaBits.join(" \u00b7 ");
 
     const pill = $("wikiCachePill");
     if (data.fetched_at) {
@@ -491,6 +1251,9 @@ async function loadWikiEntry(query, refresh = false) {
 }
 
 function openWiki(query = "") {
+  // Coordinate cleanly with Profile Editor drawer so only one drawer is open at a time
+  $("profileDrawer").hidden = true;
+  editingProfileId = null;
   $("wikiBackdrop").hidden = false;
   $("wikiDrawer").hidden = false;
   const input = $("wikiSearchInput");
@@ -559,15 +1322,31 @@ function render(data) {
     tierBtn.disabled = false;
     tierBtn.dataset.tier = String(battle.tier);
   } else {
-    tierBtn.textContent = "—";
+    tierBtn.textContent = "\u2014";
     tierBtn.disabled = true;
     delete tierBtn.dataset.tier;
   }
-  $("liveWave").textContent = battle.wave !== null && battle.wave !== undefined ? String(battle.wave) : "—";
+  $("liveWave").textContent = battle.wave !== null && battle.wave !== undefined ? String(battle.wave) : "\u2014";
   $("liveElapsed").textContent = battle.elapsed_sec !== null && battle.elapsed_sec !== undefined
     ? fmtDuration(battle.elapsed_sec)
-    : "—";
+    : "\u2014";
   $("freezeBanner").hidden = !battle.frozen;
+
+  // Active Profile & Screen Strip
+  const profileInfo = data.profile || {};
+  renderActiveProfileStrip(profileInfo);
+
+  // Keep profile action buttons & store in sync when active/queued/battle state shifts
+  const nextProfileSig = `${profileInfo.active_id || ""}|${profileInfo.queued_id || ""}|${battle.live ? "1" : "0"}`;
+  if (nextProfileSig !== lastProfileSig) {
+    const changedIds = lastProfileSig.split("|").slice(0, 2).join("|") !== `${profileInfo.active_id || ""}|${profileInfo.queued_id || ""}`;
+    lastProfileSig = nextProfileSig;
+    if (changedIds) {
+      fetchProfiles();
+    } else if (lastProfilesStore) {
+      renderProfiles(lastProfilesStore);
+    }
+  }
 
   // Master harvesting button
   const running = Boolean(data.running);
@@ -604,7 +1383,7 @@ function render(data) {
   $("floatingTimerRow").hidden = mode !== "timer";
   syncTimerInput($("floatingTimerInput"), $("floatingTimerHuman"), fg.timer_interval_sec);
 
-  // Run continuity & rules (left sidebar)
+  // Run continuity & rules (left sidebar -> Advanced Flow & Guards)
   const flow = data.run_flow || {};
   const rules = data.run_rules || {};
   setToggle($("autoHomeBtn"), Boolean(flow.auto_home), "flow");
@@ -623,11 +1402,24 @@ function render(data) {
   syncInputValue($("noStartFrom"), rules.no_start_from || "23:00");
   syncInputValue($("noStartUntil"), rules.no_start_until || "07:00");
   $("noStartTimesRow").hidden = !rules.no_start_enabled;
-  syncInputValue($("profileInput"), rules.profile_name || "");
   syncInputValue($("freezeMinInput"), rules.freeze_timeout_min ?? 10);
 
+  // Summary badge for collapsible Advanced Flow & Guards
+  const enabledFlowCount = [flow.auto_home, flow.auto_retry, flow.auto_battle, flow.auto_resume].filter(Boolean).length;
+  const advBadge = $("advancedFlowSummaryBadge");
+  if (rules.finish_and_stop) {
+    advBadge.textContent = "hold after run";
+    advBadge.className = "flow-summary-badge amber";
+  } else if (enabledFlowCount > 0) {
+    advBadge.textContent = `${enabledFlowCount} active`;
+    advBadge.className = "flow-summary-badge green";
+  } else {
+    advBadge.textContent = "off";
+    advBadge.className = "flow-summary-badge";
+  }
+
   // Sidebar status pill + hold banner
-  const anyFlow = Boolean(flow.auto_home || flow.auto_battle || flow.auto_retry || flow.auto_resume);
+  const anyFlow = enabledFlowCount > 0;
   const holding = Boolean(flow.holding);
   const holdBanner = $("holdBanner");
   const resumeBtn = $("resumeHoldBtn");
@@ -651,11 +1443,21 @@ function render(data) {
     holdBanner.hidden = true;
   }
 
-  // Refresh run ledger whenever a new run is recorded (and on first load)
+  // Refresh run ledger, profiles, and telemetry metrics on run/telemetry changes
   const logged = Number(flow.runs_logged ?? 0);
+  const telemetry = data.telemetry || {};
+  const nextMetricsSig = `${telemetry.all_time_gems ?? ""}|${telemetry.all_time_runs ?? ""}|${telemetry.iteration_id ?? ""}|${logged}|${flow.runs_restarted ?? 0}`;
+  const metricsStale = (Date.now() - lastMetricsFetchTs) > 10000;
+
   if (logged !== lastRunsLogged) {
     lastRunsLogged = logged;
     fetchRuns();
+    fetchProfiles();
+    lastMetricsSig = nextMetricsSig;
+    fetchMetrics();
+  } else if (nextMetricsSig !== lastMetricsSig || metricsStale) {
+    lastMetricsSig = nextMetricsSig;
+    fetchMetrics();
   }
 
   renderActivity(data.recent);
@@ -700,6 +1502,8 @@ async function pollStatus() {
     if (serverWasOffline) {
       serverWasOffline = false;
       $("streamImg").src = "/api/stream.mjpg?t=" + Date.now();
+      fetchProfiles();
+      fetchMetrics();
     }
     if (inFlight === 0) {
       render(data);
@@ -751,6 +1555,9 @@ try {
   if (localStorage.getItem("tp_sidebar_collapsed") === "1") {
     setSidebarCollapsed(true);
   }
+  if (localStorage.getItem("tp_advanced_flow_open") === "1") {
+    $("advancedFlowDetails").open = true;
+  }
 } catch (_) {
   // ignore
 }
@@ -760,10 +1567,77 @@ $("collapseSidebarBtn").addEventListener("click", () => {
   setSidebarCollapsed(!collapsed);
 });
 
-// Wiki drawer bindings
+$("advancedFlowDetails").addEventListener("toggle", () => {
+  try {
+    localStorage.setItem("tp_advanced_flow_open", $("advancedFlowDetails").open ? "1" : "0");
+  } catch (_) {
+    // ignore
+  }
+});
+
+// Profiles & Profile Drawer bindings
+$("newProfileBtn").addEventListener("click", () => openProfileDrawer(null));
+$("cancelQueuedBtn").addEventListener("click", () => {
+  const qid = $("cancelQueuedBtn").dataset.profileId
+    || (lastStatus && lastStatus.profile && lastStatus.profile.queued_id);
+  if (qid) activateProfile(qid, "cancel", "");
+});
+$("closeProfileDrawerBtn").addEventListener("click", closeProfileDrawer);
+$("profileForm").addEventListener("submit", saveProfileForm);
+$("resetProfileStatsBtn").addEventListener("click", resetEditingProfileStats);
+$("deleteProfileBtn").addEventListener("click", deleteEditingProfile);
+
+$("profEnabledBtn").addEventListener("click", () => {
+  const next = $("profEnabledBtn").getAttribute("aria-pressed") !== "true";
+  setToggle($("profEnabledBtn"), next, "flow");
+});
+
+$("profQuietEnabledBtn").addEventListener("click", () => {
+  const next = $("profQuietEnabledBtn").getAttribute("aria-pressed") !== "true";
+  setToggle($("profQuietEnabledBtn"), next, "amber");
+  syncProfileDrawerVisibility();
+});
+
+$("profTierMode").addEventListener("change", syncProfileDrawerVisibility);
+
+$("profPriority").addEventListener("input", () => {
+  priorityTouched = true;
+});
+
+$("profKind").addEventListener("change", () => {
+  const kind = $("profKind").value;
+  if (!priorityTouched) {
+    $("profPriority").value = String(DEFAULT_PRIORITIES[kind] || 10);
+  }
+  if (!editingProfileId) {
+    if (kind === "tournament") {
+      $("profTierMode").value = "ignore";
+    } else if (kind === "push") {
+      $("profTierMode").value = "highest_unlocked";
+    } else {
+      $("profTierMode").value = "current";
+    }
+    syncProfileDrawerVisibility();
+  }
+});
+
+// Telemetry scope toggle bindings
+$("metricsScopeToggle").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-scope]");
+  if (!btn) return;
+  metricsScope = btn.dataset.scope === "session" ? "session" : "all_time";
+  for (const b of $("metricsScopeToggle").querySelectorAll("button[data-scope]")) {
+    const active = b.dataset.scope === metricsScope;
+    b.classList.toggle("active", active);
+    b.setAttribute("aria-pressed", String(active));
+  }
+  if (lastMetrics) renderMetrics(lastMetrics);
+});
+
+// Wiki & Drawer shared bindings
 $("openWikiBtn").addEventListener("click", () => openWiki(""));
 $("closeWikiBtn").addEventListener("click", closeWiki);
-$("wikiBackdrop").addEventListener("click", closeWiki);
+$("wikiBackdrop").addEventListener("click", closeAllDrawers);
 $("wikiRefreshBtn").addEventListener("click", () => {
   if (activeWikiQuery) loadWikiEntry(activeWikiQuery, true);
 });
@@ -787,8 +1661,10 @@ $("wikiCats").addEventListener("click", (e) => {
   searchWikiIndex($("wikiSearchInput").value.trim(), activeWikiCategory);
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && !$("wikiDrawer").hidden) {
-    closeWiki();
+  if (e.key === "Escape") {
+    if (!$("profileDrawer").hidden || !$("wikiDrawer").hidden) {
+      closeAllDrawers();
+    }
   }
 });
 
@@ -859,7 +1735,7 @@ $("resumeHoldBtn").addEventListener("click", () => {
   if (reason === "finish_and_stop") {
     updateRunRules({ finish_and_stop: false }, "Resuming auto-restart");
   } else if (reason === "max_runs") {
-    updateRunRules({ action: "reset_run_count" }, "Counter reset — resuming");
+    updateRunRules({ action: "reset_run_count" }, "Counter reset \u2014 resuming");
   } else if (reason === "tier_mismatch") {
     updateRunRules({ expected_tier: 0 }, "Expected tier cleared");
   }
@@ -888,7 +1764,7 @@ function bindCommitInput(inputEl, handler) {
 bindCommitInput($("expectedTierInput"), () => {
   const val = parseInt($("expectedTierInput").value, 10);
   if (!Number.isInteger(val) || val < 0 || val > 24) {
-    showToast("Expected tier must be 0–24", true);
+    showToast("Expected tier must be 0\u201324", true);
     if (lastStatus) render(lastStatus);
     return;
   }
@@ -898,7 +1774,7 @@ bindCommitInput($("expectedTierInput"), () => {
 bindCommitInput($("maxRunsInput"), () => {
   const val = parseInt($("maxRunsInput").value, 10);
   if (!Number.isInteger(val) || val < 0 || val > 9999) {
-    showToast("Max runs must be 0–9999", true);
+    showToast("Max runs must be 0\u20139999", true);
     if (lastStatus) render(lastStatus);
     return;
   }
@@ -908,7 +1784,7 @@ bindCommitInput($("maxRunsInput"), () => {
 bindCommitInput($("freezeMinInput"), () => {
   const val = parseInt($("freezeMinInput").value, 10);
   if (!Number.isInteger(val) || val < 0 || val > 180) {
-    showToast("Freeze alert must be 0–180 min", true);
+    showToast("Freeze alert must be 0\u2013180 min", true);
     if (lastStatus) render(lastStatus);
     return;
   }
@@ -923,10 +1799,6 @@ bindCommitInput($("noStartFrom"), () => {
 bindCommitInput($("noStartUntil"), () => {
   const val = $("noStartUntil").value;
   if (val) updateRunRules({ no_start_until: val }, "Quiet window updated");
-});
-
-bindCommitInput($("profileInput"), () => {
-  updateRunRules({ profile_name: $("profileInput").value.trim() }, "Profile tag saved");
 });
 
 function bindTimerInput(inputEl, humanEl, key) {
@@ -957,4 +1829,6 @@ bindTimerInput($("floatingTimerInput"), $("floatingTimerHuman"), "floating_gems"
 
 // Initial loads
 pollStatus();
+fetchProfiles();
+fetchMetrics();
 fetchAccount();

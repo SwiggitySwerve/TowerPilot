@@ -1,0 +1,132 @@
+{
+  "frame_shape": [2560, 1080, 3],
+  "screens": {
+    "home": {
+      "header_text": "BATTLE",
+      "lines": [
+        [28, 29, "1.00T"],
+        [32, 667, "100"],
+        [115, 33, "BATTLE"],
+        [210, 930, "MISSIONS"],
+        [239, 333, "THE TOWER"],
+        [265, 65, "CLAIM"],
+        [532, 76, "Next in"],
+        [563, 69, "12h 00m"],
+        [807, 73, "Ends in"],
+        [838, 82, "3d 12h"],
+        [865, 416, "MILESTONES"],
+        [1067, 73, "Ends in"],
+        [1099, 75, "10d 12h"],
+        [1103, 313, "Total Coin Bonus"],
+        [1273, 416, "Difficulty"],
+        [1285, 78, "STONES"],
+        [1312, 55, "REFRESHED"],
+        [1385, 479, "Tier 10"],
+        [1476, 325, "Highest Wave: 1200"],
+        [1519, 75, "Ends in"],
+        [1649, 372, "Dissonant boosts"],
+        [1715, 309, "x1.00"],
+        [2049, 452, "BATTLE"],
+        [2187, 419, "Dissonant Run"]
+      ],
+      "buttons": {
+        "battle": [300, 1970, 510, 160],
+        "tournament": [48, 344, 149, 149]
+      }
+    },
+    "home_promo": {
+      "header_text": "",
+      "lines": [
+        [211, 931, "MISSIONS"],
+        [533, 77, "Next in"],
+        [935, 163, "Supercharge your rewards!"],
+        [1155, 137, "EVENT BOOST"],
+        [1253, 196, "Get +100 Instantly!"],
+        [1319, 136, "Access to 2 unique relics"],
+        [1383, 195, "+100 instantly"],
+        [1548, 751, "$14.99"],
+        [2049, 453, "BATTLE"],
+        [2187, 420, "Dissonant Run"]
+      ],
+      "buttons": {}
+    },
+    "cards": {
+      "header_text": "CARDS",
+      "active_preset": "Preset 1",
+      "lines": [
+        [28, 29, "1.00T"],
+        [32, 667, "100"],
+        [115, 32, "CARDS"],
+        [234, 19, "ALL CARDS"],
+        [255, 415, "x1"],
+        [251, 570, "20 gems x10 200 gems"],
+        [285, 21, "MAXED"],
+        [415, 60, "Preset 1"],
+        [415, 280, "Preset 2"],
+        [415, 490, "Preset 3"],
+        [415, 700, "Preset 4"],
+        [415, 910, "Preset 5"],
+        [495, 437, "ACTIVE"],
+        [545, 479, "20/20"],
+        [966, 377, "INVENTORY"],
+        [2013, 82, "Berserker"],
+        [2013, 319, "Ultimate Crit"],
+        [2013, 633, "Nuke"]
+      ],
+      "buttons": {
+        "preset_1": [21, 382, 194, 77],
+        "preset_2": [235, 385, 188, 72],
+        "preset_3": [446, 385, 188, 72],
+        "preset_4": [657, 385, 188, 72],
+        "preset_5": [868, 385, 188, 72]
+      }
+    },
+    "modules": {
+      "header_text": "MODULES",
+      "active_preset": "Preset 1",
+      "lines": [
+        [28, 29, "1.00T"],
+        [32, 667, "100"],
+        [114, 33, "MODULES"],
+        [240, 200, "Preset 1"],
+        [240, 720, "Preset 2"],
+        [349, 431, "Buy Module"],
+        [591, 267, "Lv.100"],
+        [593, 743, "Lv.100"],
+        [1013, 63, "Inventory"],
+        [1013, 469, "Merge"],
+        [1013, 817, "Shatter"],
+        [2317, 565, "All Rarities"],
+        [2318, 145, "All Types"],
+        [2318, 899, "10/300"]
+      ],
+      "buttons": {
+        "preset_1": [41, 209, 490, 77],
+        "preset_2": [551, 212, 485, 72]
+      }
+    },
+    "game_stats": {
+      "header_text": "GAME STATS",
+      "lines": [
+        [48, 445, "View Perks"],
+        [113, 27, "1.00T"],
+        [683, 889, "EXIT BATTLE"],
+        [753, 333, "GAME STATS"],
+        [858, 400, "Wave 1000"],
+        [947, 468, "Tier 10"],
+        [1037, 288, "Highest Wave: 1200"],
+        [1127, 331, "Killed By Scatter"],
+        [1217, 279, "Death defied 0 times"],
+        [1485, 139, "coins earned"],
+        [1485, 430, "ad coins earned"],
+        [1485, 773, "total coins"],
+        [1547, 133, "1.00T + 0.50T"],
+        [1547, 695, "= 1.50T"]
+      ],
+      "buttons": {
+        "retry": [77, 1663, 447, 148],
+        "home": [556, 1663, 448, 148]
+      }
+    }
+  }
+}

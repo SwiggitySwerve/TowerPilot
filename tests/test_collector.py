@@ -214,9 +214,28 @@ def test_collector_status_matches_minimal_contract():
         "floating_gems",
         "run_flow",
         "run_rules",
+        "profile",
+        "telemetry",
         "stream",
         "battle",
         "recent",
+    }
+    assert set(st["profile"].keys()) == {
+        "active_id",
+        "active_name",
+        "active_kind",
+        "queued_id",
+        "queued_name",
+        "screen",
+        "nav_state",
+        "verified_cards",
+        "verified_modules",
+    }
+    assert set(st["telemetry"].keys()) == {
+        "session_id",
+        "iteration_id",
+        "all_time_gems",
+        "all_time_runs",
     }
     assert st["running"] is False
     assert st["mode"] == "ocr"

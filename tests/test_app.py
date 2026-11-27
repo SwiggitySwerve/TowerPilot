@@ -56,10 +56,14 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
             "floating_gems",
             "run_flow",
             "run_rules",
+            "profile",
+            "telemetry",
             "stream",
             "battle",
             "recent",
         }
+        assert status["profile"]["active_id"] == "farm-default"
+        assert status["telemetry"]["all_time_runs"] == 0
         assert status["run_flow"] == {
             "auto_home": False,
             "auto_battle": False,

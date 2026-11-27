@@ -18,6 +18,8 @@ from towerpilot import __version__, loadouts, ocr, wiki
 from towerpilot.capture import FrameSource
 from towerpilot.collector import GemCollector
 from towerpilot.config import CONFIG_PATH, VALID_MODES, deep_merge, load_config, save_config
+from towerpilot.profiles import ProfileStore
+from towerpilot.telemetry import Telemetry
 
 STATIC_DIR = Path(__file__).resolve().parent / "towerpilot" / "static"
 
@@ -218,11 +220,23 @@ def create_app(
     account_store = loadouts.AccountStore(data_dir / "account.json")
     wiki_cache_path = data_dir / "wiki_cache.json"
     event_log_path = config_path.parent / "logs" / "events.jsonl"
-    gem_collector = (
-        collector
-        if collector is not None
-        else GemCollector(frames, state["cfg"], event_log_path=event_log_path)
-    )
+    profile_store = ProfileStore(data_dir / "profiles.json")
+    profile_store.seed_from_config(state["cfg"])
+    telemetry = Telemetry(event_log_path=event_log_path)
+    if collector is not None:
+        gem_collector = collector
+        if hasattr(collector, "profile_store"):
+            profile_store = collector.profile_store
+        if hasattr(collector, "telemetry"):
+            telemetry = collector.telemetry
+    else:
+        gem_collector = GemCollector(
+            frames,
+            state["cfg"],
+            event_log_path=event_log_path,
+            profile_store=profile_store,
+            telemetry=telemetry,
+        )
 
     def status_payload() -> dict[str, Any]:
         return {"version": __version__, **gem_collector.status()}
@@ -261,6 +275,8 @@ def create_app(
         "frames": frames,
         "collector": gem_collector,
         "account_store": account_store,
+        "profile_store": profile_store,
+        "telemetry": telemetry,
         "wiki_cache_path": wiki_cache_path,
         "shutdown": shutdown,
         "update_harvest": update_harvest,
@@ -301,6 +317,94 @@ def create_app(
     @app.route("/api/runs")
     def api_runs() -> Response:
         return jsonify(gem_collector.runs_ledger())
+
+    @app.route("/api/profiles", methods=["GET", "POST"])
+    def api_profiles() -> tuple[Response, int] | Response:
+        if request.method == "GET":
+            return jsonify(profile_store.snapshot())
+        payload = request.get_json(silent=True)
+        try:
+            prof = profile_store.upsert(payload)
+            return jsonify({"profile": prof, "store": profile_store.snapshot()})
+        except (ValueError, TypeError) as exc:
+            return jsonify({"error": str(exc)}), 400
+
+    @app.route("/api/profiles/<profile_id>/activate", methods=["POST"])
+    def api_profile_activate(profile_id: str) -> tuple[Response, int] | Response:
+        raw_body = request.get_data(as_text=True).strip()
+        if raw_body:
+            payload = request.get_json(silent=True)
+            if not isinstance(payload, dict):
+                return jsonify({"error": "JSON object expected"}), 400
+        else:
+            payload = {}
+        mode = payload.get("mode", "next")
+        if mode not in ("next", "now", "cancel"):
+            return jsonify({"error": "mode must be 'next', 'now', or 'cancel'"}), 400
+        try:
+            if mode == "cancel":
+                store_snap = profile_store.queue_next(None)
+                telemetry.log(
+                    "Cancelled queued profile switch",
+                    event="profile_switched",
+                    mode="cancel",
+                )
+            elif mode == "now" and not gem_collector.battle_live:
+                store_snap = profile_store.queue_next(profile_id, immediate=True)
+                prof = profile_store.get(profile_id)
+                gem_collector.on_profile_activated(profile_id, immediate=True)
+                telemetry.log(
+                    f"Switched active profile to {prof['name'] if prof else profile_id}",
+                    event="profile_switched",
+                    mode="now",
+                    profile_id=profile_id,
+                    profile_name=prof["name"] if prof else profile_id,
+                )
+            else:
+                store_snap = profile_store.queue_next(profile_id, immediate=False)
+                prof = profile_store.get(profile_id)
+                telemetry.log(
+                    f"Queued profile for next run: {prof['name'] if prof else profile_id}",
+                    event="profile_switched",
+                    mode="next",
+                    queued_profile_id=profile_id,
+                    queued_profile_name=prof["name"] if prof else profile_id,
+                )
+            return jsonify({"store": store_snap, "status": status_payload()})
+        except KeyError as exc:
+            return jsonify({"error": str(exc)}), 404
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+
+    @app.route("/api/profiles/<profile_id>/reset", methods=["POST"])
+    def api_profile_reset(profile_id: str) -> tuple[Response, int] | Response:
+        try:
+            prof = profile_store.reset_runtime(profile_id)
+            return jsonify({"profile": prof, "store": profile_store.snapshot()})
+        except KeyError as exc:
+            return jsonify({"error": str(exc)}), 404
+
+    @app.route("/api/profiles/<profile_id>", methods=["DELETE"])
+    def api_profile_delete(profile_id: str) -> tuple[Response, int] | Response:
+        try:
+            store_snap = profile_store.delete(profile_id)
+            return jsonify({"store": store_snap})
+        except KeyError as exc:
+            return jsonify({"error": str(exc)}), 404
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+
+    @app.route("/api/metrics")
+    def api_metrics() -> Response:
+        fmt = (request.args.get("format") or "json").strip().lower()
+        if fmt == "prometheus":
+            return Response(
+                telemetry.to_prometheus(),
+                content_type="text/plain; version=0.0.4; charset=utf-8",
+            )
+        if fmt == "otlp":
+            return jsonify(telemetry.to_otlp_json())
+        return jsonify(telemetry.snapshot())
 
     @app.route("/api/run-rules", methods=["POST"])
     def api_run_rules() -> tuple[Response, int] | Response:
