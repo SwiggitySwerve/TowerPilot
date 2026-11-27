@@ -1,7 +1,8 @@
 """Minimal background gem collector supporting OCR/vision detection or timer mode.
 
-Never starts, surrenders, or navigates menus. Only taps Ad Gems and Floating Gems,
-guarded by foreground window + undimmed battle HUD checks when safety.battle_only=True.
+Only taps Ad Gems and Floating Gems during verified battles, plus optional
+OCR-verified End Stats -> HOME and Home -> BATTLE transitions when `run_flow`
+is enabled. Never surrenders or cancels an active run.
 """
 from __future__ import annotations
 
@@ -42,6 +43,7 @@ _FG_ORBIT_SPREAD_DEG = 6.0
 _FG_ORBIT_JITTER = 0.03
 
 _TIMER_SKIP_BACKOFF_SEC = 5.0
+_FAILURE_BACKOFF_SEC = 5.0
 
 _FLOW_SCAN_INTERVAL_SEC = 3.0
 _FLOW_COOLDOWN_SEC = 15.0
@@ -85,6 +87,7 @@ class GemCollector:
         self.menu_state = "unknown"
         self.foreground_blocker: str | None = None
         self._last_battle_state: tuple[bool, str] | None = None
+        self._last_capture_error: str | None = None
 
         # Ad Gem routine state
         self.ad_last_scan = 0.0
@@ -207,6 +210,7 @@ class GemCollector:
             self._reset_timers(time.monotonic())
             self.foreground_blocker = None
             self._last_battle_state = None
+            self._last_capture_error = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
             self.flow_pending_action = None
@@ -240,6 +244,7 @@ class GemCollector:
             self._thread = None
             self.foreground_blocker = None
             self._last_battle_state = None
+            self._last_capture_error = None
             self.ad_pending_due_at = None
             self.ad_visible_hit = None
             self.flow_pending_action = None
@@ -357,6 +362,11 @@ class GemCollector:
             self.log(f"Tap refused ({reason}): {exc}", event="tap_refused", reason=reason, error=str(exc), point=list(pt))
             return None
 
+    def _fail_ad_attempt(self) -> None:
+        self.ad_pending_due_at = None
+        self.ad_visible_hit = None
+        self.ad_cooldown_until = max(self.ad_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
+
     def _collect_ad_gem(self, *, trigger: str, rect: tuple[int, int, int, int] | None = None) -> bool:
         """Verify live battle on a fresh ADB frame, then tap Ad Gem."""
         if self._stop_event.is_set():
@@ -365,12 +375,14 @@ class GemCollector:
             fresh, input_display = self._grab_verified_frame()
         except Exception as exc:
             self.ad_status = "capture error"
+            self._fail_ad_attempt()
             self.log(f"Ad Gem capture failed: {exc}", event="ad_gem_error", trigger=trigger, error=str(exc))
             return False
 
         ok, why = self._check_safety_guard(fresh, check_foreground=True, input_display=input_display)
         if not ok:
             self.ad_status = f"skipped ({why})"
+            self._fail_ad_attempt()
             self.log(f"Ad Gem skipped ({trigger}): {why}", event="ad_gem_skipped", trigger=trigger, reason=why)
             if trigger == "timer":
                 self.ad_next_timer_at = time.monotonic() + _TIMER_SKIP_BACKOFF_SEC
@@ -382,11 +394,11 @@ class GemCollector:
                 confirmed = detectors.detect_ad_gem(fresh)
             except Exception as exc:
                 self.ad_status = "ocr error"
+                self._fail_ad_attempt()
                 self.log(f"Ad Gem OCR recheck failed: {exc}", event="ad_gem_error", trigger=trigger, error=str(exc))
                 return False
             if confirmed is None:
-                self.ad_visible_hit = None
-                self.ad_pending_due_at = None
+                self._fail_ad_attempt()
                 self.ad_status = "offer gone"
                 self.log("Ad Gem disappeared before tap", event="ad_gem_gone", trigger=trigger)
                 return False
@@ -407,6 +419,7 @@ class GemCollector:
             display_resolved=True,
         )
         if res is None:
+            self._fail_ad_attempt()
             return False
 
         now = time.monotonic()
@@ -449,12 +462,14 @@ class GemCollector:
             fresh, input_display = self._grab_verified_frame()
         except Exception as exc:
             self.fg_status = "capture error"
+            self.fg_cooldown_until = max(self.fg_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
             self.log(f"Floating Gem capture failed: {exc}", event="floating_gem_error", trigger=trigger, error=str(exc))
             return False
 
         ok, why = self._check_safety_guard(fresh, check_foreground=True, input_display=input_display)
         if not ok:
             self.fg_status = f"skipped ({why})"
+            self.fg_cooldown_until = max(self.fg_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
             self.log(f"Floating Gem skipped ({trigger}): {why}", event="floating_gem_skipped", trigger=trigger, reason=why)
             if trigger == "timer":
                 self.fg_next_timer_at = time.monotonic() + _TIMER_SKIP_BACKOFF_SEC
@@ -531,6 +546,7 @@ class GemCollector:
                 tapped.append(res)
 
         if not tapped:
+            self.fg_cooldown_until = max(self.fg_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
             return False
 
         now = time.monotonic()
@@ -563,8 +579,12 @@ class GemCollector:
             frame, _backend = self._frames.latest_or_grab(max_age_sec=1.2)
         except Exception as exc:
             self.battle_live = False
-            self.log(f"Capture error: {exc}", event="capture_error", error=str(exc))
+            msg = str(exc)
+            if msg != self._last_capture_error:
+                self._last_capture_error = msg
+                self.log(f"Capture error: {msg}", event="capture_error", error=msg)
             return
+        self._last_capture_error = None
 
         ok, why = self._check_safety_guard(frame, check_foreground=False)
         in_battle_hud = self.menu_state in ("closed", "open")
@@ -609,6 +629,7 @@ class GemCollector:
         except Exception as exc:
             self.flow_status = "capture error"
             self.flow_pending_action = None
+            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
             self.log(f"Auto-restart capture failed: {exc}", event="auto_restart_error", action=kind, error=str(exc))
             return False
 
@@ -616,6 +637,7 @@ class GemCollector:
         if not fg_ok:
             self.flow_status = f"skipped ({fg_why})"
             self.flow_pending_action = None
+            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
             self.log(f"Auto-restart skipped ({kind}): {fg_why}", event="auto_restart_skipped", action=kind, reason=fg_why)
             return False
 
@@ -628,11 +650,13 @@ class GemCollector:
         except Exception as exc:
             self.flow_status = "ocr error"
             self.flow_pending_action = None
+            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
             self.log(f"Auto-restart OCR failed: {exc}", event="auto_restart_error", action=kind, error=str(exc))
             return False
 
         if hit is None:
             self.flow_pending_action = None
+            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
             self.flow_status = "target gone"
             self.log(f"Auto-restart target disappeared ({kind})", event="auto_restart_gone", action=kind)
             return False
@@ -656,6 +680,7 @@ class GemCollector:
             )
         except TapRefused as exc:
             self.flow_pending_action = None
+            self.flow_cooldown_until = max(self.flow_cooldown_until, time.monotonic() + _FAILURE_BACKOFF_SEC)
             self.flow_status = "tap refused"
             self.log(f"Auto-restart tap refused ({kind}): {exc}", event="tap_refused", reason=kind, error=str(exc))
             return False

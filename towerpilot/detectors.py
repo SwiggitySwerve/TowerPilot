@@ -457,15 +457,23 @@ def detect_end_stats_home(
     if "GAME STATS" not in header_text or "TOURNAMENT" in header_text:
         return None
 
+    home_rect: tuple[int, int, int, int] | None = None
+    has_retry = False
     for (x, y, w, h), raw in zip(candidates, texts[1:]):
         upper = raw.upper()
-        if re.search(r"\bHOME\b", upper) and "RETRY" not in upper:
-            return ButtonHit(
-                rect=(x, y, w, h),
-                center=(x + w // 2, y + h // 2),
-                label="HOME",
-                screen="game_stats",
-            )
+        if re.search(r"\bRETRY\b", upper) and "HOME" not in upper:
+            has_retry = True
+        elif re.search(r"\bHOME\b", upper) and "RETRY" not in upper:
+            home_rect = (x, y, w, h)
+
+    if home_rect is not None and has_retry:
+        x, y, w, h = home_rect
+        return ButtonHit(
+            rect=(x, y, w, h),
+            center=(x + w // 2, y + h // 2),
+            label="HOME",
+            screen="game_stats",
+        )
     return None
 
 

@@ -104,18 +104,20 @@ def test_minimal_api_contract_and_harvest_updates(tmp_path: Path):
         assert body["run_flow"]["auto_home"] is True
         assert body["run_flow"]["auto_battle"] is True
 
-        # Persisted cleanly to config.yaml
+        # Persisted cleanly to config.yaml (including running state for restarts)
         saved = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+        assert saved["running"] is True
         assert saved["mode"] == "timer"
         assert saved["ad_gems"] == {"enabled": True, "timer_interval_sec": 600.0}
         assert saved["floating_gems"] == {"enabled": False, "timer_interval_sec": 180.0}
         assert saved["run_flow"] == {"auto_home": True, "auto_battle": True}
 
-        # Stop harvesting via partial payload
+        # Stop harvesting via partial payload (persists running: false)
         stopped = client.post("/api/harvest", json={"running": False})
         assert stopped.status_code == 200
         assert stopped.get_json()["running"] is False
         assert stopped.get_json()["ad_gems"]["next_timer_sec"] is None
+        assert yaml.safe_load(cfg_path.read_text(encoding="utf-8"))["running"] is False
 
         # Invalid inputs return 400 without mutating state
         for bad_body in (

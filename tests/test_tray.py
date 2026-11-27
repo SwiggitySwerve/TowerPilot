@@ -362,3 +362,75 @@ def test_main_startup_failure_shuts_down_and_returns_nonzero(monkeypatch):
     assert rc == 1
     assert app.shutdown_calls == 1
     assert len(failures) == 1
+
+
+def test_main_resumes_persisted_running_state_without_autostart_flag(monkeypatch):
+    app = FakeApp(with_shutdown=True)
+    app.extensions["towerpilot"]["state"] = {"cfg": {"running": True}}
+
+    monkeypatch.setattr(tray, "redirect_output", lambda force=False: None)
+    monkeypatch.setattr(tray, "serving", lambda port, host=tray.DEFAULT_HOST, timeout=1.0: False)
+    monkeypatch.setattr(tray, "wait_until_ready", lambda port, **kw: True)
+
+    rc = tray.main(
+        ["--port", "8655", "--background"],
+        app_factory=lambda: app,
+        tray_runner=lambda a, **kw: 0,
+    )
+    assert rc == 0
+    assert app.collector.running is True
+
+
+def test_toggle_harvesting_persists_via_update_harvest():
+    app = FakeApp(with_shutdown=True)
+    calls: list[dict[str, Any]] = []
+
+    def updater(payload: dict[str, Any]) -> dict[str, Any]:
+        calls.append(payload)
+        if payload.get("running"):
+            app.collector.start()
+        else:
+            app.collector.stop()
+        return {"running": app.collector.running}
+
+    app.extensions["towerpilot"]["update_harvest"] = updater
+    assert tray.toggle_harvesting(app) is True
+    assert tray.toggle_harvesting(app) is False
+    assert calls == [{"running": True}, {"running": False}]
+
+
+def test_run_tray_notifies_once_when_farm_stalls(monkeypatch):
+    _install_fake_pystray(monkeypatch)
+    notified: list[tuple[str, str]] = []
+
+    app = FakeApp(with_shutdown=True)
+    app.collector.running = True
+    app.collector.battle_live = False
+
+    monkeypatch.setattr(tray, "STALL_CHECK_SEC", 0.01)
+    monkeypatch.setattr(tray, "STALL_NOTIFY_SEC", 0.02)
+
+    orig_build = tray.build_icon
+
+    def fake_build(*args: Any, **kwargs: Any):
+        icon = orig_build(*args, **kwargs)
+        icon.notify = lambda msg, title="": notified.append((msg, title))
+        done = threading.Event()
+
+        def fake_run() -> None:
+            done.wait(timeout=0.15)
+
+        def fake_stop() -> None:
+            icon.stopped += 1
+            done.set()
+
+        icon.run = fake_run
+        icon.stop = fake_stop
+        return icon
+
+    monkeypatch.setattr(tray, "build_icon", fake_build)
+    stopped = threading.Event()
+    rc = tray.run_tray(app, port=8620, stopped=stopped)
+    assert rc == 0
+    assert len(notified) == 1
+    assert "10+ minutes" in notified[0][0]

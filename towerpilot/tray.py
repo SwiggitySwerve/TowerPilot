@@ -24,6 +24,8 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8620
 LOG_PATH = ROOT / "logs" / "launcher.log"
 TITLE = "Tower Pilot"
+STALL_NOTIFY_SEC = 600.0
+STALL_CHECK_SEC = 15.0
 
 
 def dashboard_url(port: int, host: str = DEFAULT_HOST) -> str:
@@ -160,12 +162,17 @@ def shutdown_app(app: Any) -> None:
 
 
 def toggle_harvesting(app: Any) -> bool:
-    """Toggle the gem collector on or off and return its new running state."""
-    collector = app.extensions["towerpilot"]["collector"]
-    if collector.running:
-        collector.stop()
-    else:
+    """Toggle gem harvesting via update_harvest (persisting to config.yaml) and return new state."""
+    ext = app.extensions["towerpilot"]
+    collector = ext["collector"]
+    next_running = not bool(collector.running)
+    updater = ext.get("update_harvest")
+    if callable(updater):
+        updater({"running": next_running})
+    elif next_running:
         collector.start()
+    else:
+        collector.stop()
     return bool(collector.running)
 
 
@@ -252,14 +259,31 @@ def run_tray(
             _shutdown_once()
         return 0
 
-    if stopped is not None:
-        def _watch_server() -> None:
-            stopped.wait()
-            if not cleaned.is_set():
-                print("Dashboard server stopped; closing tray icon.", flush=True)
-                icon.stop()
+    watch_stop = stopped if stopped is not None else threading.Event()
+    collector = app.extensions.get("towerpilot", {}).get("collector")
 
-        threading.Thread(target=_watch_server, name="towerpilot-tray-watch", daemon=True).start()
+    def _watch_server() -> None:
+        stalled_since: float | None = None
+        notified = False
+        while not watch_stop.wait(STALL_CHECK_SEC) and not cleaned.is_set():
+            if collector is None or not getattr(collector, "running", False) or getattr(collector, "battle_live", False):
+                stalled_since = None
+                notified = False
+                continue
+            now = time.monotonic()
+            if stalled_since is None:
+                stalled_since = now
+            elif not notified and (now - stalled_since) >= STALL_NOTIFY_SEC:
+                notified = True
+                try:
+                    icon.notify("No live battle detected for 10+ minutes.", TITLE)
+                except Exception:
+                    pass
+        if watch_stop.is_set() and not cleaned.is_set():
+            print("Dashboard server stopped; closing tray icon.", flush=True)
+            icon.stop()
+
+    threading.Thread(target=_watch_server, name="towerpilot-tray-watch", daemon=True).start()
 
     try:
         icon.run()
@@ -319,8 +343,10 @@ def main(
         return 0
 
     app = app_factory() if app_factory is not None else _create_flask_app()
-    if args.autostart:
-        app.extensions["towerpilot"]["collector"].start()
+    ext = app.extensions["towerpilot"]
+    persisted_running = bool(ext.get("state", {}).get("cfg", {}).get("running", False))
+    if args.autostart or persisted_running:
+        ext["collector"].start()
 
     stopped = threading.Event()
 

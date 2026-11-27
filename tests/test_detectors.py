@@ -103,6 +103,11 @@ def test_detect_end_stats_home_requires_game_stats_and_rejects_tournament():
         frame, ocr_fn=lambda crops: ["TOURNAMENT GAME STATS", "RETRY", "HOME"]
     ) is None
 
+    # Rejects GAME STATS without sibling RETRY button
+    assert detectors.detect_end_stats_home(
+        frame, ocr_fn=lambda crops: ["GAME STATS", "PERKS", "HOME"]
+    ) is None
+
     # Rejects active battle (undimmed hamburger visible)
     _draw_three_bars(frame)
     assert detectors.detect_end_stats_home(frame, ocr_fn=lambda crops: ["GAME STATS", "RETRY", "HOME"]) is None

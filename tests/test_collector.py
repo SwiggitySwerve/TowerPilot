@@ -428,3 +428,47 @@ def test_run_flow_still_runs_when_battle_only_is_false_and_does_not_fall_through
     assert len(tapped) == 1
     assert collector.flow_status == "tapped HOME"
 
+
+def test_failed_ocr_attempt_backs_off_and_capture_errors_dedup(tmp_path, monkeypatch):
+    import json
+
+    log_file = tmp_path / "events.jsonl"
+    cfg = copy.deepcopy(DEFAULT_CONFIG)
+    cfg["mode"] = "ocr"
+    cfg["floating_gems"]["enabled"] = False
+
+    class FailingGrabFrames(FakeFrames):
+        def __init__(self, frame):
+            super().__init__(frame)
+            self.adb_calls = 0
+
+        def grab_adb(self):
+            self.adb_calls += 1
+            raise RuntimeError("adb offline")
+
+    frames = FailingGrabFrames(_battle_frame())
+    hit = detectors.AdGemHit(rect=(40, 620, 180, 100), center=(130, 670), text="CLAIM 6")
+    monkeypatch.setattr(detectors, "detect_ad_gem", lambda *a, **kw: hit)
+
+    collector = GemCollector(frames, cfg, ad_delay_sec=(0.0, 0.0), event_log_path=log_file)
+    collector.step_once()
+    collector.step_once()
+    collector.step_once()
+    # Pending state cleared and 5s backoff prevented hammering grab_adb on subsequent passes
+    assert frames.adb_calls == 1
+    assert collector.ad_pending_due_at is None
+    assert collector.ad_cooldown_until > time.monotonic()
+
+    # Repeated identical capture errors log only once
+    class BrokenPreview(FakeFrames):
+        def latest_or_grab(self, max_age_sec: float = 1.2):
+            raise RuntimeError("stream disconnected")
+
+    c2 = GemCollector(BrokenPreview(_battle_frame()), cfg, event_log_path=log_file)
+    c2.step_once()
+    c2.step_once()
+    c2.step_once()
+    rows = [json.loads(line) for line in log_file.read_text(encoding="utf-8").splitlines()]
+    cap_errs = [r for r in rows if r["event"] == "capture_error"]
+    assert len(cap_errs) == 1
+

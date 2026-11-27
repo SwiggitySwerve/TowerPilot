@@ -161,6 +161,8 @@ def create_app(
 
     def update_harvest(payload: dict[str, Any]) -> dict[str, Any]:
         running, cfg_patch = _parse_harvest_patch(payload)
+        if running is not None:
+            cfg_patch["running"] = running
         with cfg_lock:
             if cfg_patch:
                 merged = deep_merge(state["cfg"], cfg_patch)
@@ -187,6 +189,7 @@ def create_app(
 
     app.extensions["towerpilot"] = {
         "config_path": config_path,
+        "state": state,
         "frames": frames,
         "collector": gem_collector,
         "shutdown": shutdown,
@@ -283,7 +286,7 @@ def main() -> None:
     app = create_app()
     ext = app.extensions["towerpilot"]
     atexit.register(ext["shutdown"])
-    if args.autostart:
+    if args.autostart or ext["state"]["cfg"].get("running"):
         ext["collector"].start()
 
     print(f"Tower Pilot v{__version__} listening on http://{args.host}:{args.port}/", flush=True)

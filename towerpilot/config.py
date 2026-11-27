@@ -18,6 +18,7 @@ VALID_MODES = ("ocr", "timer")
 VALID_BACKENDS = ("auto", "mumu", "adb")
 
 DEFAULT_CONFIG: dict[str, Any] = {
+    "running": False,
     "mode": "ocr",
     "ad_gems": {
         "enabled": True,
@@ -158,6 +159,7 @@ def validate_config(cfg: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"stream.backend must be one of {VALID_BACKENDS}")
 
     return {
+        "running": _require_bool(cfg.get("running", DEFAULT_CONFIG["running"]), "running"),
         "mode": mode,
         "ad_gems": {
             "enabled": _require_bool(ad_raw.get("enabled", DEFAULT_CONFIG["ad_gems"]["enabled"]), "ad_gems.enabled"),
