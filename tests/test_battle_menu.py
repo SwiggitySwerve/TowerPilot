@@ -202,18 +202,20 @@ def test_detect_daily_missions_claimables_excludes_reroll_and_checked_chests():
 
 def test_detect_guild_claimables_excludes_checked_and_leave_button():
     frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
-    # Mark chest 100 as claimed (green checkmark around x=170, y=700), leave 250 unclaimed
-    cv2.rectangle(frame, (130, 665), (210, 735), (40, 230, 50), -1)
+    # Mark chest 100 (cx=181, cy=706) and chest 750 (cx=1015, cy=706) as claimed; leave 250 unclaimed
+    cv2.rectangle(frame, (150, 680), (210, 730), (40, 230, 50), -1)
+    cv2.rectangle(frame, (985, 680), (1045, 730), (40, 230, 50), -1)
 
     lines = [
-        (760, 110, "100"),
-        (760, 300, "250"),
-        (760, 600, "500"),
-        (840, 660, "Total Contribution: 300"),
+        (755, 113, "100"),
+        (755, 306, "250"),
+        (755, 625, "500"),
+        (755, 947, "750"),
+        (834, 727, "Total Contribution: 845"),
     ]
     res = battle_menu.detect_guild_claimables(frame, lines)
-    assert res["total_contribution"] == 300
-    assert [thr for thr, _ in res["chest_claims"]] == [250]
+    assert res["total_contribution"] == 845
+    assert [thr for thr, _ in res["chest_claims"]] == [250, 500]
 
 
 # --- 3. Full BattleMenuRoutine offline state machine ---------------------

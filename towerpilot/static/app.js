@@ -2107,11 +2107,26 @@ function render(data) {
       bmBanner.hidden = true;
     }
   }
+  const nextAuto = (bm.next_auto_sec && typeof bm.next_auto_sec === "object") ? bm.next_auto_sec : {};
   if ($("historySyncMeta")) {
     const hCount = Number(bm.history_count || 0);
-    $("historySyncMeta").textContent = hCount > 0
-      ? `${hCount} runs synced \u00b7 exact timings & Coins/hr`
-      : "Authoritative timings & Coins/hr";
+    const hNext = nextAuto.history;
+    const hBase = hCount > 0 ? `${hCount} runs` : "Exact timings & Coins/hr";
+    $("historySyncMeta").textContent = (routinesCfg.auto_sync_history && hNext !== null && hNext !== undefined)
+      ? `${hBase} \u00b7 next in ${fmtDuration(hNext)} (every ${routinesCfg.history_interval_min || 60}m)`
+      : hBase;
+  }
+  if ($("dailyRoutineMeta")) {
+    const dNext = nextAuto.daily_quests;
+    $("dailyRoutineMeta").textContent = (routinesCfg.auto_claim_daily && dNext !== null && dNext !== undefined)
+      ? `Next in ${fmtDuration(dNext)} (every ${routinesCfg.daily_interval_min || 30}m)`
+      : `Every ${routinesCfg.daily_interval_min || 30}m when ON`;
+  }
+  if ($("guildRoutineMeta")) {
+    const gNext = nextAuto.guild_rewards;
+    $("guildRoutineMeta").textContent = (routinesCfg.auto_claim_guild && gNext !== null && gNext !== undefined)
+      ? `Next in ${fmtDuration(gNext)} (every ${routinesCfg.guild_interval_min || 60}m)`
+      : `Every ${routinesCfg.guild_interval_min || 60}m when ON`;
   }
   for (const id of ["syncHistoryBtn", "runHistoryBtn", "runDailyBtn", "runGuildBtn", "runCardsBtn", "runModulesBtn", "inBattleCardsBtn", "inBattleModulesBtn"]) {
     const b = $(id);

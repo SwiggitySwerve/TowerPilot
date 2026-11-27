@@ -87,12 +87,12 @@ _TASK_LABELS: dict[str, str] = {
     "guild_rewards": "Guild Rewards",
 }
 
-# Fixed 1080px horizontal slot centers for Weekly Challenge (5 boxes) & Guild (4 chests)
+# Pixel-verified 1080px horizontal chest centers on Guild screen (measured from live_guild.png)
 _GUILD_CHEST_X_BY_THRESHOLD: dict[int, int] = {
-    100: 170,
-    250: 350,
-    500: 645,
-    750: 940,
+    100: 181,
+    250: 375,
+    500: 695,
+    750: 1015,
 }
 
 _DATE_RE = re.compile(r"\b(\d{1,2}/\d{1,2}/\d{2,4})\b")
@@ -464,7 +464,7 @@ def detect_guild_claimables(
                 else:
                     cx = lx + int(round(48 * sx))
                 cx = max(chest_w // 2, min(w - chest_w // 2, cx))
-                cy = max(int(round(650 * sy)), ly - int(round(56 * sy)))
+                cy = max(int(round(650 * sy)), ly - int(round(49 * sy)))
                 rect = (cx - chest_w // 2, cy - chest_h // 2, chest_w, chest_h)
                 center = (rect[0] + rect[2] // 2, rect[1] + rect[3] // 2)
                 if _pt_in_rect(center, forbidden_leave) or _pt_in_rect(center, forbidden_store):
@@ -806,14 +806,20 @@ class BattleMenuRoutine:
         guild_guard: bool = False,
     ) -> dict[str, Any] | None:
         """Single point-level safety fence enforced on EVERY Battle Menu routine tap."""
-        forbidden = [REF_FORBIDDEN_EXIT]
-        if not allow_close_toggle:
-            forbidden.append(REF_FORBIDDEN_STORE)
+        forbidden: list[tuple[int, int, int, int]] = []
+        # Store & EXIT BATTLE rects only exist when the Battle Side Menu dropdown is open
+        if detectors.side_menu_state(frame) == "open":
+            forbidden.append(REF_FORBIDDEN_EXIT)
+            if not allow_close_toggle:
+                forbidden.append(REF_FORBIDDEN_STORE)
         if guild_guard:
             forbidden.extend((REF_FORBIDDEN_GUILD_LEAVE, REF_FORBIDDEN_GUILD_STORE))
         for raw_rect in forbidden:
             if _pt_in_rect(pt, detectors.scale_rect(raw_rect, frame.shape)):
-                self._abort(f"refused tap inside forbidden zone ({reason})")
+                if detectors.side_menu_state(frame) == "obscured" and not reason.startswith("battle_menu:return_"):
+                    self._abort_via_return(f"refused tap inside forbidden zone ({reason})")
+                else:
+                    self._abort(f"refused tap inside forbidden zone ({reason})")
                 return None
         return self._tap(pt, frame, reason=reason, input_display=input_display)
 
