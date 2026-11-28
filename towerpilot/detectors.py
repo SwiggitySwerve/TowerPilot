@@ -504,11 +504,20 @@ def read_battle_hud_meta(
     cleaned_coins = re.sub(r"\b(?:TIER|WAVE)\s*[:#-]?\s*[\d,]+", "", cleaned_coins, flags=re.IGNORECASE)
     m = re.search(r"(?<![A-Za-z0-9.])(\d[\d,]*(?:\.\d+)?)([kKmMbBtTqQsSoOnNdD])?(?![A-Za-z0-9.])", cleaned_coins)
     if m:
-        raw = f"{m.group(1).replace(',', '')}{m.group(2) or ''}"
-        val = run_rules.parse_coins(raw)
-        if val is not None:
-            out["coins"] = val
-            out["coins_raw"] = raw
+        num_str = m.group(1).replace(",", "")
+        suffix = m.group(2) or ""
+        try:
+            mantissa = float(num_str)
+        except ValueError:
+            mantissa = -1.0
+        # Reject structurally impossible decimal-drop OCR glitches (e.g. '73096T' instead of '73.96T'):
+        # the game rolls over to the next suffix at 1000.
+        if mantissa >= 0 and not (suffix and mantissa >= 1000.0):
+            raw = f"{num_str}{suffix}"
+            val = run_rules.parse_coins(raw)
+            if val is not None:
+                out["coins"] = val
+                out["coins_raw"] = raw
     return out
 
 

@@ -24,6 +24,7 @@ let lastBattleMenuTask = null;
 let scanRequestBusy = false;
 let loadoutOwnerFilter = "all";
 let loadoutPresetFilter = "";
+let activeLoadoutSubtab = "cards";
 
 const KIND_LABELS = {
   farm: "FARM",
@@ -1089,33 +1090,6 @@ function collectPresetNames(snap) {
   return ordered;
 }
 
-function syncPresetFilterDropdown(snap) {
-  const sel = $("loadoutPresetFilter");
-  const names = new Set(DEFAULT_PRESET_NAMES);
-  for (const name of collectPresetNames(snap)) {
-    names.add(name);
-  }
-  const sorted = Array.from(names).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
-
-  const currentVal = loadoutPresetFilter;
-  sel.textContent = "";
-  const allOpt = document.createElement("option");
-  allOpt.value = "";
-  allOpt.textContent = "All Presets";
-  sel.appendChild(allOpt);
-
-  for (const name of sorted) {
-    const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
-    sel.appendChild(opt);
-  }
-  sel.value = names.has(currentVal) ? currentVal : "";
-  if (sel.value !== loadoutPresetFilter) {
-    loadoutPresetFilter = sel.value;
-  }
-}
-
 function buildPresetMembershipMaps(snap) {
   const cardMap = new Map();
   const modMap = new Map();
@@ -1282,7 +1256,6 @@ const SCAN_PHASE_LABELS = {
   starting: "Starting scan",
   cards: "Scanning Cards",
   modules: "Scanning Modules",
-  uws: "Scanning UWs",
   returning: "Returning Home",
 };
 
@@ -1313,6 +1286,68 @@ function formatScanProgress(scan) {
   return parts.length > 0 ? parts.join(" \u00b7 ") : "Scanning inventory...";
 }
 
+function updateLoadoutPrimaryBtn() {
+  const btn = $("loadoutPrimaryBtn");
+  if (!btn) return;
+  const s = lastScanState || {};
+  const isRunning = Boolean(s.running);
+  const isQueued = Boolean(s.queued) && !isRunning;
+  const battleLive = Boolean(lastStatus && lastStatus.battle && lastStatus.battle.live);
+  const bmActive = Boolean(lastStatus && lastStatus.battle_menu && lastStatus.battle_menu.active);
+
+  if (scanRequestBusy) {
+    btn.disabled = true;
+    btn.className = "mini-btn cyan loadout-primary-btn";
+    btn.textContent = "Starting\u2026";
+    btn.title = "Starting inventory action";
+  } else if (isRunning) {
+    btn.disabled = true;
+    btn.className = "mini-btn cyan loadout-primary-btn";
+    btn.textContent = "Scanning\u2026";
+    btn.title = "Automated inventory scan in progress";
+  } else if (isQueued) {
+    btn.disabled = true;
+    btn.className = "mini-btn amber loadout-primary-btn";
+    btn.textContent = "Scan Queued";
+    btn.title = "Scan queued for next run boundary";
+  } else if (activeLoadoutSubtab === "workshop" || activeLoadoutSubtab === "uws") {
+    btn.disabled = false;
+    btn.className = "mini-btn cyan loadout-primary-btn";
+    btn.textContent = "Observe";
+    btn.title = "Zero-tap read on out-of-battle Home Workshop or UWs (never pulls battle perks)";
+  } else if (battleLive) {
+    btn.disabled = bmActive;
+    btn.className = "mini-btn cyan loadout-primary-btn";
+    if (activeLoadoutSubtab === "modules") {
+      btn.textContent = "Read Mods";
+      btn.title = "Open Modules via Battle Menu and read equipped slots";
+    } else {
+      btn.textContent = "Read Cards";
+      btn.title = "Open Cards via Battle Menu and scan cards";
+    }
+  } else {
+    btn.disabled = false;
+    btn.className = "mini-btn cyan loadout-primary-btn";
+    btn.textContent = "Scan";
+    btn.title = "Automated off-battle inventory scan across Cards and Modules";
+  }
+}
+
+function triggerLoadoutPrimaryAction() {
+  const battleLive = Boolean(lastStatus && lastStatus.battle && lastStatus.battle.live);
+  if (activeLoadoutSubtab === "workshop" || activeLoadoutSubtab === "uws") {
+    observeScreen();
+  } else if (battleLive) {
+    if (activeLoadoutSubtab === "modules") {
+      runBattleMenuRoutine("modules", "Modules scan");
+    } else {
+      runBattleMenuRoutine("cards", "Cards scan");
+    }
+  } else {
+    scanInventory();
+  }
+}
+
 function renderScanState(scan) {
   if (scan && typeof scan === "object") {
     lastScanState = scan;
@@ -1321,36 +1356,12 @@ function renderScanState(scan) {
   const isRunning = Boolean(s.running);
   const isQueued = Boolean(s.queued) && !isRunning;
   const errMsg = !isRunning && !isQueued && s.error ? String(s.error) : "";
-  const battleLive = Boolean(lastStatus && lastStatus.battle && lastStatus.battle.live);
 
-  const scanBtn = $("scanInventoryBtn");
+  updateLoadoutPrimaryBtn();
+
   const banner = $("scanBanner");
   const bannerText = $("scanBannerText");
   const cancelBtn = $("cancelScanBtn");
-
-  if (scanRequestBusy) {
-    scanBtn.disabled = true;
-    scanBtn.className = "primary-btn";
-    scanBtn.textContent = "Starting...";
-  } else if (isRunning) {
-    scanBtn.disabled = true;
-    scanBtn.className = "primary-btn";
-    scanBtn.textContent = "Scanning...";
-  } else if (isQueued) {
-    scanBtn.disabled = true;
-    scanBtn.className = "primary-btn amber";
-    scanBtn.textContent = "Scan Queued";
-  } else if (battleLive) {
-    scanBtn.disabled = false;
-    scanBtn.className = "primary-btn amber";
-    scanBtn.textContent = "Queue Scan (Next Boundary)";
-    scanBtn.title = "Battle is live \u2014 arm automated scan to run automatically at the next boundary";
-  } else {
-    scanBtn.disabled = false;
-    scanBtn.className = "primary-btn";
-    scanBtn.textContent = "Scan Inventory";
-    scanBtn.title = "Automated inventory scan across Cards and Modules";
-  }
 
   if (isRunning) {
     banner.className = "alert-banner loadout-scan-banner cyan";
@@ -1381,14 +1392,6 @@ function renderScanState(scan) {
   }
 }
 
-function pickGridColumns(count) {
-  if (count <= 1) return 1;
-  if (count === 2 || count === 4) return 2;
-  if (count % 3 === 0) return 3;
-  if (count % 2 === 0) return 2;
-  return count >= 5 ? 2 : 3;
-}
-
 const CARD_RARITY_GROUPS = [
   { key: "common", label: "Common", tone: "grp-common" },
   { key: "rare", label: "Rare", tone: "grp-rare" },
@@ -1407,6 +1410,12 @@ const WORKSHOP_SLOT_GROUPS = [
   { key: "defense", label: "Defense", tone: "grp-defense" },
   { key: "utility", label: "Utility", tone: "grp-utility" },
 ];
+
+const GROUP_DEFS_BY_CATEGORY = {
+  card: { defs: CARD_RARITY_GROUPS, field: "rarity", fallback: "common" },
+  module: { defs: MODULE_SLOT_GROUPS, field: "slot", fallback: "" },
+  workshop: { defs: WORKSHOP_SLOT_GROUPS, field: "slot", fallback: "" },
+};
 
 function buildCatalogCell(item, category, membershipMaps, activePresets) {
   const presetAware = category === "card" || category === "module";
@@ -1512,7 +1521,6 @@ function renderEquippedModuleSlotsBar(container, snap) {
 
   const grid = document.createElement("div");
   grid.className = "equipped-slots-grid";
-  grid.style.setProperty("--cols", String(pickGridColumns(entries.length)));
 
   for (const { group, info } of entries) {
     const tile = document.createElement("div");
@@ -1582,34 +1590,17 @@ function renderCatalogSection(container, items, category, membershipMaps, active
     return;
   }
 
-  // Group into cleanly aligned, color-coded grid tables sized to each group
-  let groups = [];
-  if (category === "card") {
-    for (const def of CARD_RARITY_GROUPS) {
-      const members = filtered.filter((it) => normalizeKey(it.rarity || "common") === def.key);
+  // Group into consistent, color-coded 3-column grid tables (2 cols on narrow containers)
+  const groups = [];
+  const cfg = GROUP_DEFS_BY_CATEGORY[category];
+  if (cfg) {
+    for (const def of cfg.defs) {
+      const members = filtered.filter((it) => normalizeKey(it[cfg.field] || cfg.fallback) === def.key);
       if (members.length > 0) {
         groups.push({ label: def.label, tone: def.tone, items: members });
       }
     }
-    const other = filtered.filter((it) => !CARD_RARITY_GROUPS.some((d) => d.key === normalizeKey(it.rarity || "common")));
-    if (other.length > 0) groups.push({ label: "Other", tone: "", items: other });
-  } else if (category === "module") {
-    for (const def of MODULE_SLOT_GROUPS) {
-      const members = filtered.filter((it) => normalizeKey(it.slot) === def.key);
-      if (members.length > 0) {
-        groups.push({ label: def.label, tone: def.tone, items: members });
-      }
-    }
-    const other = filtered.filter((it) => !MODULE_SLOT_GROUPS.some((d) => d.key === normalizeKey(it.slot)));
-    if (other.length > 0) groups.push({ label: "Other", tone: "", items: other });
-  } else if (category === "workshop") {
-    for (const def of WORKSHOP_SLOT_GROUPS) {
-      const members = filtered.filter((it) => normalizeKey(it.slot) === def.key);
-      if (members.length > 0) {
-        groups.push({ label: def.label, tone: def.tone, items: members });
-      }
-    }
-    const other = filtered.filter((it) => !WORKSHOP_SLOT_GROUPS.some((d) => d.key === normalizeKey(it.slot)));
+    const other = filtered.filter((it) => !cfg.defs.some((d) => d.key === normalizeKey(it[cfg.field] || cfg.fallback)));
     if (other.length > 0) groups.push({ label: "Other", tone: "", items: other });
   } else {
     groups.push({ label: "", tone: "grp-uw", items: filtered });
@@ -1637,10 +1628,8 @@ function renderCatalogSection(container, items, category, membershipMaps, active
       wrap.appendChild(head);
     }
 
-    const cols = pickGridColumns(grp.items.length);
     const grid = document.createElement("div");
     grid.className = "catalog-grid";
-    grid.style.setProperty("--cols", String(cols));
 
     for (const item of grp.items) {
       grid.appendChild(buildCatalogCell(item, category, membershipMaps, activePresets));
@@ -1653,16 +1642,12 @@ function renderCatalogSection(container, items, category, membershipMaps, active
 
 function renderPresetSummary(snap, catalogCards, catalogModules, membershipMaps) {
   const presetsBox = $("loadoutPresets");
+  const presetsRow = $("loadoutPresetsRow");
   presetsBox.textContent = "";
   const presetNames = collectPresetNames(snap);
-
-  if (presetNames.length === 0) {
-    const span = document.createElement("span");
-    span.className = "ledger-empty";
-    span.textContent = "None scanned yet.";
-    presetsBox.appendChild(span);
-    return;
-  }
+  const showPresets = (activeLoadoutSubtab === "cards" || activeLoadoutSubtab === "modules") && presetNames.length > 0;
+  presetsRow.hidden = !showPresets;
+  if (!showPresets) return;
 
   for (const presetName of presetNames) {
     let cardCount = 0;
@@ -1701,7 +1686,6 @@ function renderPresetSummary(snap, catalogCards, catalogModules, membershipMaps)
       : `Highlight items equipped in ${presetName}`;
     btn.addEventListener("click", () => {
       loadoutPresetFilter = loadoutPresetFilter === presetName ? "" : presetName;
-      $("loadoutPresetFilter").value = loadoutPresetFilter;
       if (lastAccountSnap) renderAccount(lastAccountSnap);
     });
     presetsBox.appendChild(btn);
@@ -1720,13 +1704,42 @@ function getSectionCatalog(snap, key, category) {
   }));
 }
 
+function renderObserveMeta(snap) {
+  const el = $("observeMeta");
+  if (!el) return;
+  if (activeLoadoutSubtab === "workshop" || activeLoadoutSubtab === "uws") {
+    el.textContent = "Base unlocks only \u2014 open Home Workshop / UWs between runs and click Observe.";
+    return;
+  }
+  const counts = (snap && snap.counts) || {};
+  const totalOwned = (counts.cards_owned || 0)
+    + (counts.modules_owned || 0)
+    + (counts.workshop_owned || 0)
+    + (counts.uws_owned || 0)
+    + (counts.uw_plus_owned || 0);
+  const metaParts = [];
+  if (snap && snap.scan && snap.scan.last_scan_at) {
+    metaParts.push(`Scanned ${fmtTime(snap.scan.last_scan_at)}`);
+  } else if (snap && snap.updated_at) {
+    const screen = snap.last_screen || "screen";
+    metaParts.push(`Observed ${screen} at ${fmtTime(snap.updated_at)}`);
+  }
+  if (totalOwned > 0) {
+    metaParts.push(`${totalOwned} owned`);
+  }
+  el.textContent = metaParts.length > 0
+    ? metaParts.join(" \u00b7 ")
+    : "Base unlocks only \u2014 scan or observe between runs.";
+}
+
 function renderAccount(snap) {
   if (!snap) return;
   lastAccountSnap = snap;
-  syncPresetFilterDropdown(snap);
 
   if (snap.scan && typeof snap.scan === "object") {
     renderScanState(snap.scan);
+  } else {
+    updateLoadoutPrimaryBtn();
   }
 
   const catalogCards = getSectionCatalog(snap, "cards", "card");
@@ -1742,25 +1755,36 @@ function renderAccount(snap) {
   const modsTotal = counts.modules_total ?? catalogModules.length;
   const uwsOwned = counts.uws_owned ?? catalogUws.filter((i) => i.owned).length;
   const uwsTotal = counts.uws_total ?? catalogUws.length;
+  const upOwned = counts.uw_plus_owned ?? catalogUwPlus.filter((i) => i.owned).length;
+  const upTotal = counts.uw_plus_total ?? catalogUwPlus.length;
   const wsOwned = counts.workshop_owned ?? catalogWorkshop.filter((i) => i.owned).length;
   const wsTotal = counts.workshop_total ?? catalogWorkshop.length;
 
+  // Count equipped module slots so badge doesn't read '0/25' beside 'Equipped 4/4'
+  let eqModSlots = 0;
+  if (snap.module_presets && typeof snap.module_presets === "object") {
+    const firstKey = Object.keys(snap.module_presets)[0];
+    if (firstKey && snap.module_presets[firstKey]) {
+      eqModSlots = Object.values(snap.module_presets[firstKey])
+        .filter((v) => v && (v.level || v.rarity || v.name)).length;
+    }
+  }
+
   const cardsLabel = cardsTotal > 0 ? `${cardsOwned}/${cardsTotal}` : String(cardsOwned);
-  const modsLabel = modsTotal > 0 ? `${modsOwned}/${modsTotal}` : String(modsOwned);
+  const modsLabel = (modsOwned === 0 && eqModSlots > 0)
+    ? `${eqModSlots} eq`
+    : (modsTotal > 0 ? `${modsOwned}/${modsTotal}` : String(modsOwned));
   const uwsLabel = uwsTotal > 0 ? `${uwsOwned}/${uwsTotal}` : String(uwsOwned);
   const wsLabel = wsTotal > 0 ? `${wsOwned}/${wsTotal}` : String(wsOwned);
 
-  $("cardsCount").textContent = cardsLabel;
-  $("modulesCount").textContent = modsLabel;
-  $("uwsCount").textContent = uwsLabel;
-  if ($("workshopCount")) $("workshopCount").textContent = wsLabel;
-  if ($("cardsTabBadge")) $("cardsTabBadge").textContent = cardsLabel;
-  if ($("modulesTabBadge")) $("modulesTabBadge").textContent = modsLabel;
-  if ($("workshopTabBadge")) $("workshopTabBadge").textContent = wsLabel;
-  if ($("uwsTabBadge")) $("uwsTabBadge").textContent = uwsLabel;
+  $("cardsTabBadge").textContent = cardsLabel;
+  $("modulesTabBadge").textContent = modsLabel;
+  $("workshopTabBadge").textContent = wsLabel;
+  $("uwsTabBadge").textContent = uwsLabel;
+  $("uwPlusCount").textContent = `${upOwned}/${upTotal}`;
 
   const slotsBadge = $("cardSlotsBadge");
-  if (snap.active_card_slots) {
+  if (snap.active_card_slots && activeLoadoutSubtab === "cards") {
     slotsBadge.textContent = `${snap.active_card_slots} slots`;
     slotsBadge.hidden = false;
   } else {
@@ -1773,36 +1797,11 @@ function renderAccount(snap) {
 
   renderCatalogSection($("loadoutCards"), catalogCards, "card", membershipMaps, activePresets, snap);
   renderCatalogSection($("loadoutModules"), catalogModules, "module", membershipMaps, activePresets, snap);
-  if ($("loadoutWorkshop")) {
-    renderCatalogSection($("loadoutWorkshop"), catalogWorkshop, "workshop", membershipMaps, activePresets, snap);
-  }
+  renderCatalogSection($("loadoutWorkshop"), catalogWorkshop, "workshop", membershipMaps, activePresets, snap);
   renderCatalogSection($("loadoutUws"), catalogUws, "uw", membershipMaps, activePresets, snap);
-  if ($("loadoutUwPlus")) {
-    renderCatalogSection($("loadoutUwPlus"), catalogUwPlus, "uw_plus", membershipMaps, activePresets, snap);
-  }
-  if ($("uwPlusCount")) {
-    const upOwned = counts.uw_plus_owned ?? catalogUwPlus.filter((i) => i.owned).length;
-    const upTotal = counts.uw_plus_total ?? catalogUwPlus.length;
-    $("uwPlusCount").textContent = `${upOwned}/${upTotal}`;
-  }
+  renderCatalogSection($("loadoutUwPlus"), catalogUwPlus, "uw_plus", membershipMaps, activePresets, snap);
   renderPresetSummary(snap, catalogCards, catalogModules, membershipMaps);
-
-  const metaParts = [];
-  if (snap.scan && snap.scan.last_scan_at) {
-    metaParts.push(`Scanned ${fmtTime(snap.scan.last_scan_at)}`);
-  } else if (snap.updated_at) {
-    const screen = snap.last_screen || "screen";
-    metaParts.push(`Observed ${screen} at ${fmtTime(snap.updated_at)}`);
-  }
-  const totalOwned = cardsOwned + modsOwned + uwsOwned;
-  if (totalOwned > 0) {
-    metaParts.push(`${totalOwned} owned`);
-  }
-  if (metaParts.length > 0) {
-    $("observeMeta").textContent = metaParts.join(" \u00b7 ");
-  } else {
-    $("observeMeta").textContent = "Scan inventory or open Cards/Modules/UWs and click Observe.";
-  }
+  renderObserveMeta(snap);
 }
 
 async function fetchAccount() {
@@ -1815,24 +1814,27 @@ async function fetchAccount() {
   }
 }
 
+async function postJsonRaw(url, payload) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
 async function scanInventory() {
   scanRequestBusy = true;
   renderScanState(lastScanState);
   try {
-    const res = await fetch("/api/account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "scan", scope: "all", queue_if_battle: true }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const data = await postJsonRaw("/api/account", { action: "scan", scope: "all", queue_if_battle: true });
     if (data.scan) {
       lastScanRunning = Boolean(data.scan.running);
       renderScanState(data.scan);
     }
-    if (data.account) {
-      renderAccount(data.account);
-    }
+    if (data.account) renderAccount(data.account);
     if (data.scan && data.scan.queued) {
       showToast("Scan queued for next boundary");
     } else if (data.scan && data.scan.running) {
@@ -1852,20 +1854,12 @@ async function cancelInventoryScan() {
   const cancelBtn = $("cancelScanBtn");
   cancelBtn.disabled = true;
   try {
-    const res = await fetch("/api/account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "cancel_scan" }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const data = await postJsonRaw("/api/account", { action: "cancel_scan" });
     if (data.scan) {
       lastScanRunning = Boolean(data.scan.running);
       renderScanState(data.scan);
     }
-    if (data.account) {
-      renderAccount(data.account);
-    }
+    if (data.account) renderAccount(data.account);
     showToast("Scan cancelled");
   } catch (err) {
     showToast(err.message || "Cancel failed", true);
@@ -1875,38 +1869,31 @@ async function cancelInventoryScan() {
 }
 
 async function observeScreen() {
-  const btn = $("observeBtn");
-  btn.disabled = true;
-  btn.textContent = "Observing...";
+  const btn = $("loadoutPrimaryBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Observing\u2026";
+  }
   try {
-    const res = await fetch("/api/account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "observe" }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const data = await postJsonRaw("/api/account", { action: "observe" });
     renderAccount(data.account);
     const found = (data.observed && Array.isArray(data.observed.items)) ? data.observed.items.length : 0;
     const screen = (data.observed && data.observed.screen) ? data.observed.screen : "screen";
-    showToast(`Observed ${found} item${found === 1 ? "" : "s"} (${screen})`);
+    if (screen === "battle") {
+      showToast("Live battle active \u2014 open Home Workshop / UWs between runs");
+    } else {
+      showToast(`Observed ${found} item${found === 1 ? "" : "s"} (${screen})`);
+    }
   } catch (err) {
     showToast(err.message || "Observe failed", true);
   } finally {
-    btn.disabled = false;
-    btn.textContent = "Observe";
+    updateLoadoutPrimaryBtn();
   }
 }
 
 async function resetAccount() {
   try {
-    const res = await fetch("/api/account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "reset" }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const data = await postJsonRaw("/api/account", { action: "reset" });
     renderAccount(data.account);
     showToast("Observed loadout cleared");
   } catch (err) {
@@ -2225,17 +2212,24 @@ function render(data) {
   $("noStartTimesRow").hidden = !rules.no_start_enabled;
   syncInputValue($("freezeMinInput"), rules.freeze_timeout_min ?? 10);
 
-  // Summary badge for collapsible Advanced Flow & Guards
+  // Summary badge for collapsible Guards & Limits
   const enabledFlowCount = [flow.auto_home, flow.auto_retry, flow.auto_battle, flow.auto_resume].filter(Boolean).length;
+  const activeGuards = [
+    rules.finish_and_stop,
+    rules.no_start_enabled,
+    Number(rules.expected_tier || 0) > 0,
+    Number(rules.max_runs || 0) > 0,
+    Number(rules.freeze_timeout_min || 0) > 0,
+  ].filter(Boolean).length;
   const advBadge = $("advancedFlowSummaryBadge");
   if (rules.finish_and_stop) {
     advBadge.textContent = "hold after run";
     advBadge.className = "flow-summary-badge amber";
-  } else if (enabledFlowCount > 0) {
-    advBadge.textContent = `${enabledFlowCount} active`;
+  } else if (activeGuards > 0) {
+    advBadge.textContent = `${activeGuards} set`;
     advBadge.className = "flow-summary-badge green";
   } else {
-    advBadge.textContent = "off";
+    advBadge.textContent = "default";
     advBadge.className = "flow-summary-badge";
   }
 
@@ -2300,61 +2294,53 @@ function render(data) {
 
   // Live Battle Menu routines (auto toggles + on-demand status)
   const routinesCfg = data.routines || {};
-  if ($("autoSyncHistoryBtn")) {
-    setToggle($("autoSyncHistoryBtn"), Boolean(routinesCfg.auto_sync_history), "flow");
-  }
-  if ($("autoClaimDailyBtn")) {
-    setToggle($("autoClaimDailyBtn"), Boolean(routinesCfg.auto_claim_daily), "flow");
-  }
-  if ($("autoClaimGuildBtn")) {
-    setToggle($("autoClaimGuildBtn"), Boolean(routinesCfg.auto_claim_guild), "flow");
-  }
+  setToggle($("autoSyncHistoryBtn"), Boolean(routinesCfg.auto_sync_history), "flow");
+  setToggle($("autoClaimDailyBtn"), Boolean(routinesCfg.auto_claim_daily), "flow");
+  setToggle($("autoClaimGuildBtn"), Boolean(routinesCfg.auto_claim_guild), "flow");
+
   const bm = data.battle_menu || {};
   const bmActive = Boolean(bm.active);
-  const bmPill = $("battleMenuPill");
   const bmBanner = $("battleMenuBanner");
-  if (bmPill) {
-    if (bmActive) {
-      setPill(bmPill, bm.task ? String(bm.task).replace(/_/g, " ") : "Running", "cyan");
-    } else if (bm.error) {
-      setPill(bmPill, "Error", "amber");
-    } else {
-      setPill(bmPill, "Idle", "");
-    }
-  }
-  if (bmBanner) {
-    if (bmActive) {
-      $("battleMenuBannerText").textContent = bm.detail ? String(bm.detail) : "Running Battle Menu routine\u2026";
-      bmBanner.hidden = false;
-    } else {
-      bmBanner.hidden = true;
-    }
+  if (bmActive) {
+    $("battleMenuBannerText").textContent = bm.detail ? String(bm.detail) : "Running Battle Menu routine\u2026";
+    bmBanner.hidden = false;
+  } else {
+    bmBanner.hidden = true;
   }
   const nextAuto = (bm.next_auto_sec && typeof bm.next_auto_sec === "object") ? bm.next_auto_sec : {};
-  if ($("historySyncMeta")) {
-    const hCount = Number(bm.history_count || 0);
-    const hNext = nextAuto.history;
-    const hBase = hCount > 0 ? `${hCount} runs` : "Exact timings & Coins/hr";
-    $("historySyncMeta").textContent = (routinesCfg.auto_sync_history && hNext !== null && hNext !== undefined)
+  const hCount = Number(bm.history_count || 0);
+  const hNext = nextAuto.history;
+  const hBase = hCount > 0 ? `${hCount} runs` : "Exact timings & Coins/hr";
+  if (routinesCfg.auto_sync_history) {
+    $("historySyncMeta").textContent = (hNext !== null && hNext !== undefined)
       ? `${hBase} \u00b7 next in ${fmtDuration(hNext)} (every ${routinesCfg.history_interval_min || 60}m)`
-      : hBase;
+      : `${hBase} \u00b7 waits for battle (every ${routinesCfg.history_interval_min || 60}m)`;
+  } else {
+    $("historySyncMeta").textContent = hBase;
   }
-  if ($("dailyRoutineMeta")) {
-    const dNext = nextAuto.daily_quests;
-    $("dailyRoutineMeta").textContent = (routinesCfg.auto_claim_daily && dNext !== null && dNext !== undefined)
+
+  const dNext = nextAuto.daily_quests;
+  if (routinesCfg.auto_claim_daily) {
+    $("dailyRoutineMeta").textContent = (dNext !== null && dNext !== undefined)
       ? `Next in ${fmtDuration(dNext)} (every ${routinesCfg.daily_interval_min || 30}m)`
-      : `Every ${routinesCfg.daily_interval_min || 30}m when ON`;
+      : `Waits for battle (every ${routinesCfg.daily_interval_min || 30}m)`;
+  } else {
+    $("dailyRoutineMeta").textContent = `Every ${routinesCfg.daily_interval_min || 30}m when ON`;
   }
-  if ($("guildRoutineMeta")) {
-    const gNext = nextAuto.guild_rewards;
-    $("guildRoutineMeta").textContent = (routinesCfg.auto_claim_guild && gNext !== null && gNext !== undefined)
+
+  const gNext = nextAuto.guild_rewards;
+  if (routinesCfg.auto_claim_guild) {
+    $("guildRoutineMeta").textContent = (gNext !== null && gNext !== undefined)
       ? `Next in ${fmtDuration(gNext)} (every ${routinesCfg.guild_interval_min || 60}m)`
-      : `Every ${routinesCfg.guild_interval_min || 60}m when ON`;
+      : `Waits for battle (every ${routinesCfg.guild_interval_min || 60}m)`;
+  } else {
+    $("guildRoutineMeta").textContent = `Every ${routinesCfg.guild_interval_min || 60}m when ON`;
   }
-  for (const id of ["syncHistoryBtn", "runHistoryBtn", "runDailyBtn", "runGuildBtn", "runCardsBtn", "runModulesBtn", "runWorkshopBtn", "inBattleCardsBtn", "inBattleModulesBtn", "inBattleWorkshopBtn"]) {
-    const b = $(id);
-    if (b) b.disabled = bmActive;
+
+  for (const id of ["runHistoryBtn", "runDailyBtn", "runGuildBtn"]) {
+    $(id).disabled = bmActive;
   }
+  updateLoadoutPrimaryBtn();
   if (lastBattleMenuActive && !bmActive) {
     if (bm.error) {
       showToast(String(bm.error), true);
@@ -2379,15 +2365,7 @@ function render(data) {
 async function postJson(url, payload, toastLabel) {
   inFlight += 1;
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(data.error || `HTTP ${res.status}`);
-    }
+    const data = await postJsonRaw(url, payload);
     render(data && data.status ? data.status : data);
     if (toastLabel) showToast(toastLabel);
   } catch (err) {
@@ -2413,13 +2391,7 @@ function updateRoutines(payload, toastLabel) {
 async function runBattleMenuRoutine(task, label) {
   inFlight += 1;
   try {
-    const res = await fetch("/api/routines", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "run", task }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const data = await postJsonRaw("/api/routines", { action: "run", task });
     if (data.status) render(data.status);
     showToast(`Started ${label}`);
   } catch (err) {
@@ -2481,6 +2453,7 @@ $("sidebarTabs").addEventListener("click", (e) => {
 function selectLoadoutSubtab(sub) {
   const valid = ["cards", "modules", "workshop", "uws"];
   const active = valid.includes(sub) ? sub : "cards";
+  activeLoadoutSubtab = active;
   const map = {
     cards: "subtabCards",
     modules: "subtabModules",
@@ -2488,63 +2461,32 @@ function selectLoadoutSubtab(sub) {
     uws: "subtabUws",
   };
   for (const [key, id] of Object.entries(map)) {
-    const panel = $(id);
-    if (panel) panel.hidden = key !== active;
+    $(id).hidden = key !== active;
   }
-  const bar = $("loadoutSubTabs");
-  if (bar) {
-    for (const btn of bar.querySelectorAll("button[data-subtab]")) {
-      const isAct = btn.dataset.subtab === active;
-      btn.classList.toggle("active", isAct);
-      btn.setAttribute("aria-selected", String(isAct));
-    }
+  for (const btn of $("loadoutSubTabs").querySelectorAll("button[data-subtab]")) {
+    const isAct = btn.dataset.subtab === active;
+    btn.classList.toggle("active", isAct);
+    btn.setAttribute("aria-selected", String(isAct));
   }
-  // Preset filter only applies to Cards & Modules
-  const presetSel = $("loadoutPresetFilter");
-  if (presetSel) {
-    presetSel.hidden = (active === "workshop" || active === "uws");
+  updateLoadoutPrimaryBtn();
+  if (lastAccountSnap) {
+    renderAccount(lastAccountSnap);
+  } else {
+    renderObserveMeta(null);
   }
 }
 
-if ($("loadoutSubTabs")) {
-  $("loadoutSubTabs").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-subtab]");
-    if (btn) selectLoadoutSubtab(btn.dataset.subtab);
-  });
-}
-
-// Collapsible sidebar helper (only active when collapse button is present)
-function setSidebarCollapsed(collapsed) {
-  const grid = $("layoutGrid");
-  const btn = $("collapseSidebarBtn");
-  if (!grid || !btn) return;
-  grid.classList.toggle("sidebar-collapsed", collapsed);
-  btn.setAttribute("aria-expanded", String(!collapsed));
-  btn.title = collapsed ? "Expand panel" : "Collapse panel";
-  btn.textContent = collapsed ? "\u00bb" : "\u00ab";
-  try {
-    localStorage.setItem("tp_sidebar_collapsed", collapsed ? "1" : "0");
-  } catch (_) {
-    // ignore
-  }
-}
+$("loadoutSubTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-subtab]");
+  if (btn) selectLoadoutSubtab(btn.dataset.subtab);
+});
 
 try {
-  if ($("collapseSidebarBtn") && localStorage.getItem("tp_sidebar_collapsed") === "1") {
-    setSidebarCollapsed(true);
-  }
   if (localStorage.getItem("tp_advanced_flow_open") === "1") {
     $("advancedFlowDetails").open = true;
   }
 } catch (_) {
   // ignore
-}
-
-if ($("collapseSidebarBtn")) {
-  $("collapseSidebarBtn").addEventListener("click", () => {
-    const collapsed = $("layoutGrid").classList.contains("sidebar-collapsed");
-    setSidebarCollapsed(!collapsed);
-  });
 }
 
 $("advancedFlowDetails").addEventListener("toggle", () => {
@@ -2649,71 +2591,29 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Loadout & Battle Menu routine bindings
-$("scanInventoryBtn").addEventListener("click", scanInventory);
+$("loadoutPrimaryBtn").addEventListener("click", triggerLoadoutPrimaryAction);
 $("cancelScanBtn").addEventListener("click", cancelInventoryScan);
-if ($("inBattleCardsBtn")) {
-  $("inBattleCardsBtn").addEventListener("click", () => runBattleMenuRoutine("cards", "Cards scan"));
-}
-if ($("inBattleModulesBtn")) {
-  $("inBattleModulesBtn").addEventListener("click", () => runBattleMenuRoutine("modules", "Modules scan"));
-}
-if ($("syncHistoryBtn")) {
-  $("syncHistoryBtn").addEventListener("click", () => runBattleMenuRoutine("history", "Battle History sync"));
-}
-if ($("runHistoryBtn")) {
-  $("runHistoryBtn").addEventListener("click", () => runBattleMenuRoutine("history", "Battle History sync"));
-}
-if ($("runDailyBtn")) {
-  $("runDailyBtn").addEventListener("click", () => runBattleMenuRoutine("daily_quests", "Daily Quests check"));
-}
-if ($("runGuildBtn")) {
-  $("runGuildBtn").addEventListener("click", () => runBattleMenuRoutine("guild_rewards", "Guild Rewards check"));
-}
-if ($("runCardsBtn")) {
-  $("runCardsBtn").addEventListener("click", () => runBattleMenuRoutine("cards", "Cards scan"));
-}
-if ($("runModulesBtn")) {
-  $("runModulesBtn").addEventListener("click", () => runBattleMenuRoutine("modules", "Modules scan"));
-}
-if ($("cancelBattleMenuBtn")) {
-  $("cancelBattleMenuBtn").addEventListener("click", () => {
-    fetch("/api/routines", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "cancel" }),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d && d.status) render(d.status);
-        showToast("Battle Menu routine cancelled");
-      })
-      .catch(() => showToast("Cancel failed", true));
-  });
-}
-if ($("autoSyncHistoryBtn")) {
-  $("autoSyncHistoryBtn").addEventListener("click", () => {
-    const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_sync_history);
-    updateRoutines({ auto_sync_history: next }, next ? "Auto Sync History ON" : "Auto Sync History OFF");
-  });
-}
-if ($("autoClaimDailyBtn")) {
-  $("autoClaimDailyBtn").addEventListener("click", () => {
-    const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_claim_daily);
-    updateRoutines({ auto_claim_daily: next }, next ? "Auto Claim Daily Quests ON" : "Auto Claim Daily Quests OFF");
-  });
-}
-if ($("autoClaimGuildBtn")) {
-  $("autoClaimGuildBtn").addEventListener("click", () => {
-    const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_claim_guild);
-    updateRoutines({ auto_claim_guild: next }, next ? "Auto Claim Guild Rewards ON" : "Auto Claim Guild Rewards OFF");
-  });
-}
-if ($("cancelSetupTestBtn")) {
-  $("cancelSetupTestBtn").addEventListener("click", () => {
-    postJson("/api/setup-test", { action: "cancel" }, "Setup test cancelled");
-  });
-}
-$("observeBtn").addEventListener("click", observeScreen);
+$("runHistoryBtn").addEventListener("click", () => runBattleMenuRoutine("history", "Battle History sync"));
+$("runDailyBtn").addEventListener("click", () => runBattleMenuRoutine("daily_quests", "Daily Quests check"));
+$("runGuildBtn").addEventListener("click", () => runBattleMenuRoutine("guild_rewards", "Guild Rewards check"));
+$("cancelBattleMenuBtn").addEventListener("click", () => {
+  postJson("/api/routines", { action: "cancel" }, "Battle Menu routine cancelled");
+});
+$("autoSyncHistoryBtn").addEventListener("click", () => {
+  const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_sync_history);
+  updateRoutines({ auto_sync_history: next }, next ? "Auto Sync History ON" : "Auto Sync History OFF");
+});
+$("autoClaimDailyBtn").addEventListener("click", () => {
+  const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_claim_daily);
+  updateRoutines({ auto_claim_daily: next }, next ? "Auto Claim Daily Quests ON" : "Auto Claim Daily Quests OFF");
+});
+$("autoClaimGuildBtn").addEventListener("click", () => {
+  const next = !(lastStatus && lastStatus.routines && lastStatus.routines.auto_claim_guild);
+  updateRoutines({ auto_claim_guild: next }, next ? "Auto Claim Guild Rewards ON" : "Auto Claim Guild Rewards OFF");
+});
+$("cancelSetupTestBtn").addEventListener("click", () => {
+  postJson("/api/setup-test", { action: "cancel" }, "Setup test cancelled");
+});
 $("resetAccountBtn").addEventListener("click", resetAccount);
 $("loadoutOwnerFilter").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-filter]");
@@ -2726,10 +2626,6 @@ $("loadoutOwnerFilter").addEventListener("click", (e) => {
     b.classList.toggle("active", active);
     b.setAttribute("aria-pressed", String(active));
   }
-  if (lastAccountSnap) renderAccount(lastAccountSnap);
-});
-$("loadoutPresetFilter").addEventListener("change", () => {
-  loadoutPresetFilter = $("loadoutPresetFilter").value || "";
   if (lastAccountSnap) renderAccount(lastAccountSnap);
 });
 $("liveTierBtn").addEventListener("click", () => {

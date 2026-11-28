@@ -527,46 +527,47 @@ def test_p2_7_merged_chest_lines_map_distinct_rects_and_unverified_claims_not_co
     assert rx + rw // 2 > 300  # Aimed at CLAIM, NOT at 'Destroy' (x=60)
 
 
-def test_workshop_panel_parser_and_account_store_recording(tmp_path: Path):
-    frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
-    # Bright pixels in header & panel body (off-battle: no side-menu toggle at top-right)
-    frame[1800:1880, 20:400] = 220
-    frame[1900:2380, 20:1040] = 220
+def test_p2_d_exit_and_store_fence_unconditional_except_verified_guild_750(tmp_path: Path):
+    import threading
 
-    atk_lines = [
-        (80, 40, "Damage"),
-        (110, 320, "Max"),
-        (80, 580, "Attack Speed"),
-        (110, 860, "Max"),
-        (250, 40, "Critical"),
-        (290, 40, "Chance"),
-        (270, 580, "Damage /"),
-        (310, 580, "Meter"),
-    ]
-    parsed = loadouts.parse_battle_workshop_panel(
-        frame,
-        header_ocr_fn=lambda crops: ["ATTACK UPGRADES"],
-        lines_fn=lambda crops: [atk_lines],
-    )
-    assert parsed["tab"] == "attack"
-    slugs = {it["slug"]: it for it in parsed["items"]}
-    assert "workshop:damage" in slugs and slugs["workshop:damage"]["maxed"] is True
-    assert "workshop:attack_speed" in slugs and slugs["workshop:attack_speed"]["maxed"] is True
-    assert "workshop:critical_chance" in slugs
-    assert "workshop:damage_meter" in slugs
-
+    obscured_frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    taps: list[tuple[int, int]] = []
     store = loadouts.AccountStore(tmp_path / "account.json")
-    # Battle-sourced workshop/UW writes are strictly rejected
-    with pytest.raises(ValueError, match="live-battle"):
-        store.record_workshop_scan(parsed["items"], source="battle")
+    hist = battle_menu.BattleHistoryStore(tmp_path / "history.json")
+    ctrl = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (obscured_frame.copy(), None),
+        check_foreground=lambda disp: (True, ""),
+        tap=lambda pt, frame, **k: (taps.append(pt) or {"ok": True}),
+        swipe=lambda *a, **k: {"ok": True},
+        log=lambda *a, **k: None,
+        notify=lambda *a, **k: None,
+        stop_event=threading.Event(),
+        account_store=store,
+        history_store=hist,
+    )
+    ctrl.active = True
+    ctrl.task = "daily_quests"
+    ctrl.phase = "work"
 
-    snap = store.record_workshop_scan(parsed["items"], source="home")
-    assert snap["counts"]["workshop_owned"] == 4
-    assert snap["counts"]["workshop_total"] == 48
-    ws_map = {w["slug"]: w for w in snap["catalog"]["workshop"]}
-    assert ws_map["workshop:damage"]["owned"] is True
-    assert ws_map["workshop:damage"]["maxed"] is True
-    assert ws_map["workshop:rend_armor_chance"]["owned"] is False
+    # Point inside REF_FORBIDDEN_EXIT (850..1080, 640..750) is blocked EVEN on obscured frames
+    res_blocked = ctrl._safe_tap((960, 690), obscured_frame, reason="battle_menu:claim_daily", input_display=None)
+    assert res_blocked is None
+    assert taps == []
+
+    # Only an explicit header-verified Guild 750 chest tap is exempted from EXIT rect overlap
+    ctrl.active = True
+    ctrl.task = "guild_rewards"
+    ctrl.phase = "work"
+    res_guild750 = ctrl._safe_tap(
+        (1015, 690),
+        obscured_frame,
+        reason="battle_menu:claim_guild_750",
+        input_display=None,
+        guild_guard=True,
+        allow_guild_750_chest=True,
+    )
+    assert res_guild750 is not None
+    assert len(taps) == 1
 
 
 def test_never_records_battle_perks_or_in_battle_workshop_as_base_unlocks(tmp_path: Path):
@@ -586,24 +587,17 @@ def test_never_records_battle_perks_or_in_battle_workshop_as_base_unlocks(tmp_pa
         account_store=store,
         history_store=hist,
     )
-    # 1) BattleMenuController rejects 'workshop' task (never scrapes live battle panel)
+    # 1) BattleMenuRoutine rejects 'workshop' task (never scrapes live battle panel)
     with pytest.raises(ValueError):
         ctrl.start("workshop", battle_live=True)
 
-    # 2) Live battle frame (menu toggle visible) is ignored by observe_frame() and parse_battle_workshop_panel()
+    # 2) Live battle frame (menu toggle visible) is ignored by observe_frame()
     obs_battle = loadouts.observe_frame(
         live_frame,
         lines_fn=lambda crops: [[(1820, 40, "ULTIMATE WEAPONS"), (1950, 80, "Poison Swamp"), (2050, 80, "Inner Land Mines")]],
     )
     assert obs_battle["screen"] == "battle"
     assert obs_battle["items"] == []
-
-    parsed_battle = loadouts.parse_battle_workshop_panel(
-        live_frame,
-        tab="uw",
-        lines_fn=lambda crops: [[(80, 80, "Poison Swamp")]],
-    )
-    assert parsed_battle["items"] == []
 
     # 3) Off-battle Home Workshop & Home UWs screens record permanently unlocked items while skipping locked UNLOCK rows
     home_frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
@@ -612,22 +606,23 @@ def test_never_records_battle_perks_or_in_battle_workshop_as_base_unlocks(tmp_pa
         lines_fn=lambda crops: [[
             (1820, 40, "ATTACK UPGRADES"),
             (1940, 60, "Damage"),
-            (1960, 260, "Lv.1500"),
+            (1960, 260, "x1.35 250"),
             (2120, 60, "Rend Armor Chance"),
             (2140, 240, "UNLOCK 500B"),
         ]],
     )
     assert obs_ws["screen"] == "workshop"
-    ws_slugs = {it["slug"] for it in obs_ws["items"]}
-    assert "workshop:damage" in ws_slugs
-    assert "workshop:rend_armor_chance" not in ws_slugs
+    ws_by_slug = {it["slug"]: it for it in obs_ws["items"]}
+    assert "workshop:damage" in ws_by_slug
+    assert "Lv." not in ws_by_slug["workshop:damage"]["detail"]  # P3: x1.35 must not parse as Lv.35
+    assert "workshop:rend_armor_chance" not in ws_by_slug
 
     obs_uw = loadouts.observe_frame(
         home_frame,
         lines_fn=lambda crops: [[
             (1820, 40, "ULTIMATE WEAPONS"),
             (1940, 60, "Golden Tower"),
-            (2080, 60, "Golden Combo"),
+            (2080, 60, "Golden Comb0"),  # P3: noisy UW+ must resolve to uw_plus:golden_combo, not base UW
             (2220, 60, "Unlock New Ultimate Weapon"),
         ]],
     )
@@ -638,6 +633,37 @@ def test_never_records_battle_perks_or_in_battle_workshop_as_base_unlocks(tmp_pa
     snap = store.merge_observation(obs_uw)
     assert snap["counts"]["uws_owned"] == 1
     assert snap["counts"]["uw_plus_owned"] == 1
+
+
+def test_p2_c_api_observe_refuses_workshop_when_collector_reports_battle_live(tmp_path: Path, monkeypatch):
+    cfg_path = tmp_path / "config.yaml"
+    dimmed_frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    frames = DummyFrames(dimmed_frame)
+    app = create_app(config_path=cfg_path, frame_source=frames)
+    client = app.test_client()
+    collector = app.extensions["towerpilot"]["collector"]
+    collector.running = True
+    collector.battle_live = True
+    collector._last_battle_state = (True, "closed")
+
+    monkeypatch.setattr(
+        loadouts,
+        "observe_frame",
+        lambda frame: {
+            "screen": "workshop",
+            "observed_at": 123.0,
+            "tier": None,
+            "presets": [],
+            "items": [{"slug": "workshop:damage", "name": "Damage", "category": "workshop", "detail": ""}],
+            "line_count": 2,
+        },
+    )
+    res = client.post("/api/account", json={"action": "observe"})
+    assert res.status_code == 200
+    body = res.get_json()
+    assert body["observed"]["screen"] == "battle"
+    assert body["observed"]["items"] == []
+    assert body["account"]["counts"]["workshop_owned"] == 0
 
 
 

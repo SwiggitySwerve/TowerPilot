@@ -133,15 +133,23 @@ def _classify_screen(lines: list[tuple[int, int, str]]) -> str:
 
 
 def _extract_detail(text: str, nearby: list[str]) -> str:
-    """Pull optional rarity/level/max detail from a line or adjacent OCR lines."""
+    """Pull optional rarity/level/max detail from a line or adjacent OCR lines.
+
+    Requires an explicit `Lv.` / `Level` prefix so stat multipliers like `x1.35`
+    or bare numbers never turn into bogus levels (e.g. `Lv.35`).
+    """
     pool = " ".join([text] + nearby)
     bits: list[str] = []
     m_rar = _RARITY_RE.search(pool)
     if m_rar:
         bits.append(_normalize_rarity(m_rar.group(1)))
-    lv = _parse_level_int(pool)
-    if lv is not None:
-        bits.append(f"Lv.{lv}")
+    m_lv = _LEVEL_RE.search(pool)
+    if m_lv:
+        digits = m_lv.group(1).translate(_OCR_DIGIT_TRANS)
+        if digits.isdigit():
+            val = int(digits)
+            if 1 <= val <= 5000:
+                bits.append(f"Lv.{val}")
     elif re.search(r"\bMAX\b", pool, re.IGNORECASE):
         bits.append("Max")
     return " ".join(bits)
@@ -197,7 +205,7 @@ def observe_frame(
     preferred_cats: tuple[str, ...] = {
         "cards": ("card",),
         "modules": ("module",),
-        "ultimate_weapons": ("uw", "uw_plus"),
+        "ultimate_weapons": ("uw_plus", "uw"),
         "workshop": ("workshop",),
     }.get(screen, ())
 
@@ -344,7 +352,13 @@ _MASTERY_LEVEL_RE = re.compile(
 
 
 def _parse_card_mastery(footer_text: str, extra_text: str = "", *, maxed: bool = False) -> tuple[bool, int | None]:
-    """Parse Tier 16 Card Mastery enhancement level (0..9) appearing after card stars/Max."""
+    """Parse Tier 16 Card Mastery enhancement level (0..9) appearing after card stars/Max.
+
+    Only accepts mastery when the card footer independently indicates Max (no `n/m` progress
+    fraction) so OCR noise on non-maxed cards can never promote them to 7★ Max + Mastery.
+    """
+    if not maxed or _PROGRESS_RE.search(footer_text or ""):
+        return False, None
     for chunk in (footer_text, extra_text):
         cleaned = (chunk or "").strip()
         if not cleaned:
@@ -354,7 +368,7 @@ def _parse_card_mastery(footer_text: str, extra_text: str = "", *, maxed: bool =
             lvl_str = next(g for g in m.groups() if g is not None)
             return True, int(lvl_str)
     # Standalone single mastery digit 0..9 in star/badge band on an already-maxed card
-    if maxed and extra_text:
+    if extra_text:
         m_bare = re.fullmatch(r"\s*[★*#•·+]?\s*([0-9])\s*", extra_text)
         if m_bare:
             return True, int(m_bare.group(1))
@@ -382,9 +396,6 @@ def _build_card_entry(
 
     maxed, progress = _parse_card_footer(footer_text)
     mastery_unlocked, mastery_level = _parse_card_mastery(footer_text, star_band_text, maxed=maxed)
-    if mastery_unlocked:
-        maxed = True
-        progress = progress or "Max"
 
     raw_stars = min(7, m_stars + y_stars)
     if maxed:
@@ -959,165 +970,6 @@ def _preset_sort_key(name: str) -> tuple[int, str]:
     return (int(m.group(1)), name) if m else (999, name)
 
 
-# Battle bottom upgrade panel ROIs (1080x2560 reference)
-REF_WORKSHOP_PANEL_HDR = (0, 1790, 820, 105)
-REF_WORKSHOP_PANEL_BODY = (0, 1890, 1080, 520)
-REF_WORKSHOP_TABS: dict[str, tuple[int, int, int, int]] = {
-    "attack": (10, 2430, 250, 115),
-    "defense": (275, 2430, 250, 115),
-    "utility": (545, 2430, 250, 115),
-    "uw": (815, 2430, 250, 115),
-}
-
-
-def detect_battle_workshop_tab(
-    frame: np.ndarray,
-    *,
-    ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
-) -> str | None:
-    """Identify which battle bottom-panel tab is currently open: 'attack', 'defense', 'utility', 'uw', or None."""
-    if frame is None or frame.ndim != 3:
-        return None
-    hx, hy, hw, hh = detectors.scale_rect(REF_WORKSHOP_PANEL_HDR, frame.shape)
-    crop = frame[hy : hy + hh, hx : hx + hw]
-    if crop.size == 0 or int(crop.max()) < 40:
-        return None
-    reader = ocr_fn if ocr_fn is not None else (lambda items: ocr.read_texts(items, scale=1.5, timeout=2.0))
-    try:
-        texts = reader([crop])
-    except Exception:
-        return None
-    up = (texts[0] if texts else "").upper()
-    if "ATTACK" in up and "UPGRADE" in up:
-        return "attack"
-    if "DEFENSE" in up and "UPGRADE" in up:
-        return "defense"
-    if "UTILITY" in up and "UPGRADE" in up:
-        return "utility"
-    if "ULTIMATE" in up and "WEAPON" in up:
-        return "uw"
-    return None
-
-
-def parse_battle_workshop_panel(
-    frame: np.ndarray,
-    *,
-    tab: str | None = None,
-    lines_fn: Callable[[list[np.ndarray]], list[list[tuple[int, int, str]]]] | None = None,
-    header_ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
-) -> dict[str, Any]:
-    """Read unlocked Workshop Upgrades (or Ultimate Weapons) from an off-battle Home Workshop panel.
-
-    Refuses to scrape live-battle frames (`menu_toggle_visible`) so in-run perks
-    (e.g. Unlock Random Ultimate Weapon) and in-run cash upgrades never pollute base unlocks.
-    """
-    if frame is None or frame.ndim != 3 or detectors.menu_toggle_visible(frame):
-        return {"tab": None, "items": []}
-    active_tab = tab or detect_battle_workshop_tab(frame, ocr_fn=header_ocr_fn)
-    if active_tab not in ("attack", "defense", "utility", "uw"):
-        return {"tab": active_tab, "items": []}
-
-    bx, by, bw, bh = detectors.scale_rect(REF_WORKSHOP_PANEL_BODY, frame.shape)
-    crop = frame[by : by + bh, bx : bx + bw]
-    if crop.size == 0 or int(crop.max()) < 40:
-        return {"tab": active_tab, "items": []}
-
-    reader = lines_fn if lines_fn is not None else (lambda items: ocr.read_lines(items, scale=1.5, timeout=2.5))
-    try:
-        batches = reader([crop])
-    except Exception:
-        return {"tab": active_tab, "items": []}
-    lines = batches[0] if batches else []
-
-    sx = frame.shape[1] / float(detectors.REF_W)
-    sy = frame.shape[0] / float(detectors.REF_H)
-
-    if active_tab == "uw":
-        found_uws: dict[str, dict[str, Any]] = {}
-        for _ly, _lx, text in lines:
-            clean = " ".join(text.strip().split())
-            if not clean:
-                continue
-            hit = wiki.match_name(clean, category="uw")
-            if hit is not None and hit.slug not in found_uws:
-                found_uws[hit.slug] = {"slug": hit.slug, "name": hit.name, "category": "uw", "detail": "Unlocked"}
-        return {"tab": "uw", "items": list(found_uws.values())}
-
-    # Workshop tab: 2-column grid of tiles (left column x < 540, right column x >= 540)
-    mid_x = int(round(540 * sx))
-    label_offset_max = int(round(270 * sx))
-    row_merge_gap = int(round(62 * sy))
-    tile_row_height = int(round(190 * sy))
-
-    col_buckets: dict[int, list[tuple[int, int, str]]] = {0: [], 1: []}
-    max_markers: list[tuple[int, int]] = []
-    for ly, lx, text in lines:
-        clean = " ".join(text.strip().split())
-        if not clean:
-            continue
-        col = 0 if lx < mid_x else 1
-        rel_x = lx if col == 0 else (lx - mid_x)
-        if re.fullmatch(r"MAX", clean, flags=re.IGNORECASE):
-            max_markers.append((col, ly))
-            continue
-        if rel_x <= label_offset_max:
-            col_buckets[col].append((ly, lx, clean))
-
-    slot_items = [it for it in wiki.INDEX if it.category == "workshop" and it.slot == active_tab]
-    slot_by_low: dict[str, wiki.IndexItem] = {}
-    for it in slot_items:
-        for k in (it.name.lower(), it.name.lower().replace(" / ", "/"), *(a.lower() for a in it.aliases)):
-            slot_by_low[k] = it
-
-    def _match_workshop_label(raw: str) -> wiki.IndexItem | None:
-        cleaned = " ".join(raw.strip().split())
-        if not cleaned or len(cleaned) < 3:
-            return None
-        low = cleaned.lower()
-        if low in slot_by_low:
-            return slot_by_low[low]
-        norm = low.replace(" / ", "/")
-        if norm in slot_by_low:
-            return slot_by_low[norm]
-        hit = wiki.match_name(cleaned, category="workshop")
-        if hit is not None and hit.slot == active_tab:
-            return hit
-        return None
-
-    found: dict[str, dict[str, Any]] = {}
-    for col, entries in col_buckets.items():
-        entries.sort(key=lambda e: e[0])
-        # Group adjacent stacked lines belonging to the same tile label (e.g. 'Critical' + 'Chance', 'Damage /' + 'Meter')
-        clusters: list[list[tuple[int, str]]] = []
-        for ly, _lx, txt in entries:
-            if clusters and (ly - clusters[-1][-1][0]) <= row_merge_gap:
-                clusters[-1].append((ly, txt))
-            else:
-                clusters.append([(ly, txt)])
-        for cl in clusters:
-            combined = " ".join(t for _, t in cl)
-            hit = _match_workshop_label(combined)
-            if hit is None and len(cl) > 1:
-                for _, single in cl:
-                    hit = _match_workshop_label(single)
-                    if hit is not None:
-                        break
-            if hit is not None:
-                cy = cl[0][0]
-                is_max = any(mc == col and -int(round(40 * sy)) <= (my - cy) <= tile_row_height for mc, my in max_markers)
-                prev = found.get(hit.slug)
-                if prev is None or (is_max and not prev.get("maxed")):
-                    found[hit.slug] = {
-                        "slug": hit.slug,
-                        "name": hit.name,
-                        "category": "workshop",
-                        "slot": active_tab,
-                        "maxed": is_max,
-                        "detail": "Max" if is_max else "Unlocked",
-                    }
-    return {"tab": active_tab, "items": list(found.values())}
-
-
 class AccountStore:
     """Thread-safe local JSON store (`data/account.json`, git-ignored) for observed loadout."""
 
@@ -1375,26 +1227,40 @@ class AccountStore:
                 name = card.get("name") or (item_meta.name if item_meta else slug)
                 prev = data["items"].get(slug) or {}
 
-                maxed = bool(card.get("maxed")) or bool(prev.get("maxed"))
-                raw_stars = card.get("stars")
-                prev_stars = prev.get("stars") or 0
-                stars = max(int(prev_stars), int(raw_stars)) if raw_stars is not None else (int(prev_stars) or None)
-                if maxed and (stars is None or stars < 7):
-                    stars = 7
+                raw_progress = str(card.get("progress") or "").strip()
+                explicit_non_max = bool(_PROGRESS_RE.search(raw_progress)) and not bool(card.get("maxed"))
 
-                mastery_unlocked = bool(card.get("mastery_unlocked")) or bool(prev.get("mastery_unlocked"))
-                raw_mlvl = card.get("mastery_level")
-                prev_mlvl = prev.get("mastery_level")
-                if raw_mlvl is not None:
-                    mastery_level: int | None = max(int(prev_mlvl or 0), int(raw_mlvl))
-                    mastery_unlocked = True
+                if explicit_non_max:
+                    # Allow a clean non-maxed rescan (e.g. '5/32') to correct any prior OCR false positive
+                    maxed = False
+                    raw_stars = card.get("stars")
+                    stars = int(raw_stars) if raw_stars is not None else (prev.get("stars") or None)
+                    mastery_unlocked = False
+                    mastery_level: int | None = None
+                    progress = raw_progress
                 else:
-                    mastery_level = int(prev_mlvl) if prev_mlvl is not None else None
-                if mastery_unlocked:
-                    maxed = True
-                    stars = 7
+                    maxed = bool(card.get("maxed")) or bool(prev.get("maxed"))
+                    raw_stars = card.get("stars")
+                    prev_stars = prev.get("stars") or 0
+                    stars = max(int(prev_stars), int(raw_stars)) if raw_stars is not None else (int(prev_stars) or None)
+                    if maxed and (stars is None or stars < 7):
+                        stars = 7
 
-                progress = "Max" if maxed else (card.get("progress") or prev.get("progress") or "")
+                    raw_mlvl = card.get("mastery_level")
+                    prev_mlvl = prev.get("mastery_level")
+                    if raw_mlvl is not None:
+                        mastery_level = int(raw_mlvl)
+                        mastery_unlocked = True
+                    elif card.get("mastery_unlocked") is True:
+                        mastery_unlocked = True
+                        mastery_level = int(prev_mlvl) if prev_mlvl is not None else 0
+                    else:
+                        mastery_unlocked = bool(prev.get("mastery_unlocked"))
+                        mastery_level = int(prev_mlvl) if prev_mlvl is not None else None
+                    if mastery_unlocked:
+                        maxed = True
+                        stars = 7
+                    progress = "Max" if maxed else (raw_progress or prev.get("progress") or "")
                 bits = [f"{stars}★"] if stars else []
                 if mastery_unlocked and mastery_level is not None:
                     bits.append(f"M{mastery_level}")
@@ -1508,41 +1374,6 @@ class AccountStore:
                 }
                 slot_map[clean_slot] = slot_entry
 
-            self._write_unlocked(data)
-        return self.snapshot()
-
-    def record_workshop_scan(self, items: list[dict[str, Any]], *, source: str = "home") -> dict[str, Any]:
-        """Record permanently unlocked base Workshop Upgrades / UWs from out-of-battle Home Workshop."""
-        if str(source).strip().lower() == "battle":
-            raise ValueError("Cannot record live-battle Workshop/UW state as base account unlocks")
-        with self._lock:
-            data = self._read_unlocked()
-            now = round(time.time(), 1)
-            data["updated_at"] = now
-            data["last_screen"] = "home_workshop"
-            for item in items or []:
-                slug = item.get("slug")
-                meta = wiki.BY_SLUG.get(slug) if slug else None
-                if meta is None:
-                    continue
-                prev = data["items"].get(slug) or {}
-                maxed = bool(item.get("maxed")) or bool(prev.get("maxed"))
-                detail = "Max" if maxed else (item.get("detail") or prev.get("detail") or "Unlocked")
-                merged_item = dict(prev)
-                merged_item.update(
-                    {
-                        "slug": slug,
-                        "name": meta.name,
-                        "category": meta.category,
-                        "slot": meta.slot,
-                        "owned": True,
-                        "maxed": maxed,
-                        "detail": detail,
-                        "last_seen": now,
-                        "screen": "home_workshop",
-                    }
-                )
-                data["items"][slug] = merged_item
             self._write_unlocked(data)
         return self.snapshot()
 

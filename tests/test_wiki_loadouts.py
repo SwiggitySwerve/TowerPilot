@@ -711,15 +711,18 @@ def test_master_catalog_includes_area_of_effect_and_uw_plus():
 
 
 def test_card_mastery_parsing_and_store_persistence(tmp_path: Path):
-    # Direct _parse_card_mastery cases
-    assert loadouts._parse_card_mastery("Max 3") == (True, 3)
-    assert loadouts._parse_card_mastery("M5") == (True, 5)
-    assert loadouts._parse_card_mastery("Lv. 2") == (True, 2)
-    assert loadouts._parse_card_mastery("+4") == (True, 4)
+    # Direct _parse_card_mastery cases (requires maxed=True and no n/m progress fraction)
+    assert loadouts._parse_card_mastery("Max 3", maxed=True) == (True, 3)
+    assert loadouts._parse_card_mastery("Max", "M5", maxed=True) == (True, 5)
+    assert loadouts._parse_card_mastery("Max", "Lv. 2", maxed=True) == (True, 2)
+    assert loadouts._parse_card_mastery("Max", "+4", maxed=True) == (True, 4)
     assert loadouts._parse_card_mastery("Max", "7", maxed=True) == (True, 7)
     assert loadouts._parse_card_mastery("Max", "★ 0", maxed=True) == (True, 0)
-    # Non-maxed card or star count string must NOT false-positive
+    # Non-maxed card (P2-B) or star count string must NEVER false-positive into mastery
     assert loadouts._parse_card_mastery("12/32", "5", maxed=False) == (False, None)
+    assert loadouts._parse_card_mastery("5/32", "M 3", maxed=False) == (False, None)
+    assert loadouts._parse_card_mastery("5/32", "+2", maxed=True) == (False, None)
+    assert loadouts._parse_card_mastery("5/32", "Lv 2", maxed=False) == (False, None)
     assert loadouts._parse_card_mastery("Max", "7★", maxed=True) == (False, None)
 
     # Full lines parse with star-band mastery digit on a maxed card
@@ -745,7 +748,7 @@ def test_card_mastery_parsing_and_store_persistence(tmp_path: Path):
     assert by_slug["card:coins"]["mastery_level"] is None
     assert by_slug["card:coins"]["level_text"] == "7★ Max"
 
-    # AccountStore persists mastery and never regresses mastery level on re-scan
+    # AccountStore persists mastery and allows clean rescans to update or downgrade false positives
     store = loadouts.AccountStore(tmp_path / "account.json")
     snap = store.record_cards_scan("Preset 1", parsed["cards"], active_slots="20/20")
     assert snap["counts"]["cards_mastered"] == 1
@@ -753,7 +756,7 @@ def test_card_mastery_parsing_and_store_persistence(tmp_path: Path):
     assert cat_cards["card:damage"]["mastery_unlocked"] is True
     assert cat_cards["card:damage"]["mastery_level"] == 3
 
-    # Re-scan where mastery wasn't read in OCR preserves existing mastery level
+    # Re-scan where mastery wasn't read in OCR (Max only) preserves existing mastery level
     snap2 = store.record_cards_scan(
         "Preset 1",
         [{"slug": "card:damage", "name": "Damage", "maxed": True, "stars": 7, "equipped": True}],
@@ -763,11 +766,23 @@ def test_card_mastery_parsing_and_store_persistence(tmp_path: Path):
     assert cat_cards2["card:damage"]["mastery_level"] == 3
     assert snap2["counts"]["cards_mastered"] == 1
 
-    # Higher mastery level updates cleanly
+    # Explicit updated mastery level replaces previous value cleanly
     snap3 = store.record_cards_scan(
         "Preset 1",
         [{"slug": "card:damage", "name": "Damage", "maxed": True, "stars": 7, "mastery_unlocked": True, "mastery_level": 6}],
     )
     cat_cards3 = {c["slug"]: c for c in snap3["catalog"]["cards"]}
     assert cat_cards3["card:damage"]["mastery_level"] == 6
+
+    # P2-B: Clean non-maxed rescan ('5/32', 4★) downgrades and clears any bogus sticky mastery
+    snap4 = store.record_cards_scan(
+        "Preset 1",
+        [{"slug": "card:damage", "name": "Damage", "maxed": False, "stars": 4, "progress": "5/32"}],
+    )
+    cat_cards4 = {c["slug"]: c for c in snap4["catalog"]["cards"]}
+    assert cat_cards4["card:damage"]["maxed"] is False
+    assert cat_cards4["card:damage"]["stars"] == 4
+    assert cat_cards4["card:damage"]["mastery_unlocked"] is False
+    assert cat_cards4["card:damage"]["mastery_level"] is None
+    assert snap4["counts"]["cards_mastered"] == 0
 

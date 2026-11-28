@@ -8,7 +8,7 @@
 </head>
 <body>
   <main class="shell">
-    <!-- Global slim header bar -->
+    <!-- Global slim header bar (consolidated status pills) -->
     <header class="app-header">
       <div class="brand">
         <h1>Tower Pilot</h1>
@@ -16,20 +16,36 @@
         <span id="sidebarStatePill" class="pill"><span class="dot"></span>Off</span>
       </div>
       <div class="app-header-right">
+        <span id="backendPill" class="pill"><span class="dot"></span>Offline</span>
+        <span id="battlePill" class="pill"><span class="dot"></span>Waiting</span>
+        <span id="screenBadge" class="screen-badge">unknown</span>
         <span id="connPill" class="pill" hidden><span class="dot"></span>Server Offline</span>
         <button id="openWikiBtn" class="mini-btn sidebar-wiki-btn" type="button" title="Open Wiki Drawer">Wiki</button>
       </div>
     </header>
 
+    <!-- Full-width alert & active-routine strip (never buried under stream) -->
+    <div id="alertStrip" class="alert-strip" aria-live="polite">
+      <div id="freezeBanner" class="alert-banner red" hidden>
+        <span>Battle wave appears frozen</span>
+      </div>
+      <div id="holdBanner" class="alert-banner amber" hidden>
+        <span id="holdBannerText">Holding at Home</span>
+        <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
+      </div>
+      <div id="setupTestBanner" class="alert-banner cyan" hidden>
+        <span id="setupTestBannerText">Setup test running&hellip;</span>
+        <button id="cancelSetupTestBtn" class="mini-btn" type="button">Cancel</button>
+      </div>
+      <div id="battleMenuBanner" class="alert-banner cyan" hidden>
+        <span id="battleMenuBannerText">Running routine&hellip;</span>
+        <button id="cancelBattleMenuBtn" class="mini-btn" type="button">Cancel</button>
+      </div>
+    </div>
+
     <div id="layoutGrid" class="layout cockpit-layout">
       <!-- Column 1: Sticky Live Emulator Viewport + Live Run Telemetry -->
       <section class="card stream-card viewport-col" aria-label="Emulator Stream">
-        <div class="card-header">
-          <div class="header-left">
-            <span id="backendPill" class="pill"><span class="dot"></span>Offline</span>
-          </div>
-          <span id="battlePill" class="pill"><span class="dot"></span>Waiting</span>
-        </div>
         <div id="streamStage" class="stream-stage">
           <img id="streamImg" src="/api/stream.mjpg" alt="Emulator live stream" />
           <div id="streamError" class="stream-error" hidden></div>
@@ -52,23 +68,12 @@
             <span id="liveCoinsPerHour" class="stat-value">&mdash;</span>
           </div>
         </div>
-        <div id="freezeBanner" class="alert-banner red" hidden>
-          <span>Battle wave appears frozen</span>
-        </div>
-        <div id="holdBanner" class="alert-banner amber" hidden>
-          <span id="holdBannerText">Holding at Home</span>
-          <button id="resumeHoldBtn" class="mini-btn amber" type="button" hidden>Resume</button>
-        </div>
-        <div id="setupTestBanner" class="alert-banner cyan" hidden>
-          <span id="setupTestBannerText">Setup test running&hellip;</span>
-          <button id="cancelSetupTestBtn" class="mini-btn" type="button">Cancel</button>
-        </div>
       </section>
 
-      <!-- Column 2: Automation Control Center -->
+      <!-- Column 2: Three Balanced Control Cards (Automation, Profiles, Run Flow) -->
       <div class="controls controls-col">
-        <!-- Master Harvesting + Mode row -->
-        <section class="card master-card" aria-label="Master Controls">
+        <!-- Card 1: Master Harvesting & Uniform 5-Row Automation -->
+        <section class="card master-card" aria-label="Automation Controls">
           <button id="harvestBtn" class="harvest-btn" type="button" aria-pressed="false">
             <span class="harvest-left">
               <span class="power-dot" aria-hidden="true"></span>
@@ -86,15 +91,9 @@
               <button type="button" data-mode="timer" aria-pressed="false">Timer</button>
             </div>
           </div>
-        </section>
 
-        <!-- Balanced 2-column Automation Grid: Gem Harvesting | Battle Menu Routines -->
-        <div class="automation-grid">
-          <section class="card gem-list" aria-label="Gem Types">
-            <div class="card-header">
-              <span class="title">Gem Collection</span>
-            </div>
-            <!-- Ad Gems -->
+          <div class="gem-list automation-list" aria-label="Automation Routines">
+            <!-- 1. Ad Gems -->
             <div class="gem-row">
               <div class="gem-top">
                 <div class="gem-info">
@@ -115,7 +114,7 @@
               </div>
             </div>
 
-            <!-- Floating Gems -->
+            <!-- 2. Floating Gems -->
             <div class="gem-row">
               <div class="gem-top">
                 <div class="gem-info">
@@ -135,76 +134,68 @@
                 <span id="floatingTimerHuman" class="timer-human"></span>
               </div>
             </div>
-          </section>
 
-          <section class="card" aria-label="Battle Menu Routines">
-            <div class="card-header">
-              <span class="title">Battle Menu</span>
-              <span id="battleMenuPill" class="pill"><span class="dot"></span>Idle</span>
-            </div>
-            <div id="battleMenuBanner" class="alert-banner cyan" hidden>
-              <span id="battleMenuBannerText">Running routine&hellip;</span>
-              <button id="cancelBattleMenuBtn" class="mini-btn" type="button">Cancel</button>
-            </div>
-            <div class="gem-list">
-              <div class="gem-row routine-row">
-                <div class="gem-top">
-                  <div class="gem-info">
-                    <div class="gem-name">Sync History</div>
-                    <div id="historySyncMeta" class="gem-status">Exact timings &amp; Coins/hr</div>
+            <!-- 3. Sync History -->
+            <div class="gem-row routine-row">
+              <div class="gem-top">
+                <div class="gem-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="gem-name">Sync History</span>
                   </div>
-                  <div class="routine-controls">
-                    <button id="runHistoryBtn" class="mini-btn cyan" type="button" title="Open Battle History now">Run</button>
-                    <button id="autoSyncHistoryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                  </div>
+                  <div id="historySyncMeta" class="gem-status">Exact timings &amp; Coins/hr</div>
                 </div>
-              </div>
-              <div class="gem-row routine-row">
-                <div class="gem-top">
-                  <div class="gem-info">
-                    <div class="gem-name">Daily Quests</div>
-                    <div id="dailyRoutineMeta" class="gem-status">Claim quests &amp; weekly chests</div>
-                  </div>
-                  <div class="routine-controls">
-                    <button id="runDailyBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Daily Quests now">Run</button>
-                    <button id="autoClaimDailyBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                  </div>
-                </div>
-              </div>
-              <div class="gem-row routine-row">
-                <div class="gem-top">
-                  <div class="gem-info">
-                    <div class="gem-name">Guild Rewards</div>
-                    <div id="guildRoutineMeta" class="gem-status">Claim 100/250/500/750 chests</div>
-                  </div>
-                  <div class="routine-controls">
-                    <button id="runGuildBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Guild Rewards now">Run</button>
-                    <button id="autoClaimGuildBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
-                  </div>
-                </div>
-              </div>
-              <div class="gem-row routine-row">
-                <div class="routine-manual-row">
-                  <span class="stat-label">Inspect In-Battle</span>
-                  <div class="routine-controls">
-                    <button id="runCardsBtn" class="mini-btn" type="button" title="Open Cards from Battle Menu &amp; inventory">Cards</button>
-                    <button id="runModulesBtn" class="mini-btn" type="button" title="Open Modules from Battle Menu &amp; inventory">Modules</button>
-                  </div>
+                <div class="routine-controls">
+                  <button id="runHistoryBtn" class="mini-btn cyan" type="button" title="Open Battle History now">Run</button>
+                  <button id="autoSyncHistoryBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
                 </div>
               </div>
             </div>
-          </section>
-        </div>
 
-        <!-- Profiles & Run Flow Card -->
-        <section class="card" aria-label="Profiles and Flow">
+            <!-- 4. Daily Quests -->
+            <div class="gem-row routine-row">
+              <div class="gem-top">
+                <div class="gem-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="gem-name">Daily Quests</span>
+                  </div>
+                  <div id="dailyRoutineMeta" class="gem-status">Claim quests &amp; weekly chests</div>
+                </div>
+                <div class="routine-controls">
+                  <button id="runDailyBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Daily Quests now">Run</button>
+                  <button id="autoClaimDailyBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Guild Rewards -->
+            <div class="gem-row routine-row">
+              <div class="gem-top">
+                <div class="gem-info">
+                  <div class="gem-name-line">
+                    <span class="gem-dot flow" aria-hidden="true"></span>
+                    <span class="gem-name">Guild Rewards</span>
+                  </div>
+                  <div id="guildRoutineMeta" class="gem-status">Claim 100/250/500/750 chests</div>
+                </div>
+                <div class="routine-controls">
+                  <button id="runGuildBtn" class="mini-btn cyan" type="button" title="Check &amp; claim Guild Rewards now">Run</button>
+                  <button id="autoClaimGuildBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 2: Profiles -->
+        <section class="card" aria-label="Profiles">
           <div class="card-header">
-            <span class="title">Profiles &amp; Run Flow</span>
+            <span class="title">Profiles</span>
             <button id="newProfileBtn" class="mini-btn cyan" type="button" title="Create a new profile">+ New</button>
           </div>
-          <div id="activeProfileStrip" class="profile-screen-strip" aria-label="Active Profile and Screen">
+          <div id="activeProfileStrip" class="profile-screen-strip" aria-label="Active Profile">
             <div class="profile-strip-main">
-              <span id="screenBadge" class="screen-badge">unknown</span>
               <span id="activeKindPill" class="kind-pill farm" hidden>FARM</span>
               <span id="activeProfileName" class="active-profile-name">&mdash;</span>
               <span id="navStateText" class="nav-state-text" hidden></span>
@@ -216,30 +207,28 @@
               </span>
             </div>
           </div>
-
-          <div class="sidebar-section" aria-label="Profiles">
+          <div class="sidebar-section">
             <div id="profilesList" class="profiles-list profiles-grid">
               <div class="ledger-empty">Loading profiles&hellip;</div>
             </div>
           </div>
+        </section>
 
-          <details id="advancedFlowDetails" class="sidebar-section flow-details">
-            <summary class="section-heading flow-summary">
-              <span class="flow-summary-left">
-                <span class="flow-caret" aria-hidden="true">&#9656;</span>
-                <span>Advanced Flow &amp; Guards</span>
-              </span>
-              <span id="advancedFlowSummaryBadge" class="flow-summary-badge">off</span>
-            </summary>
-
-            <div class="flow-details-body flow-details-grid">
+        <!-- Card 3: Run Flow (4 Core Toggles Always Visible + Collapsible Guards) -->
+        <section class="card" aria-label="Run Flow and Guards">
+          <div class="card-header">
+            <span class="title">Run Flow</span>
+            <span id="flowStatus" class="gem-status">off</span>
+          </div>
+          <div class="sidebar-section">
+            <div class="flow-core-grid">
               <div class="rule-row">
                 <div class="rule-info">
                   <div class="gem-name-line">
                     <span class="gem-dot flow" aria-hidden="true"></span>
                     <span class="rule-name">End Stats &rarr; Home</span>
                   </div>
-                  <div id="flowStatus" class="gem-status">off</div>
+                  <div class="gem-status">Exit modal to Home</div>
                 </div>
                 <button id="autoHomeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
               </div>
@@ -274,11 +263,23 @@
                     <span class="gem-dot flow" aria-hidden="true"></span>
                     <span class="rule-name">Crash Auto-Resume</span>
                   </div>
-                  <div class="gem-status">Tap RESUME if run was interrupted</div>
+                  <div class="gem-status">Tap RESUME if interrupted</div>
                 </div>
                 <button id="autoResumeBtn" class="toggle-btn flow" type="button" aria-pressed="false">OFF</button>
               </div>
+            </div>
+          </div>
 
+          <details id="advancedFlowDetails" class="sidebar-section flow-details">
+            <summary class="section-heading flow-summary">
+              <span class="flow-summary-left">
+                <span class="flow-caret" aria-hidden="true">&#9656;</span>
+                <span>Guards &amp; Limits</span>
+              </span>
+              <span id="advancedFlowSummaryBadge" class="flow-summary-badge">off</span>
+            </summary>
+
+            <div class="flow-details-body flow-details-grid">
               <div class="rule-row">
                 <div class="rule-info">
                   <div class="rule-name">Finish Run &amp; Hold</div>
@@ -329,7 +330,7 @@
         </section>
       </div>
 
-      <!-- Column 3: Tabbed Data & Loadout Workspace (viewport-bounded, zero vertical blob) -->
+      <!-- Column 3: Fixed-Height Tabbed Workspace (single scroller) -->
       <aside id="runsSidebar" class="card sidebar workspace-col" aria-label="History, Loadout, and Telemetry">
         <div id="sidebarTabs" class="sidebar-tabs workspace-tabs" role="tablist" aria-label="Workspace Panels">
           <button type="button" role="tab" data-tab="runs" aria-selected="true" class="active">History</button>
@@ -350,10 +351,7 @@
             <div class="sidebar-section">
               <div class="section-heading">
                 <span>Run Ledger</span>
-                <span class="section-heading-right">
-                  <button id="syncHistoryBtn" class="mini-btn cyan" type="button" title="Open Battle History in-battle and sync exact timings">Sync</button>
-                  <span id="ledgerCount" class="gem-count">0</span>
-                </span>
+                <span id="ledgerCount" class="gem-count">0</span>
               </div>
               <ul id="runLedgerList" class="ledger-list">
                 <li class="ledger-empty">No completed runs logged yet.</li>
@@ -361,7 +359,7 @@
             </div>
           </div>
 
-          <!-- TAB 2: LOADOUT (Separated sub-tabs: Cards | Modules | Workshop | UWs) -->
+          <!-- TAB 2: LOADOUT (Sticky 2-row toolbar + dedicated sub-tabs) -->
           <div id="tabLoadout" class="tab-panel" role="tabpanel" hidden>
             <div class="sidebar-section loadout-toolbar-section">
               <div id="loadoutSubTabs" class="subtab-bar" role="tablist" aria-label="Inventory Sections">
@@ -370,53 +368,35 @@
                 <button type="button" role="tab" data-subtab="workshop" aria-selected="false">Workshop <span id="workshopTabBadge" class="subtab-count">0/48</span></button>
                 <button type="button" role="tab" data-subtab="uws" aria-selected="false">UWs <span id="uwsTabBadge" class="subtab-count">0/9</span></button>
               </div>
-              <div class="loadout-actions">
-                <button id="scanInventoryBtn" class="primary-btn" type="button" title="Automated inventory scan across Cards and Modules">Scan Presets</button>
-                <button id="inBattleCardsBtn" class="mini-btn cyan" type="button" title="View Cards via Battle Menu (works in battle)">Cards</button>
-                <button id="inBattleModulesBtn" class="mini-btn cyan" type="button" title="View Modules via Battle Menu (works in battle)">Mods</button>
-                <button id="observeBtn" class="mini-btn" type="button" title="Zero-tap read on out-of-battle Home Workshop, UWs, Cards, or Modules">Observe</button>
-                <button id="resetAccountBtn" class="mini-btn" type="button" title="Clear observed loadout">Clear</button>
+              <div class="loadout-controls-row">
+                <div class="loadout-controls-left">
+                  <div id="loadoutOwnerFilter" class="mini-seg" role="group" aria-label="Ownership filter">
+                    <button type="button" data-filter="all" aria-pressed="true" class="active">All</button>
+                    <button type="button" data-filter="owned" aria-pressed="false">Unlocked</button>
+                    <button type="button" data-filter="missing" aria-pressed="false">Locked</button>
+                  </div>
+                  <span id="cardSlotsBadge" class="slots-badge" hidden></span>
+                </div>
+                <div class="loadout-controls-right">
+                  <button id="loadoutPrimaryBtn" class="mini-btn cyan loadout-primary-btn" type="button">Scan</button>
+                  <button id="resetAccountBtn" class="mini-btn" type="button" title="Clear observed loadout">Clear</button>
+                </div>
+              </div>
+              <div id="loadoutPresetsRow" class="loadout-presets-row" hidden>
+                <div id="loadoutPresets" class="chip-grid"></div>
               </div>
               <div id="scanBanner" class="alert-banner loadout-scan-banner cyan" hidden>
                 <span id="scanBannerText" class="scan-banner-text">Scanning inventory&hellip;</span>
                 <button id="cancelScanBtn" class="mini-btn" type="button">Cancel</button>
               </div>
-              <div id="observeMeta" class="gem-status">Base unlocks only &mdash; Workshop &amp; UWs are read from Home between runs (never live battle perks).</div>
-              <div class="loadout-filters">
-                <div id="loadoutOwnerFilter" class="mini-seg" role="group" aria-label="Ownership filter">
-                  <button type="button" data-filter="all" aria-pressed="true" class="active">All</button>
-                  <button type="button" data-filter="owned" aria-pressed="false">Unlocked</button>
-                  <button type="button" data-filter="missing" aria-pressed="false">Locked</button>
-                </div>
-                <select id="loadoutPresetFilter" class="compact-input select loadout-preset-select" aria-label="Preset filter">
-                  <option value="">All Presets</option>
-                  <option value="Preset 1">Preset 1</option>
-                  <option value="Preset 2">Preset 2</option>
-                  <option value="Preset 3">Preset 3</option>
-                  <option value="Preset 4">Preset 4</option>
-                  <option value="Preset 5">Preset 5</option>
-                </select>
-              </div>
+              <div id="observeMeta" class="gem-status">Base unlocks only &mdash; Workshop &amp; UWs read from Home between runs.</div>
             </div>
 
             <!-- SUB-TAB: CARDS -->
             <div id="subtabCards" class="subtab-panel" role="tabpanel">
               <div class="sidebar-section">
-                <div class="section-heading">
-                  <span>Cards</span>
-                  <span class="section-heading-right">
-                    <span id="cardSlotsBadge" class="slots-badge" hidden></span>
-                    <span id="cardsCount" class="gem-count">0/32</span>
-                  </span>
-                </div>
                 <div id="loadoutCards" class="catalog-tables">
                   <span class="ledger-empty">Loading catalog&hellip;</span>
-                </div>
-              </div>
-              <div class="sidebar-section">
-                <div class="section-heading">Presets Seen</div>
-                <div id="loadoutPresets" class="chip-grid">
-                  <span class="ledger-empty">None observed yet.</span>
                 </div>
               </div>
             </div>
@@ -424,10 +404,6 @@
             <!-- SUB-TAB: MODULES -->
             <div id="subtabModules" class="subtab-panel" role="tabpanel" hidden>
               <div class="sidebar-section">
-                <div class="section-heading">
-                  <span>Modules</span>
-                  <span id="modulesCount" class="gem-count">0/25</span>
-                </div>
                 <div id="loadoutModules" class="catalog-tables">
                   <span class="ledger-empty">Loading catalog&hellip;</span>
                 </div>
@@ -437,12 +413,8 @@
             <!-- SUB-TAB: WORKSHOP UPGRADES -->
             <div id="subtabWorkshop" class="subtab-panel" role="tabpanel" hidden>
               <div class="sidebar-section">
-                <div class="section-heading">
-                  <span>Workshop Upgrades</span>
-                  <span id="workshopCount" class="gem-count">0/48</span>
-                </div>
                 <div id="loadoutWorkshop" class="catalog-tables">
-                  <span class="ledger-empty">Open Home Workshop between runs and click Observe (never pulled from battle).</span>
+                  <span class="ledger-empty">Open Home Workshop between runs and click Observe.</span>
                 </div>
               </div>
             </div>
@@ -450,10 +422,6 @@
             <!-- SUB-TAB: ULTIMATE WEAPONS -->
             <div id="subtabUws" class="subtab-panel" role="tabpanel" hidden>
               <div class="sidebar-section">
-                <div class="section-heading">
-                  <span>Ultimate Weapons</span>
-                  <span id="uwsCount" class="gem-count">0/9</span>
-                </div>
                 <div id="loadoutUws" class="catalog-tables">
                   <span class="ledger-empty">Loading catalog&hellip;</span>
                 </div>

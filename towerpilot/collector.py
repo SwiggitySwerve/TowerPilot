@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import math
 import random
+import re
 import threading
 import time
 from datetime import datetime
@@ -292,12 +293,15 @@ class GemCollector:
     def battle_menu(self) -> BattleMenuRoutine:
         return self._battle_menu
 
+    def _attach_history_meta(self, st: dict[str, Any]) -> dict[str, Any]:
+        hsnap = self._history_store.snapshot()
+        st["history_synced_at"] = hsnap.get("synced_at")
+        st["history_count"] = len(hsnap.get("runs") or [])
+        return st
+
     def battle_menu_status(self) -> dict[str, Any]:
         with self._lock:
-            st = self._battle_menu.status()
-            hsnap = self._history_store.snapshot()
-            st["history_synced_at"] = hsnap.get("synced_at")
-            st["history_count"] = len(hsnap.get("runs") or [])
+            st = self._attach_history_meta(self._battle_menu.status())
             now_mono = time.monotonic()
             rcfg = self._routines_cfg()
             next_auto: dict[str, float | None] = {}
@@ -306,7 +310,7 @@ class GemCollector:
                 ("auto_claim_daily", "daily_quests"),
                 ("auto_claim_guild", "guild_rewards"),
             ):
-                if self.running and bool(rcfg.get(key, False)):
+                if self.running and self.battle_live and bool(rcfg.get(key, False)):
                     due = self._auto_routine_next_at.get(task, now_mono)
                     next_auto[task] = max(0.0, round(due - now_mono, 1))
                 else:
@@ -323,18 +327,15 @@ class GemCollector:
             if self._setup_tester.active:
                 raise RuntimeError("Cannot run Battle Menu routine while a Setup Test is active")
             st = self._battle_menu.start(task, battle_live=self._effective_battle_live(), trigger=trigger)
-            hsnap = self._history_store.snapshot()
-            st["history_synced_at"] = hsnap.get("synced_at")
-            st["history_count"] = len(hsnap.get("runs") or [])
-            return st
+            return self._attach_history_meta(st)
 
     def cancel_battle_menu(self) -> dict[str, Any]:
         with self._lock:
-            st = self._battle_menu.cancel()
-            hsnap = self._history_store.snapshot()
-            st["history_synced_at"] = hsnap.get("synced_at")
-            st["history_count"] = len(hsnap.get("runs") or [])
-            return st
+            return self._attach_history_meta(self._battle_menu.cancel())
+
+    def is_battle_live(self) -> bool:
+        with self._lock:
+            return self._effective_battle_live()
 
     @property
     def navigator(self) -> MenuNavigator:
@@ -1261,11 +1262,12 @@ class GemCollector:
                 continue
             due_at = self._auto_routine_next_at.get(task, 0.0)
             if now >= due_at:
-                self._auto_routine_next_at[task] = now + interval_sec
                 try:
                     self._battle_menu.start(task, battle_live=True, trigger="auto")
+                    self._auto_routine_next_at[task] = now + interval_sec
                 except Exception:
-                    pass
+                    # Back off briefly instead of consuming the full 30-60 min schedule
+                    self._auto_routine_next_at[task] = now + 30.0
                 return
 
     def _step_wave_watch(self, frame: np.ndarray, now: float) -> None:
@@ -1321,35 +1323,37 @@ class GemCollector:
         coins = meta.get("coins")
         coins_raw = meta.get("coins_raw")
         if isinstance(coins, (int, float)) and coins >= 0:
+            # Guard against structurally impossible suffixed readings (mantissa >= 1000)
+            if isinstance(coins_raw, str):
+                m_raw = re.match(r"^\s*([\d.]+)\s*([kKmMbBtTqQsSoOnNdD])\s*$", coins_raw)
+                if m_raw:
+                    try:
+                        if float(m_raw.group(1)) >= 1000.0:
+                            return
+                    except ValueError:
+                        return
             cval = float(coins)
-            # Reject single-frame decimal-drop spikes (e.g. '66.25T' misread as '6625T') unless confirmed twice
-            if self.current_coins is not None and self.current_coins > 0 and cval > self.current_coins * 5.0:
-                self._high_coins_streak += 1
-                if self._high_coins_streak < 2:
-                    return
-            self._high_coins_streak = 0
             now_wall = time.time()
             if self._run_start_coins is None:
                 self._run_start_coins = cval
                 self._run_start_coins_at = now_wall
                 self._low_coins_streak = 0
+                self._high_coins_streak = 0
                 self.current_coins = cval
                 self.current_coins_raw = str(coins_raw) if coins_raw else run_rules.format_coins(cval)
-            elif cval < self._run_start_coins:
-                # Require two consecutive lower readings before rebasing so one OCR dip never poisons Coins/hr
-                self._low_coins_streak += 1
-                if self._low_coins_streak >= 2:
-                    self._run_start_coins = cval
-                    self._run_start_coins_at = now_wall
-                    self._low_coins_streak = 0
-                    self.current_coins = cval
-                    self.current_coins_raw = str(coins_raw) if coins_raw else run_rules.format_coins(cval)
-                    self.live_coins_per_hour = None
-                    self.live_coins_per_hour_fmt = None
-            elif self._run_start_coins_at is not None:
-                self._low_coins_streak = 0
-                self.current_coins = cval
-                self.current_coins_raw = str(coins_raw) if coins_raw else run_rules.format_coins(cval)
+                return
+
+            # Never rebase downward mid-run (rebases happen only at run boundaries via _reset_live_coins)
+            if cval < self._run_start_coins or (self.current_coins is not None and cval < self.current_coins):
+                return
+
+            # Reject implausible upward spikes (e.g. decimal-drop OCR misread) vs last accepted balance
+            if self.current_coins is not None and self.current_coins >= 1e6 and cval > self.current_coins * 1.5:
+                return
+
+            self.current_coins = cval
+            self.current_coins_raw = str(coins_raw) if coins_raw else run_rules.format_coins(cval)
+            if self._run_start_coins_at is not None:
                 dt = now_wall - self._run_start_coins_at
                 delta = cval - self._run_start_coins
                 if dt >= 60.0 and delta > 0:

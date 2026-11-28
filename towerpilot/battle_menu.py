@@ -458,11 +458,8 @@ def detect_guild_claimables(
                 if thr > total_contribution or thr in seen_thresholds:
                     continue
                 seen_thresholds.add(thr)
-                # Use the threshold's verified horizontal slot if line was merged, else OCR anchor
-                if len(matches) > 1 or thr in _GUILD_CHEST_X_BY_THRESHOLD:
-                    cx = int(round(_GUILD_CHEST_X_BY_THRESHOLD[thr] * sx))
-                else:
-                    cx = lx + int(round(48 * sx))
+                # Every matched threshold (100/250/500/750) has a verified horizontal slot
+                cx = int(round(_GUILD_CHEST_X_BY_THRESHOLD[thr] * sx))
                 cx = max(chest_w // 2, min(w - chest_w // 2, cx))
                 cy = max(int(round(650 * sy)), ly - int(round(49 * sy)))
                 rect = (cx - chest_w // 2, cy - chest_h // 2, chest_w, chest_h)
@@ -804,14 +801,15 @@ class BattleMenuRoutine:
         input_display: int | None,
         allow_close_toggle: bool = False,
         guild_guard: bool = False,
+        allow_guild_750_chest: bool = False,
     ) -> dict[str, Any] | None:
         """Single point-level safety fence enforced on EVERY Battle Menu routine tap."""
         forbidden: list[tuple[int, int, int, int]] = []
-        # Store & EXIT BATTLE rects only exist when the Battle Side Menu dropdown is open
-        if detectors.side_menu_state(frame) == "open":
+        # Keep EXIT BATTLE & STORE fences unconditional; exempt only header-verified Guild 750 chest
+        if not (allow_guild_750_chest and guild_guard and reason == "battle_menu:claim_guild_750" and detectors.side_menu_state(frame) == "obscured"):
             forbidden.append(REF_FORBIDDEN_EXIT)
-            if not allow_close_toggle:
-                forbidden.append(REF_FORBIDDEN_STORE)
+        if not allow_close_toggle:
+            forbidden.append(REF_FORBIDDEN_STORE)
         if guild_guard:
             forbidden.extend((REF_FORBIDDEN_GUILD_LEAVE, REF_FORBIDDEN_GUILD_STORE))
         for raw_rect in forbidden:
@@ -1274,6 +1272,7 @@ class BattleMenuRoutine:
                     reason=f"battle_menu:claim_guild_{thr}",
                     input_display=disp,
                     guild_guard=True,
+                    allow_guild_750_chest=(thr == 750),
                 )
                 if res is not None:
                     self._claim_attempts += 1
