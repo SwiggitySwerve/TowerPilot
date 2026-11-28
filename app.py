@@ -528,12 +528,15 @@ def create_app(
                 if not isinstance(task, str):
                     return jsonify({"error": "task must be a string"}), 400
                 try:
-                    bm = gem_collector.request_battle_menu(task, trigger="manual")
-                    return jsonify({"battle_menu": bm, "status": status_payload()})
+                    routine = gem_collector.request_routine(task, trigger="manual")
                 except ValueError as exc:
                     return jsonify({"error": str(exc)}), 400
                 except RuntimeError as exc:
                     return jsonify({"error": str(exc)}), 409
+                body = {"routine": routine, "battle_menu": gem_collector.battle_menu_status(), "status": status_payload()}
+                if routine["outcome"] == "refused":
+                    return jsonify({**body, "error": routine["message"]}), 409
+                return jsonify(body)
             return jsonify({"error": f"Unknown action: {action}"}), 400
 
         # Otherwise update automatic routine toggles / intervals

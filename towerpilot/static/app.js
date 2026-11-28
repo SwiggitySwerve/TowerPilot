@@ -1328,17 +1328,12 @@ function updateLoadoutPrimaryBtn() {
 }
 
 function triggerLoadoutPrimaryAction() {
-  const battleLive = Boolean(lastStatus && lastStatus.battle && lastStatus.battle.live);
   if (activeLoadoutSubtab === "workshop" || activeLoadoutSubtab === "uws") {
     observeScreen();
-  } else if (battleLive) {
-    if (activeLoadoutSubtab === "modules") {
-      runBattleMenuRoutine("modules", "Modules scan");
-    } else {
-      runBattleMenuRoutine("cards", "Cards scan");
-    }
   } else {
-    scanInventory();
+    // The server decides the path from where the game is now (battle side menu, or a Home scan)
+    const task = activeLoadoutSubtab === "modules" ? "modules" : "cards";
+    runBattleMenuRoutine(task, task === "modules" ? "Modules scan" : "Cards scan");
   }
 }
 
@@ -2331,8 +2326,20 @@ function render(data) {
     $("guildRoutineMeta").textContent = `Every ${routinesCfg.guild_interval_min || 60}m when ON`;
   }
 
-  for (const id of ["runHistoryBtn", "runDailyBtn", "runGuildBtn"]) {
-    $(id).disabled = bmActive;
+  // Run buttons follow the server's per-context availability (battle-only routines grey out off-battle)
+  const availability = (routinesCfg.availability && typeof routinesCfg.availability === "object") ? routinesCfg.availability : {};
+  for (const [id, task] of [
+    ["runHistoryBtn", "history"],
+    ["runDailyBtn", "daily_quests"],
+    ["runGuildBtn", "guild_rewards"],
+    ["runEventBtn", "event_missions"],
+  ]) {
+    const avail = availability[task];
+    const blocked = Boolean(avail && !avail.available && avail.reason !== "harvesting_off");
+    const btn = $(id);
+    if (btn.dataset.baseTitle === undefined) btn.dataset.baseTitle = btn.title;
+    btn.disabled = bmActive || blocked;
+    btn.title = blocked ? String(avail.message || "") : btn.dataset.baseTitle;
   }
   updateLoadoutPrimaryBtn();
   if (lastBattleMenuActive && !bmActive) {
@@ -2387,7 +2394,7 @@ async function runBattleMenuRoutine(task, label) {
   try {
     const data = await postJsonRaw("/api/routines", { action: "run", task });
     if (data.status) render(data.status);
-    showToast(`Started ${label}`);
+    showToast((data.routine && data.routine.message) || `Started ${label}`);
   } catch (err) {
     showToast(err.message || `Failed to start ${label}`, true);
   } finally {

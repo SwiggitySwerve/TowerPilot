@@ -591,7 +591,7 @@ def test_scanner_immediate_abort_on_battle_or_blocker_and_three_strike_abort(tmp
     assert len(notifies) == 1
 
 
-def test_flask_api_account_scan_and_cancel_routes(tmp_path: Path):
+def test_flask_api_account_scan_and_cancel_routes(tmp_path: Path, monkeypatch):
     """Flask GET/POST /api/account supports catalog/counts/scan, scan start/queue/cancel, and 409 when live."""
     cfg_path = tmp_path / "config.yaml"
     frames = FakeEmulatorFrames(_battle_frame())
@@ -652,8 +652,9 @@ def test_flask_api_account_scan_and_cancel_routes(tmp_path: Path):
         assert c_body["scan"]["running"] is False
         assert c_body["scan"]["phase"] == "idle"
 
-        # Off-battle frame -> immediate start
+        # Off-battle frame confirmed as Home -> immediate start (an unconfirmed screen only queues)
         frames.set_frame(_blank_frame())
+        monkeypatch.setattr(screens, "identify", lambda f: screens.Screen(name="home"))
         started = client.post("/api/account", json={"action": "scan", "scope": "all"})
         assert started.status_code == 200
         s_body = started.get_json()
