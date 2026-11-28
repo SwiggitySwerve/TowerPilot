@@ -9,7 +9,6 @@ from __future__ import annotations
 import copy
 import math
 import random
-import re
 import threading
 import time
 from datetime import datetime
@@ -181,6 +180,7 @@ class GemCollector:
         self._run_start_coins_at: float | None = None
         self._low_coins_streak: int = 0
         self._high_coins_streak: int = 0
+        self._pending_coin_val: float | None = None
         self.current_coins: float | None = None
         self.current_coins_raw: str | None = None
         self.live_coins_per_hour: float | None = None
@@ -1112,6 +1112,7 @@ class GemCollector:
         self._run_start_coins_at = None
         self._low_coins_streak = 0
         self._high_coins_streak = 0
+        self._pending_coin_val = None
         self.current_coins = None
         self.current_coins_raw = None
         self.live_coins_per_hour = None
@@ -1323,36 +1324,64 @@ class GemCollector:
         coins = meta.get("coins")
         coins_raw = meta.get("coins_raw")
         if isinstance(coins, (int, float)) and coins >= 0:
-            # Guard against structurally impossible suffixed readings (mantissa >= 1000)
-            if isinstance(coins_raw, str):
-                m_raw = re.match(r"^\s*([\d.]+)\s*([kKmMbBtTqQsSoOnNdD])\s*$", coins_raw)
-                if m_raw:
-                    try:
-                        if float(m_raw.group(1)) >= 1000.0:
-                            return
-                    except ValueError:
-                        return
             cval = float(coins)
             now_wall = time.time()
+            fmt_raw = str(coins_raw) if coins_raw else run_rules.format_coins(cval)
+
             if self._run_start_coins is None:
                 self._run_start_coins = cval
                 self._run_start_coins_at = now_wall
                 self._low_coins_streak = 0
                 self._high_coins_streak = 0
+                self._pending_coin_val = None
                 self.current_coins = cval
-                self.current_coins_raw = str(coins_raw) if coins_raw else run_rules.format_coins(cval)
+                self.current_coins_raw = fmt_raw
                 return
 
-            # Never rebase downward mid-run (rebases happen only at run boundaries via _reset_live_coins)
+            def _consistent_pending(val: float) -> bool:
+                p = self._pending_coin_val
+                return p is not None and (p == 0.0 if val == 0.0 else abs(val - p) / max(val, p, 1.0) <= 0.15)
+
+            # Lower reading: require 3 consecutive consistent readings before rebasing (blocks 1-2 frame OCR dips,
+            # while allowing a genuinely bad high initial baseline like 662.5T -> 66.25T to self-heal).
             if cval < self._run_start_coins or (self.current_coins is not None and cval < self.current_coins):
+                self._high_coins_streak = 0
+                self._low_coins_streak = (self._low_coins_streak + 1) if _consistent_pending(cval) else 1
+                self._pending_coin_val = cval
+                if self._low_coins_streak >= 3:
+                    self._run_start_coins = cval
+                    self._run_start_coins_at = now_wall
+                    self._low_coins_streak = 0
+                    self._pending_coin_val = None
+                    self.current_coins = cval
+                    self.current_coins_raw = fmt_raw
+                    self.live_coins_per_hour = None
+                    self.live_coins_per_hour_fmt = None
                 return
 
-            # Reject implausible upward spikes (e.g. decimal-drop OCR misread) vs last accepted balance
+            # Upward jump > 1.5x: require 2 consecutive consistent readings before accepting (blocks 1-frame spikes
+            # while allowing a bad low initial baseline like 6.25T -> 66.25T or long-pause growth to recover).
             if self.current_coins is not None and self.current_coins >= 1e6 and cval > self.current_coins * 1.5:
-                return
+                self._low_coins_streak = 0
+                self._high_coins_streak = (self._high_coins_streak + 1) if _consistent_pending(cval) else 1
+                self._pending_coin_val = cval
+                if self._high_coins_streak < 2:
+                    return
+                self._high_coins_streak = 0
+                self._pending_coin_val = None
+                if self.live_coins_per_hour is None:
+                    # Confirmed much higher than unestablished baseline -> rebase cleanly rather than faking earnings
+                    self._run_start_coins = cval
+                    self._run_start_coins_at = now_wall
+                    self.current_coins = cval
+                    self.current_coins_raw = fmt_raw
+                    return
 
+            self._low_coins_streak = 0
+            self._high_coins_streak = 0
+            self._pending_coin_val = None
             self.current_coins = cval
-            self.current_coins_raw = str(coins_raw) if coins_raw else run_rules.format_coins(cval)
+            self.current_coins_raw = fmt_raw
             if self._run_start_coins_at is not None:
                 dt = now_wall - self._run_start_coins_at
                 delta = cval - self._run_start_coins

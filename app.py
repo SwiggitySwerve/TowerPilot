@@ -457,14 +457,7 @@ def create_app(
                 obs = loadouts.observe_frame(frame)
                 # Defense-in-depth (P2-C): never record Workshop/UW unlocks while a battle is live
                 if gem_collector.is_battle_live() and obs.get("screen") in ("workshop", "ultimate_weapons"):
-                    obs = {
-                        "screen": "battle",
-                        "observed_at": obs.get("observed_at"),
-                        "tier": None,
-                        "presets": [],
-                        "items": [],
-                        "line_count": 0,
-                    }
+                    obs = {**obs, "screen": "battle", "tier": None, "presets": [], "items": [], "line_count": 0}
                 snap = account_store.merge_observation(obs)
                 return jsonify({"observed": obs, "account": snap, "scan": gem_collector.scan_status()})
             except Exception as exc:

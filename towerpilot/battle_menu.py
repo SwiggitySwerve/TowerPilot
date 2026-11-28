@@ -804,9 +804,10 @@ class BattleMenuRoutine:
         allow_guild_750_chest: bool = False,
     ) -> dict[str, Any] | None:
         """Single point-level safety fence enforced on EVERY Battle Menu routine tap."""
+        menu_state = detectors.side_menu_state(frame)
         forbidden: list[tuple[int, int, int, int]] = []
         # Keep EXIT BATTLE & STORE fences unconditional; exempt only header-verified Guild 750 chest
-        if not (allow_guild_750_chest and guild_guard and reason == "battle_menu:claim_guild_750" and detectors.side_menu_state(frame) == "obscured"):
+        if not (allow_guild_750_chest and menu_state == "obscured"):
             forbidden.append(REF_FORBIDDEN_EXIT)
         if not allow_close_toggle:
             forbidden.append(REF_FORBIDDEN_STORE)
@@ -814,7 +815,7 @@ class BattleMenuRoutine:
             forbidden.extend((REF_FORBIDDEN_GUILD_LEAVE, REF_FORBIDDEN_GUILD_STORE))
         for raw_rect in forbidden:
             if _pt_in_rect(pt, detectors.scale_rect(raw_rect, frame.shape)):
-                if detectors.side_menu_state(frame) == "obscured" and not reason.startswith("battle_menu:return_"):
+                if menu_state == "obscured" and not reason.startswith("battle_menu:return_"):
                     self._abort_via_return(f"refused tap inside forbidden zone ({reason})")
                 else:
                     self._abort(f"refused tap inside forbidden zone ({reason})")

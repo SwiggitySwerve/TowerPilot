@@ -83,8 +83,12 @@ def _normalize_rarity(raw: str) -> str:
     return f"{mapping[base]}{plus}" if base in mapping else cleaned
 
 
-def _parse_level_int(text: str) -> int | None:
-    """Parse module level integer from OCR text like 'Lv.132', 'LC.131', 'Lv.ioo'."""
+def _parse_level_int(text: str, *, strict: bool = False, max_val: int = 500) -> int | None:
+    """Parse level integer from OCR text like 'Lv.132', 'LC.131', 'Lv.ioo'.
+
+    When `strict=True`, requires an explicit `Lv.`/`Level` prefix so stat multipliers
+    like `x1.35` or bare numbers never produce bogus levels.
+    """
     raw = (text or "").strip()
     if not raw:
         return None
@@ -93,8 +97,10 @@ def _parse_level_int(text: str) -> int | None:
         digits = m.group(1).translate(_OCR_DIGIT_TRANS)
         if digits.isdigit():
             val = int(digits)
-            if 1 <= val <= 500:
+            if 1 <= val <= max_val:
                 return val
+    if strict:
+        return None
     # Fallback: fuzzy Lv prefix or standalone 1-3 digit token after fixing common OCR slips
     fixed = re.sub(r"\bL[a-zA-Z0-9]?[\s.:_-]+", "Lv.", raw)
     m2 = _LEVEL_RE.search(fixed)
@@ -102,7 +108,7 @@ def _parse_level_int(text: str) -> int | None:
         digits = m2.group(1).translate(_OCR_DIGIT_TRANS)
         if digits.isdigit():
             val = int(digits)
-            if 1 <= val <= 500:
+            if 1 <= val <= max_val:
                 return val
     # Fallback for 'Lv.132' missing the 'v' like 'L .132' or '.132'
     m3 = re.search(r"(?:^|[\s.:-])([0-9OoIl]{2,3})\b", raw)
@@ -110,7 +116,7 @@ def _parse_level_int(text: str) -> int | None:
         digits = m3.group(1).translate(_OCR_DIGIT_TRANS)
         if digits.isdigit():
             val = int(digits)
-            if 1 <= val <= 500:
+            if 1 <= val <= max_val:
                 return val
     return None
 
@@ -133,23 +139,15 @@ def _classify_screen(lines: list[tuple[int, int, str]]) -> str:
 
 
 def _extract_detail(text: str, nearby: list[str]) -> str:
-    """Pull optional rarity/level/max detail from a line or adjacent OCR lines.
-
-    Requires an explicit `Lv.` / `Level` prefix so stat multipliers like `x1.35`
-    or bare numbers never turn into bogus levels (e.g. `Lv.35`).
-    """
+    """Pull optional rarity/level/max detail from a line or adjacent OCR lines."""
     pool = " ".join([text] + nearby)
     bits: list[str] = []
     m_rar = _RARITY_RE.search(pool)
     if m_rar:
         bits.append(_normalize_rarity(m_rar.group(1)))
-    m_lv = _LEVEL_RE.search(pool)
-    if m_lv:
-        digits = m_lv.group(1).translate(_OCR_DIGIT_TRANS)
-        if digits.isdigit():
-            val = int(digits)
-            if 1 <= val <= 5000:
-                bits.append(f"Lv.{val}")
+    lv = _parse_level_int(pool, strict=True, max_val=5000)
+    if lv is not None:
+        bits.append(f"Lv.{lv}")
     elif re.search(r"\bMAX\b", pool, re.IGNORECASE):
         bits.append("Max")
     return " ".join(bits)
@@ -1163,7 +1161,7 @@ class AccountStore:
                 detail = item.get("detail") or prev.get("detail") or ""
                 m_rar = _RARITY_RE.search(detail)
                 rarity = _normalize_rarity(m_rar.group(1)) if m_rar else (prev.get("rarity") or "")
-                lv = _parse_level_int(detail)
+                lv = _parse_level_int(detail, strict=True, max_val=5000)
                 if lv is None:
                     lv = prev.get("level")
                 maxed = bool(re.search(r"\bMAX\b", detail, re.IGNORECASE)) or bool(prev.get("maxed"))
@@ -1253,7 +1251,7 @@ class AccountStore:
                         mastery_unlocked = True
                     elif card.get("mastery_unlocked") is True:
                         mastery_unlocked = True
-                        mastery_level = int(prev_mlvl) if prev_mlvl is not None else 0
+                        mastery_level = int(prev_mlvl) if prev_mlvl is not None else None
                     else:
                         mastery_unlocked = bool(prev.get("mastery_unlocked"))
                         mastery_level = int(prev_mlvl) if prev_mlvl is not None else None

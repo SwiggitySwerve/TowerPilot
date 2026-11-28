@@ -548,6 +548,49 @@ def test_p2_a_live_coins_rejects_impossible_mantissa_and_consecutive_low_dips(tm
     assert collector.live_coins_per_hour_fmt == "5.00T"
 
 
+def test_s1_live_coins_self_heals_from_bad_initial_baseline(tmp_path: Path, monkeypatch):
+    """S1: A bad initial baseline (too low OR too high) self-heals via consistent repeated readings."""
+    frame = _battle_frame()
+    cfg = copy.deepcopy(DEFAULT_CONFIG)
+    cfg["ad_gems"]["enabled"] = False
+    cfg["floating_gems"]["enabled"] = False
+    frames = DummyFrames(frame)
+
+    # Case 1: Initial baseline read too low (6.25T instead of 66.25T) -> 2 consistent 66.25T readings rebase cleanly
+    c1 = GemCollector(frames, cfg, event_log_path=tmp_path / "events1.jsonl")
+    s1 = iter([
+        {"tier": 10, "coins": 6.25e12, "coins_raw": "6.25T", "tournament": False},
+        {"tier": 10, "coins": 66.25e12, "coins_raw": "66.25T", "tournament": False},
+        {"tier": 10, "coins": 66.26e12, "coins_raw": "66.26T", "tournament": False},
+        {"tier": 10, "coins": 66.76e12, "coins_raw": "66.76T", "tournament": False},
+    ])
+    monkeypatch.setattr(detectors, "read_battle_hud_meta", lambda f: next(s1))
+    c1._hud_meta_last_scan = 0.0
+    for idx, wall in enumerate((10000.0, 10020.0, 10040.0, 10400.0)):
+        monkeypatch.setattr(time, "time", lambda w=wall: w)
+        c1._step_hud_meta(frames.frame, 1000.0 + idx * 20.0)
+    assert c1.current_coins_raw == "66.76T"
+    # +0.50T over 360s (0.1h) = 5.00T/hr (NOT fake +60T/hr)
+    assert c1.live_coins_per_hour == pytest.approx(5.0e12, rel=1e-2)
+
+    # Case 2: Initial baseline read too high (662.5T instead of 66.25T) -> 3 consistent lower readings rebase cleanly
+    c2 = GemCollector(frames, cfg, event_log_path=tmp_path / "events2.jsonl")
+    s2 = iter([
+        {"tier": 10, "coins": 662.5e12, "coins_raw": "662.5T", "tournament": False},
+        {"tier": 10, "coins": 66.25e12, "coins_raw": "66.25T", "tournament": False},
+        {"tier": 10, "coins": 66.26e12, "coins_raw": "66.26T", "tournament": False},
+        {"tier": 10, "coins": 66.27e12, "coins_raw": "66.27T", "tournament": False},
+        {"tier": 10, "coins": 66.77e12, "coins_raw": "66.77T", "tournament": False},
+    ])
+    monkeypatch.setattr(detectors, "read_battle_hud_meta", lambda f: next(s2))
+    c2._hud_meta_last_scan = 0.0
+    for idx, wall in enumerate((10000.0, 10020.0, 10040.0, 10060.0, 10420.0)):
+        monkeypatch.setattr(time, "time", lambda w=wall: w)
+        c2._step_hud_meta(frames.frame, 1000.0 + idx * 20.0)
+    assert c2.current_coins_raw == "66.77T"
+    assert c2.live_coins_per_hour == pytest.approx(5.0e12, rel=1e-2)
+
+
 def test_p3_routine_countdown_is_none_off_battle_and_failed_start_backs_off(tmp_path: Path, monkeypatch):
     cfg = copy.deepcopy(DEFAULT_CONFIG)
     cfg["routines"]["auto_claim_daily"] = True
