@@ -73,7 +73,7 @@ _MODULE_RARITY_RANK: dict[str, int] = {
     "common": 0,
 }
 
-_RARITY_RE = re.compile(r"\b(Ancestral|Mythic\+?|Legendary\+?|Epic\+?|Rare\+?|Common)\b", re.IGNORECASE)
+_RARITY_RE = re.compile(r"\b(Ancestral|Mythic\+?|Legendary\+?|Epic\+?|Rare\+?|Common)(?!\w)", re.IGNORECASE)
 _LEVEL_RE = re.compile(r"\b(?:Lv\.?|Level|L[cvg]\.?)\s*[:.-]?\s*([0-9OoIl|]{1,4})\b", re.IGNORECASE)
 _LEVEL_SLASH_RE = re.compile(r"\b(\d{1,3})\s*/\s*(\d{2,3})\b")
 _PRESET_RE = re.compile(r"\b(Preset\s*\d+)\b", re.IGNORECASE)
@@ -1091,7 +1091,7 @@ def parse_module_detail(
                 "popup_text": popup_text,
                 "raw_text": popup_text,
             }
-        # Generic / fodder module detail popup (e.g. Solar Dyson Sphere): open modal, not in 25-module catalog
+        # Generic / fodder module detail popup (e.g. Solar Dyson Sphere): open modal, not in 28-module catalog
         has_modal_chrome = bool(
             close_center is not None
             or re.search(r"\b(?:EQUIP|UNEQUIP|RESTORE|SUB-?MODULE|FAVORITE)\b", popup_text, re.IGNORECASE)

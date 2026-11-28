@@ -26,6 +26,7 @@ _CARD_STALL_THRESHOLD = 2
 _CARD_STALL_MAD = 2.5
 _MAX_SCROLL_TOP_SWIPES = 6
 _MAX_MOD_INV_PAGES = 5
+_MAX_MOD_INV_TOP_SWIPES = 4
 _MAX_MOD_INV_TAPS = 50
 _SWIPE_DURATION_MS = 550
 
@@ -172,6 +173,7 @@ class InventoryScanner:
         self._mod_current_slot: str | None = None
         self._mod_current_base: dict[str, Any] = {}
         self._mod_inv_page: int = 0
+        self._mod_inv_top_swipes: int = 0
         self._mod_inv_queue: list[dict[str, Any]] = []
         self._mod_inv_taps: int = 0
         self._mod_inv_has_lower: bool = False
@@ -641,7 +643,12 @@ class InventoryScanner:
         if self._substate == "tap_slot":
             if self._mod_slot_idx >= len(loadouts.MODULE_SLOT_ORDER):
                 self._mod_preset_idx += 1
-                self._substate = "preset_select" if self._mod_preset_idx < len(self._mod_presets) else "inv_scan"
+                if self._mod_preset_idx < len(self._mod_presets):
+                    self._substate = "preset_select"
+                else:
+                    self._mod_inv_top_swipes = 0
+                    self._mod_inv_prev_roi = None
+                    self._substate = "inv_scroll_top"
                 return False
 
             slot = loadouts.MODULE_SLOT_ORDER[self._mod_slot_idx]
@@ -661,6 +668,27 @@ class InventoryScanner:
             self.progress = f"Preset {self._mod_preset_idx + 1}/{len(self._mod_presets)} · Slot {self._mod_slot_idx + 1}/4"
             self._arm_delay(now)
             return True
+
+        if self._substate == "inv_scroll_top":
+            if self._mod_inv_top_swipes == 0 and int(self._detect_mod_inv(fresh).get("total_tiles") or 0) == 0:
+                self._substate = "restore"
+                return False
+            rx, ry, rw, rh = detectors.scale_rect(_REF_MOD_INV_ROI, fresh.shape)
+            inv_roi = fresh[ry : ry + rh, rx : rx + rw].copy()
+            at_top = (
+                self._mod_inv_top_swipes > 0
+                and self._mod_inv_prev_roi is not None
+                and _roi_mad(self._mod_inv_prev_roi, inv_roi) < _CARD_STALL_MAD
+            )
+            if at_top or self._mod_inv_top_swipes >= _MAX_MOD_INV_TOP_SWIPES:
+                self._mod_inv_prev_roi = None
+                self._substate = "inv_scan"
+            else:
+                self._mod_inv_prev_roi = inv_roi
+                self._mod_inv_top_swipes += 1
+                self.detail = "Scrolling Modules inventory to top"
+                self._swipe_inventory(fresh, input_display, direction="up", reason="scan:modules_scroll_top", now=now)
+                return True
 
         if self._substate == "inv_scan":
             rx, ry, rw, rh = detectors.scale_rect(_REF_MOD_INV_ROI, fresh.shape)

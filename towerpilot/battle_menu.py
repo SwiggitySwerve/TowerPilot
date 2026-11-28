@@ -70,6 +70,7 @@ _MOD_STEP_DELAY_SEC = 0.55
 _MAX_FAILURES = 4
 _MAX_SCROLL_PAGES = 3
 _MAX_MOD_INV_PAGES = 5
+_MAX_MOD_INV_TOP_SWIPES = 4
 _MAX_MOD_INV_TAPS = 50
 _MOD_INV_STALL_MAD = 2.5
 _MAX_CLAIMS_PER_RUN = 10
@@ -654,6 +655,7 @@ class BattleMenuRoutine:
         self._mod_current_slot: str | None = None
         self._mod_current_base: dict[str, Any] = {}
         self._mod_inv_page: int = 0
+        self._mod_inv_top_swipes: int = 0
         self._mod_inv_queue: list[dict[str, Any]] = []
         self._mod_inv_taps: int = 0
         self._mod_inv_has_lower: bool = False
@@ -1387,7 +1389,9 @@ class BattleMenuRoutine:
         # 2) Tap each of the 4 main equipped slots to read exact module name & substats
         if self._mod_substate == "tap_slot":
             if self._mod_slot_idx >= len(loadouts.MODULE_SLOT_ORDER):
-                self._mod_substate = "scan_inv_page"
+                self._mod_inv_top_swipes = 0
+                self._mod_inv_prev_roi = None
+                self._mod_substate = "scroll_inv_top"
             else:
                 slot = loadouts.MODULE_SLOT_ORDER[self._mod_slot_idx]
                 slot_info = dict(self._mod_slots.get(slot) or {})
@@ -1480,6 +1484,33 @@ class BattleMenuRoutine:
                 self._safe_tap(pt, fresh, reason="battle_menu:mod_close_retry", input_display=disp)
             self._next_step_at = now + delay
             return self.active
+
+        # 3b) Scroll Modules Inventory back to top (game persists last scroll offset across opens)
+        if self._mod_substate == "scroll_inv_top":
+            inv_roi = self._mod_inv_roi(fresh)
+            at_top = False
+            if self._mod_inv_top_swipes > 0 and self._mod_inv_prev_roi is not None:
+                if inv_roi.shape == self._mod_inv_prev_roi.shape and inv_roi.size > 0:
+                    mad = float(np.mean(np.abs(inv_roi.astype(np.float32) - self._mod_inv_prev_roi.astype(np.float32))))
+                    if mad < _MOD_INV_STALL_MAD:
+                        at_top = True
+            if at_top or self._mod_inv_top_swipes >= _MAX_MOD_INV_TOP_SWIPES:
+                self._mod_inv_prev_roi = None
+                self._mod_substate = "scan_inv_page"
+            else:
+                self._mod_inv_prev_roi = inv_roi
+                self._mod_inv_top_swipes += 1
+                self._swipe(
+                    (int(round(540 * sx)), int(round(1240 * sy))),
+                    (int(round(540 * sx)), int(round(2060 * sy))),
+                    fresh,
+                    duration_ms=480,
+                    reason=f"battle_menu:scroll_mod_inv_top_{self._mod_inv_top_swipes}",
+                    input_display=disp,
+                )
+                self.detail = "Scrolling Modules inventory to top"
+                self._next_step_at = now + 0.6
+                return True
 
         # 4) Scan visible Epic+ inventory tiles (skip Rare/Common & visual dupes)
         if self._mod_substate == "scan_inv_page":

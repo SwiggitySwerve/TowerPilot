@@ -386,7 +386,7 @@ def test_wiki_master_catalog_slots_and_rarities():
     cat = wiki.master_catalog()
     assert cat == wiki.catalog()
     assert len(cat["cards"]) == 32
-    assert len(cat["modules"]) == 25
+    assert len(cat["modules"]) == 28
     assert len(cat["uws"]) == 9
     assert len(cat["uw_plus"]) == 9
     assert len(cat["workshop"]) == 48
@@ -401,14 +401,18 @@ def test_wiki_master_catalog_slots_and_rarities():
     assert all(c["slot"] == "" for c in cat["cards"])
 
     mod_by_name = {m["name"]: m for m in cat["modules"]}
-    assert sum(1 for m in cat["modules"] if m["slot"] == "cannon") == 6
-    assert sum(1 for m in cat["modules"] if m["slot"] == "armor") == 6
-    assert sum(1 for m in cat["modules"] if m["slot"] == "generator") == 6
+    assert sum(1 for m in cat["modules"] if m["slot"] == "cannon") == 7
+    assert sum(1 for m in cat["modules"] if m["slot"] == "armor") == 7
+    assert sum(1 for m in cat["modules"] if m["slot"] == "generator") == 7
     assert sum(1 for m in cat["modules"] if m["slot"] == "core") == 7
     assert mod_by_name["Amplifying Strike"]["slot"] == "cannon"
+    assert mod_by_name["Gilded Sniper"]["slot"] == "cannon"
     assert mod_by_name["Anti-Cube Portal"]["slot"] == "armor"
+    assert mod_by_name["Sentry Protocol"]["slot"] == "armor"
     assert mod_by_name["Galaxy Compressor"]["slot"] == "generator"
-    assert mod_by_name["Solar Dyson Sphere"]["slot"] == "core"
+    assert mod_by_name["Infinity Threshold"]["slot"] == "generator"
+    assert mod_by_name["Tactical Barrage"]["slot"] == "core"
+    assert "Solar Dyson Sphere" not in mod_by_name
 
     # IndexItem keeps backwards-compatible empty defaults for UWs/enemies
     gt = wiki.match_name("GT")
@@ -590,14 +594,14 @@ def test_parse_module_detail_popup_and_non_module():
 def test_account_store_enriched_catalog_and_presets(tmp_path: Path):
     store = loadouts.AccountStore(tmp_path / "account.json")
 
-    # Empty snapshot still exposes full master catalog (31 cards, 25 modules, 9 UWs) with owned=False
+    # Empty snapshot still exposes full master catalog (32 cards, 28 modules, 9 UWs) with owned=False
     empty = store.snapshot()
     assert empty["counts"] == {
         "cards_owned": 0,
         "cards_total": 32,
         "cards_mastered": 0,
         "modules_owned": 0,
-        "modules_total": 25,
+        "modules_total": 28,
         "uws_owned": 0,
         "uws_total": 9,
         "uw_plus_owned": 0,
@@ -606,7 +610,7 @@ def test_account_store_enriched_catalog_and_presets(tmp_path: Path):
         "workshop_total": 48,
     }
     assert len(empty["catalog"]["cards"]) == 32
-    assert len(empty["catalog"]["modules"]) == 25
+    assert len(empty["catalog"]["modules"]) == 28
     assert len(empty["catalog"]["uws"]) == 9
     assert len(empty["catalog"]["uw_plus"]) == 9
     assert all(it["owned"] is False for it in empty["catalog"]["cards"])
@@ -864,5 +868,32 @@ def test_detect_module_inventory_tiles_filters_epic_plus_and_dedupes_fodder(tmp_
     assert acp["owned"] is True
     assert acp["rarity"] == "Epic+"
     assert acp["equipped_in"] == []
+
+    # v29 unique modules & live OCR artifacts ('Lv. 136 1160', 'ANCESTRAL a', Solar Dyson Sphere as fodder)
+    gs_lines = [[
+        (110, 960, "10"),
+        (360, 240, "ANCESTRAL a"),
+        (430, 240, "Gilded Sniper"),
+        (510, 260, "Lv. 137"),
+        (920, 120, "+5x Attack Speed"),
+    ]]
+    gs = loadouts.parse_module_detail(frame, lines_fn=lambda crops: gs_lines)
+    assert gs is not None and gs["slug"] == "module:gilded_sniper" and gs["slot"] == "cannon"
+    assert gs["rarity"] == "Ancestral" and gs["level"] == 137
+
+    it_lines = [[
+        (360, 240, "MYTHIC+"),
+        (430, 240, "Infinity Threshold"),
+        (510, 260, "Lv. 136 1160"),
+        (920, 120, "+8% Package Chance"),
+    ]]
+    it = loadouts.parse_module_detail(frame, lines_fn=lambda crops: it_lines)
+    assert it is not None and it["slug"] == "module:infinity_threshold" and it["slot"] == "generator"
+    assert it["rarity"] == "Mythic+" and it["level"] == 136
+
+    sds_lines = [[(220, 200, "Solar Dyson Sphere"), (260, 820, "X"), (300, 220, "Epic+"), (1500, 300, "EQUIP")]]
+    sds = loadouts.parse_module_detail(frame, lines_fn=lambda crops: sds_lines)
+    assert sds is not None and sds["slug"] is None and sds["non_unique"] is True
+
 
 

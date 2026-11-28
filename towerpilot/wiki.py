@@ -84,26 +84,29 @@ _CARDS: tuple[tuple[str, str], ...] = (
 _CARD_NAMES: tuple[str, ...] = tuple(name for name, _ in _CARDS)
 
 _MODULES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
-    # Cannon (6)
+    # Cannon (7)
     ("Amplifying Strike", "cannon", ("AS",)),
     ("Astral Deliverance", "cannon", ("AD",)),
     ("Being Annihilator", "cannon", ("BA",)),
     ("Death Penalty", "cannon", ("DP",)),
+    ("Gilded Sniper", "cannon", ("GS",)),
     ("Havoc Bringer", "cannon", ("HB",)),
     ("Shrink Ray", "cannon", ("SR",)),
-    # Armor (6)
+    # Armor (7)
     ("Anti-Cube Portal", "armor", ("ACP",)),
     ("Negative Mass Projector", "armor", ("NMP",)),
     ("Orbital Augment", "armor", ("OA",)),
+    ("Sentry Protocol", "armor", ("SP",)),
     ("Sharp Fortitude", "armor", ("SF",)),
     ("Space Displacer", "armor", ("SD",)),
     ("Wormhole Redirector", "armor", ("WR",)),
-    # Generator (6)
+    # Generator (7)
     ("Black Hole Digestor", "generator", ("BHD",)),
     ("Galaxy Compressor", "generator", ("GC", "GCOMP")),
+    ("Infinity Threshold", "generator", ("IT",)),
     ("Project Funding", "generator", ("PF",)),
     ("Pulsar Harvester", "generator", ("PH",)),
-    ("Restorative Bonus", "generator", ("RB",)),
+    ("Restorative Bonus", "generator", ("RB", "Restorative Boost")),
     ("Singularity Harness", "generator", ("SH",)),
     # Core (7)
     ("Dimension Core", "core", ("DC",)),
@@ -112,7 +115,7 @@ _MODULES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("Multiverse Nexus", "core", ("MVN",)),
     ("Om Chip", "core", ("OC",)),
     ("Primordial Collapse", "core", ("PC",)),
-    ("Solar Dyson Sphere", "core", ("SDS",)),
+    ("Tactical Barrage", "core", ("TB",)),
 )
 
 _UWS: tuple[tuple[str, tuple[str, ...]], ...] = (

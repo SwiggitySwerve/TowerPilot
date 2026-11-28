@@ -771,5 +771,98 @@ def test_battle_menu_modules_sweep_reads_main_slots_and_epic_plus_inventory(tmp_
     assert len(inv_taps) == 2
 
 
+def test_battle_menu_modules_scrolls_inventory_to_top_when_opened_at_bottom(tmp_path: Path):
+    """If the game opens Modules scrolled down to Rare/Common, sweep scrolls back to top before scanning Epic+."""
+    import threading
+
+    def page_frame(pg: int) -> np.ndarray:
+        f = np.zeros((2560, 1080, 3), dtype=np.uint8)
+        f[1100:2200, 50:1030] = (pg + 1) * 70
+        return f
+
+    battle_closed = _battle_frame(menu_open=False)
+    state = {"page": 2, "popup": None, "returned": False}
+    swipes: list[tuple[tuple[int, int], tuple[int, int], str]] = []
+    store = loadouts.AccountStore(tmp_path / "account.json")
+    hist = battle_menu.BattleHistoryStore(tmp_path / "history.json")
+
+    def current_frame() -> np.ndarray:
+        return battle_closed if state["returned"] else page_frame(state["page"])
+
+    def fake_tap(pt, frame, *, reason="", input_display=None):
+        if reason.startswith("battle_menu:mod_slot_"):
+            state["popup"] = {"slug": "module:gilded_sniper", "name": "Gilded Sniper", "slot": "cannon", "level": 137, "rarity": "Ancestral", "substats": [], "close_center": (820, 260), "forbidden": False}
+        elif reason.startswith("battle_menu:mod_inv_close") or reason.startswith("battle_menu:mod_close_"):
+            state["popup"] = None
+        elif reason.startswith("battle_menu:mod_inv_"):
+            state["popup"] = {"slug": "module:infinity_threshold", "name": "Infinity Threshold", "slot": "generator", "level": 136, "rarity": "Mythic+", "substats": [], "close_center": (820, 260), "forbidden": False}
+        elif reason.startswith("battle_menu:return_"):
+            state["returned"] = True
+        return {"ok": True}
+
+    def fake_swipe(start, end, frame, *, duration_ms=500, reason="", input_display=None):
+        swipes.append((start, end, reason))
+        if start[1] < end[1]:  # finger drags down -> scroll content UP to top
+            state["page"] = max(0, state["page"] - 1)
+        else:
+            state["page"] = min(2, state["page"] + 1)
+        return {"ok": True}
+
+    def fake_lines(crops):
+        if state["returned"]:
+            return [[]]
+        if len(crops) == 1 and crops[0].shape[0] <= 150:
+            if crops[0].shape[1] == 820:
+                return [[(100, 40, "MODULES")]]
+            return [[(40, 200, "Tap To Return To Game")]]
+        return [[]]
+
+    def fake_detect(frame):
+        # Page 2 has only lower-tier Rare/Common; Page 0 has top Epic+ module
+        if state["page"] == 0:
+            return {
+                "tiles": [{"center": (144, 1198), "rarity": "Mythic", "sig": np.full((16, 16), 25.0, dtype=np.float32)}],
+                "has_lower_tier": True,
+                "total_tiles": 4,
+            }
+        return {"tiles": [], "has_lower_tier": True, "total_tiles": 10}
+
+    ctrl = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (current_frame().copy(), None),
+        check_foreground=lambda disp: (True, ""),
+        tap=fake_tap,
+        swipe=fake_swipe,
+        log=lambda *a, **k: None,
+        notify=lambda *a, **k: None,
+        stop_event=threading.Event(),
+        account_store=store,
+        history_store=hist,
+        step_delay_sec=0.0,
+        lines_fn=fake_lines,
+        parse_modules_fn=lambda f: {"active_preset": "Preset 1", "slots": {}},
+        parse_detail_fn=lambda f: state["popup"],
+        detect_mod_inv_fn=fake_detect,
+    )
+    ctrl.active = True
+    ctrl.task = "modules"
+    ctrl.phase = "work"
+
+    now = 100.0
+    for _ in range(50):
+        now += 1.0
+        if not ctrl.step(current_frame(), now):
+            break
+
+    assert ctrl.active is False
+    assert ctrl.error is None
+    assert state["page"] == 0
+    top_swipes = [r for _, _, r in swipes if r.startswith("battle_menu:scroll_mod_inv_top_")]
+    assert len(top_swipes) >= 2
+    owned_slugs = {m["slug"] for m in store.snapshot()["catalog"]["modules"] if m["owned"]}
+    assert "module:gilded_sniper" in owned_slugs
+    assert "module:infinity_threshold" in owned_slugs
+
+
+
 
 
