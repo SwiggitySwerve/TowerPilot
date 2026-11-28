@@ -68,7 +68,9 @@ VALID_TASKS = ("history", "cards", "modules", "workshop", "daily_quests", "guild
 _STEP_DELAY_SEC = 1.0
 _MAX_FAILURES = 4
 _MAX_SCROLL_PAGES = 3
-_MAX_WORKSHOP_SCROLLS = 4
+_MAX_WORKSHOP_SCROLLS = 7
+_MAX_UW_SCROLLS = 3
+_WORKSHOP_SCROLL_TOP_SWIPES = 3
 _MAX_CLAIMS_PER_RUN = 10
 _MAX_RETURN_ATTEMPTS = 4
 _WORKSHOP_TAB_ORDER = ("attack", "defense", "utility", "uw")
@@ -665,6 +667,7 @@ class BattleMenuRoutine:
             self._page = 0
             self._workshop_tab_idx = 0
             self._workshop_tab_pages = 0
+            self._workshop_top_swipes = 0
             self._workshop_seen_uws: set[str] = set()
             self._claims_done = 0
             self._claim_attempts = 0
@@ -1123,6 +1126,23 @@ class BattleMenuRoutine:
             self._next_step_at = now + self._step_delay_sec
             return True
 
+        # Scroll to top of each tab first so previously scrolled-down panels never miss top items
+        if self._workshop_tab_pages == 0 and self._workshop_top_swipes < _WORKSHOP_SCROLL_TOP_SWIPES:
+            sx = fresh.shape[1] / float(detectors.REF_W)
+            sy = fresh.shape[0] / float(detectors.REF_H)
+            self._swipe(
+                (int(round(540 * sx)), int(round(1940 * sy))),
+                (int(round(540 * sx)), int(round(2360 * sy))),
+                fresh,
+                duration_ms=260,
+                reason=f"battle_menu:workshop_top_{target_tab}_{self._workshop_top_swipes}",
+                input_display=disp,
+            )
+            self._workshop_top_swipes += 1
+            self.detail = f"Scrolling {target_tab.title()} to top"
+            self._next_step_at = now + 0.45
+            return True
+
         # Active tab matches target_tab -> OCR visible items & merge into AccountStore
         parsed = loadouts.parse_battle_workshop_panel(fresh, tab=target_tab, lines_fn=self._lines_fn)
         items = parsed.get("items") or []
@@ -1146,24 +1166,25 @@ class BattleMenuRoutine:
         self._failures = 0
         self.detail = f"Scanning {target_tab.title()} (page {self._workshop_tab_pages}, {len(self._seen_items)} upgrades, {len(self._workshop_seen_uws)} UWs)"
 
-        # Scroll down inside the upgrade panel for Attack/Defense/Utility if more items may lie below
-        if target_tab != "uw" and self._workshop_tab_pages < _MAX_WORKSHOP_SCROLLS and (new_count > 0 or self._workshop_tab_pages == 1):
+        max_scrolls = _MAX_UW_SCROLLS if target_tab == "uw" else _MAX_WORKSHOP_SCROLLS
+        if self._workshop_tab_pages < max_scrolls and (new_count > 0 or self._workshop_tab_pages == 1):
             sx = fresh.shape[1] / float(detectors.REF_W)
             sy = fresh.shape[0] / float(detectors.REF_H)
             self._swipe(
                 (int(round(540 * sx)), int(round(2340 * sy))),
                 (int(round(540 * sx)), int(round(1940 * sy))),
                 fresh,
-                duration_ms=450,
+                duration_ms=420,
                 reason=f"battle_menu:scroll_workshop_{target_tab}_{self._workshop_tab_pages}",
                 input_display=disp,
             )
-            self._next_step_at = now + 0.7
+            self._next_step_at = now + 0.65
             return True
 
         # Advance to next tab
         self._workshop_tab_idx += 1
         self._workshop_tab_pages = 0
+        self._workshop_top_swipes = 0
         self._next_step_at = now + 0.4
         return True
 
