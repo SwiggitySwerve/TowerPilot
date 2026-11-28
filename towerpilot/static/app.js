@@ -1363,7 +1363,167 @@ function renderScanState(scan) {
   }
 }
 
-function renderCatalogSection(container, items, category, membershipMaps, activePresets) {
+function pickGridColumns(count) {
+  if (count <= 1) return 1;
+  if (count === 2 || count === 4) return 2;
+  if (count % 3 === 0) return 3;
+  if (count % 2 === 0) return 2;
+  return count >= 5 ? 2 : 3;
+}
+
+const CARD_RARITY_GROUPS = [
+  { key: "common", label: "Common", tone: "grp-common" },
+  { key: "rare", label: "Rare", tone: "grp-rare" },
+  { key: "epic", label: "Epic", tone: "grp-epic" },
+];
+
+const MODULE_SLOT_GROUPS = [
+  { key: "cannon", label: "Cannon", tone: "grp-cannon" },
+  { key: "armor", label: "Armor", tone: "grp-armor" },
+  { key: "generator", label: "Generator", tone: "grp-generator" },
+  { key: "core", label: "Core", tone: "grp-core" },
+];
+
+function buildCatalogCell(item, category, membershipMaps, activePresets) {
+  const presetAware = category === "card" || category === "module";
+  const activePresetForCat = category === "card" ? activePresets.cards : (category === "module" ? activePresets.modules : null);
+
+  const owned = Boolean(item.owned);
+  const equippedIn = resolveEquippedIn(item, category, membershipMaps);
+  let isEquipped = false;
+  let notInSelectedPreset = false;
+
+  if (presetAware) {
+    if (loadoutPresetFilter) {
+      isEquipped = equippedIn.includes(loadoutPresetFilter);
+      if (!isEquipped) notInSelectedPreset = true;
+    } else if (activePresetForCat) {
+      isEquipped = equippedIn.includes(activePresetForCat);
+    } else {
+      isEquipped = equippedIn.length > 0;
+    }
+  }
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  const classes = ["catalog-cell", owned ? "owned" : "unowned"];
+  if (owned) {
+    const rarityCls = getRarityChipClass(item, category);
+    if (rarityCls) classes.push(rarityCls);
+  }
+  if (isEquipped) classes.push("is-equipped");
+  if (notInSelectedPreset) classes.push("not-in-preset");
+  btn.className = classes.join(" ");
+
+  const topRow = document.createElement("div");
+  topRow.className = "cell-top";
+
+  const nameEl = document.createElement("span");
+  nameEl.className = "cell-name";
+  nameEl.textContent = item.name || item.slug || "";
+  topRow.appendChild(nameEl);
+
+  if (isEquipped) {
+    const eqDot = document.createElement("span");
+    eqDot.className = "chip-eq-dot";
+    eqDot.textContent = "\u2713";
+    eqDot.setAttribute("aria-hidden", "true");
+    topRow.appendChild(eqDot);
+  }
+  btn.appendChild(topRow);
+
+  const detailText = formatCatalogDetail(item, category);
+  const subRow = document.createElement("div");
+  subRow.className = "cell-sub";
+
+  const statusTag = document.createElement("span");
+  statusTag.className = "cell-status";
+  statusTag.textContent = owned ? (isEquipped ? "Equipped" : "Owned") : "Missing";
+  subRow.appendChild(statusTag);
+
+  if (detailText) {
+    const det = document.createElement("span");
+    const detRarityCls = getDetailRarityClass(item, category, detailText);
+    det.className = "chip-detail" + (detRarityCls ? ` ${detRarityCls}` : "");
+    det.textContent = detailText;
+    subRow.appendChild(det);
+  }
+  btn.appendChild(subRow);
+
+  btn.title = buildItemTooltip(item, category, detailText, equippedIn);
+  btn.addEventListener("click", () => openWiki(item.slug || item.name));
+  return btn;
+}
+
+function renderEquippedModuleSlotsBar(container, snap) {
+  const modPresets = (snap && snap.module_presets && typeof snap.module_presets === "object") ? snap.module_presets : {};
+  const presetName = (loadoutPresetFilter && modPresets[loadoutPresetFilter])
+    ? loadoutPresetFilter
+    : Object.keys(modPresets)[0];
+  if (!presetName || !modPresets[presetName]) return;
+  const slots = modPresets[presetName];
+  const entries = MODULE_SLOT_GROUPS
+    .map((g) => ({ group: g, info: slots[g.key] }))
+    .filter((x) => x.info && (x.info.level || x.info.rarity || x.info.name));
+  if (entries.length === 0) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "catalog-group";
+
+  const head = document.createElement("div");
+  head.className = "catalog-group-head";
+  const lbl = document.createElement("span");
+  lbl.textContent = `Equipped (${presetName})`;
+  const cnt = document.createElement("span");
+  cnt.className = "catalog-group-count";
+  cnt.textContent = `${entries.length}/4`;
+  head.appendChild(lbl);
+  head.appendChild(cnt);
+  wrap.appendChild(head);
+
+  const grid = document.createElement("div");
+  grid.className = "equipped-slots-grid";
+  grid.style.setProperty("--cols", String(pickGridColumns(entries.length)));
+
+  for (const { group, info } of entries) {
+    const tile = document.createElement("div");
+    const rarCls = getRarityChipClass({ rarity: info.rarity || "" }, "module");
+    tile.className = `catalog-cell owned is-equipped ${rarCls || "mod-owned"}`;
+
+    const top = document.createElement("div");
+    top.className = "cell-top";
+    const nm = document.createElement("span");
+    nm.className = "cell-name";
+    nm.textContent = info.name || group.label;
+    top.appendChild(nm);
+    const badge = document.createElement("span");
+    badge.className = `slot-tag slot-${group.key}`;
+    badge.textContent = SLOT_LABELS[group.key] || group.label;
+    top.appendChild(badge);
+    tile.appendChild(top);
+
+    const sub = document.createElement("div");
+    sub.className = "cell-sub";
+    const lv = document.createElement("span");
+    lv.className = "cell-status";
+    lv.textContent = info.level ? `Lv.${info.level}` : "Equipped";
+    sub.appendChild(lv);
+    if (info.rarity) {
+      const rar = document.createElement("span");
+      const detCls = getDetailRarityClass({ rarity: info.rarity }, "module", info.rarity);
+      rar.className = "chip-detail" + (detCls ? ` ${detCls}` : "");
+      rar.textContent = info.rarity;
+      sub.appendChild(rar);
+    }
+    tile.appendChild(sub);
+    grid.appendChild(tile);
+  }
+
+  wrap.appendChild(grid);
+  container.appendChild(wrap);
+}
+
+function renderCatalogSection(container, items, category, membershipMaps, activePresets, snap) {
   container.textContent = "";
   const list = Array.isArray(items) ? items : [];
   const filtered = list.filter((item) => {
@@ -1372,6 +1532,10 @@ function renderCatalogSection(container, items, category, membershipMaps, active
     if (loadoutOwnerFilter === "missing") return !owned;
     return true;
   });
+
+  if (category === "module" && snap) {
+    renderEquippedModuleSlotsBar(container, snap);
+  }
 
   if (filtered.length === 0) {
     const span = document.createElement("span");
@@ -1389,67 +1553,63 @@ function renderCatalogSection(container, items, category, membershipMaps, active
     return;
   }
 
-  const presetAware = category === "card" || category === "module";
-  const activePresetForCat = category === "card" ? activePresets.cards : (category === "module" ? activePresets.modules : null);
-
-  for (const item of filtered) {
-    const owned = Boolean(item.owned);
-    const equippedIn = resolveEquippedIn(item, category, membershipMaps);
-    let isEquipped = false;
-    let notInSelectedPreset = false;
-
-    if (presetAware) {
-      if (loadoutPresetFilter) {
-        isEquipped = equippedIn.includes(loadoutPresetFilter);
-        if (!isEquipped) notInSelectedPreset = true;
-      } else if (activePresetForCat) {
-        isEquipped = equippedIn.includes(activePresetForCat);
-      } else {
-        isEquipped = equippedIn.length > 0;
+  // Group into cleanly aligned, color-coded grid tables sized to each group
+  let groups = [];
+  if (category === "card") {
+    for (const def of CARD_RARITY_GROUPS) {
+      const members = filtered.filter((it) => normalizeKey(it.rarity || "common") === def.key);
+      if (members.length > 0) {
+        groups.push({ label: def.label, tone: def.tone, items: members });
       }
     }
-
-    const btn = document.createElement("button");
-    btn.type = "button";
-    const classes = ["wiki-chip", owned ? "owned" : "unowned"];
-    if (owned) {
-      const rarityCls = getRarityChipClass(item, category);
-      if (rarityCls) classes.push(rarityCls);
+    const other = filtered.filter((it) => !CARD_RARITY_GROUPS.some((d) => d.key === normalizeKey(it.rarity || "common")));
+    if (other.length > 0) groups.push({ label: "Other", tone: "", items: other });
+  } else if (category === "module") {
+    for (const def of MODULE_SLOT_GROUPS) {
+      const members = filtered.filter((it) => normalizeKey(it.slot) === def.key);
+      if (members.length > 0) {
+        groups.push({ label: def.label, tone: def.tone, items: members });
+      }
     }
-    if (isEquipped) classes.push("is-equipped");
-    if (notInSelectedPreset) classes.push("not-in-preset");
-    btn.className = classes.join(" ");
+    const other = filtered.filter((it) => !MODULE_SLOT_GROUPS.some((d) => d.key === normalizeKey(it.slot)));
+    if (other.length > 0) groups.push({ label: "Other", tone: "", items: other });
+  } else {
+    groups.push({ label: "", tone: "grp-uw", items: filtered });
+  }
 
-    if (isEquipped) {
-      const eqDot = document.createElement("span");
-      eqDot.className = "chip-eq-dot";
-      eqDot.textContent = "\u2713";
-      eqDot.setAttribute("aria-hidden", "true");
-      btn.appendChild(eqDot);
-    }
+  for (const grp of groups) {
+    const wrap = document.createElement("div");
+    wrap.className = "catalog-group" + (grp.tone ? ` ${grp.tone}` : "");
 
-    if (category === "module" && item.slot) {
-      const slotKey = normalizeKey(item.slot);
-      const slotTag = document.createElement("span");
-      slotTag.className = `slot-tag slot-${slotKey.replace(/[^a-z0-9_-]/g, "")}`;
-      slotTag.textContent = SLOT_LABELS[slotKey] || String(item.slot);
-      btn.appendChild(slotTag);
-    }
+    if (grp.label) {
+      const ownedInGrp = grp.items.filter((i) => i.owned).length;
+      const head = document.createElement("div");
+      head.className = "catalog-group-head";
 
-    btn.appendChild(document.createTextNode(item.name || item.slug || ""));
+      const title = document.createElement("span");
+      title.className = "catalog-group-label";
+      title.textContent = grp.label;
 
-    const detailText = formatCatalogDetail(item, category);
-    if (detailText) {
-      const det = document.createElement("span");
-      const detRarityCls = getDetailRarityClass(item, category, detailText);
-      det.className = "chip-detail" + (detRarityCls ? ` ${detRarityCls}` : "");
-      det.textContent = detailText;
-      btn.appendChild(det);
+      const countEl = document.createElement("span");
+      countEl.className = "catalog-group-count";
+      countEl.textContent = `${ownedInGrp}/${grp.items.length}`;
+
+      head.appendChild(title);
+      head.appendChild(countEl);
+      wrap.appendChild(head);
     }
 
-    btn.title = buildItemTooltip(item, category, detailText, equippedIn);
-    btn.addEventListener("click", () => openWiki(item.slug || item.name));
-    container.appendChild(btn);
+    const cols = pickGridColumns(grp.items.length);
+    const grid = document.createElement("div");
+    grid.className = "catalog-grid";
+    grid.style.setProperty("--cols", String(cols));
+
+    for (const item of grp.items) {
+      grid.appendChild(buildCatalogCell(item, category, membershipMaps, activePresets));
+    }
+
+    wrap.appendChild(grid);
+    container.appendChild(wrap);
   }
 }
 
@@ -1559,9 +1719,9 @@ function renderAccount(snap) {
   const membershipMaps = buildPresetMembershipMaps(snap);
   const activePresets = getActiveProfilePresets();
 
-  renderCatalogSection($("loadoutCards"), catalogCards, "card", membershipMaps, activePresets);
-  renderCatalogSection($("loadoutModules"), catalogModules, "module", membershipMaps, activePresets);
-  renderCatalogSection($("loadoutUws"), catalogUws, "uw", membershipMaps, activePresets);
+  renderCatalogSection($("loadoutCards"), catalogCards, "card", membershipMaps, activePresets, snap);
+  renderCatalogSection($("loadoutModules"), catalogModules, "module", membershipMaps, activePresets, snap);
+  renderCatalogSection($("loadoutUws"), catalogUws, "uw", membershipMaps, activePresets, snap);
   renderPresetSummary(snap, catalogCards, catalogModules, membershipMaps);
 
   const metaParts = [];
