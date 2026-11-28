@@ -189,6 +189,7 @@
                   <div class="routine-controls">
                     <button id="runCardsBtn" class="mini-btn" type="button" title="Open Cards from Battle Menu &amp; inventory">Cards</button>
                     <button id="runModulesBtn" class="mini-btn" type="button" title="Open Modules from Battle Menu &amp; inventory">Modules</button>
+                    <button id="runWorkshopBtn" class="mini-btn" type="button" title="Scan Workshop Upgrades &amp; UWs in battle">Workshop</button>
                   </div>
                 </div>
               </div>
@@ -361,13 +362,20 @@
             </div>
           </div>
 
-          <!-- TAB 2: LOADOUT (Inventory Scanner & Master Catalog) -->
+          <!-- TAB 2: LOADOUT (Separated sub-tabs: Cards | Modules | Workshop | UWs) -->
           <div id="tabLoadout" class="tab-panel" role="tabpanel" hidden>
-            <div class="sidebar-section">
+            <div class="sidebar-section loadout-toolbar-section">
+              <div id="loadoutSubTabs" class="subtab-bar" role="tablist" aria-label="Inventory Sections">
+                <button type="button" role="tab" data-subtab="cards" aria-selected="true" class="active">Cards <span id="cardsTabBadge" class="subtab-count">0/31</span></button>
+                <button type="button" role="tab" data-subtab="modules" aria-selected="false">Modules <span id="modulesTabBadge" class="subtab-count">0/25</span></button>
+                <button type="button" role="tab" data-subtab="workshop" aria-selected="false">Workshop <span id="workshopTabBadge" class="subtab-count">0/48</span></button>
+                <button type="button" role="tab" data-subtab="uws" aria-selected="false">UWs <span id="uwsTabBadge" class="subtab-count">0/9</span></button>
+              </div>
               <div class="loadout-actions">
                 <button id="scanInventoryBtn" class="primary-btn" type="button" title="Automated inventory scan across Cards and Modules">Scan Presets</button>
                 <button id="inBattleCardsBtn" class="mini-btn cyan" type="button" title="View Cards via Battle Menu (works in battle)">Cards</button>
                 <button id="inBattleModulesBtn" class="mini-btn cyan" type="button" title="View Modules via Battle Menu (works in battle)">Mods</button>
+                <button id="inBattleWorkshopBtn" class="mini-btn cyan" type="button" title="Scan Workshop Upgrades &amp; UWs live in battle">Workshop</button>
                 <button id="observeBtn" class="mini-btn" type="button" title="Quick zero-tap single-screen read">Observe</button>
                 <button id="resetAccountBtn" class="mini-btn" type="button" title="Clear observed loadout">Clear</button>
               </div>
@@ -375,12 +383,12 @@
                 <span id="scanBannerText" class="scan-banner-text">Scanning inventory&hellip;</span>
                 <button id="cancelScanBtn" class="mini-btn" type="button">Cancel</button>
               </div>
-              <div id="observeMeta" class="gem-status">Scan inventory or open Cards/Modules/UWs and click Observe.</div>
+              <div id="observeMeta" class="gem-status">Scan inventory or open Cards/Modules/Workshop/UWs.</div>
               <div class="loadout-filters">
                 <div id="loadoutOwnerFilter" class="mini-seg" role="group" aria-label="Ownership filter">
                   <button type="button" data-filter="all" aria-pressed="true" class="active">All</button>
-                  <button type="button" data-filter="owned" aria-pressed="false">Owned</button>
-                  <button type="button" data-filter="missing" aria-pressed="false">Missing</button>
+                  <button type="button" data-filter="owned" aria-pressed="false">Unlocked</button>
+                  <button type="button" data-filter="missing" aria-pressed="false">Locked</button>
                 </div>
                 <select id="loadoutPresetFilter" class="compact-input select loadout-preset-select" aria-label="Preset filter">
                   <option value="">All Presets</option>
@@ -393,43 +401,64 @@
               </div>
             </div>
 
-            <div class="sidebar-section">
-              <div class="section-heading">
-                <span>Cards</span>
-                <span class="section-heading-right">
-                  <span id="cardSlotsBadge" class="slots-badge" hidden></span>
-                  <span id="cardsCount" class="gem-count">0/31</span>
-                </span>
+            <!-- SUB-TAB: CARDS -->
+            <div id="subtabCards" class="subtab-panel" role="tabpanel">
+              <div class="sidebar-section">
+                <div class="section-heading">
+                  <span>Cards</span>
+                  <span class="section-heading-right">
+                    <span id="cardSlotsBadge" class="slots-badge" hidden></span>
+                    <span id="cardsCount" class="gem-count">0/31</span>
+                  </span>
+                </div>
+                <div id="loadoutCards" class="catalog-tables">
+                  <span class="ledger-empty">Loading catalog&hellip;</span>
+                </div>
               </div>
-              <div id="loadoutCards" class="catalog-tables">
-                <span class="ledger-empty">Loading catalog&hellip;</span>
-              </div>
-            </div>
-
-            <div class="sidebar-section">
-              <div class="section-heading">
-                <span>Modules</span>
-                <span id="modulesCount" class="gem-count">0/25</span>
-              </div>
-              <div id="loadoutModules" class="catalog-tables">
-                <span class="ledger-empty">Loading catalog&hellip;</span>
-              </div>
-            </div>
-
-            <div class="sidebar-section">
-              <div class="section-heading">
-                <span>Ultimate Weapons</span>
-                <span id="uwsCount" class="gem-count">0/9</span>
-              </div>
-              <div id="loadoutUws" class="catalog-tables">
-                <span class="ledger-empty">Loading catalog&hellip;</span>
+              <div class="sidebar-section">
+                <div class="section-heading">Presets Seen</div>
+                <div id="loadoutPresets" class="chip-grid">
+                  <span class="ledger-empty">None observed yet.</span>
+                </div>
               </div>
             </div>
 
-            <div class="sidebar-section">
-              <div class="section-heading">Presets Seen</div>
-              <div id="loadoutPresets" class="chip-grid">
-                <span class="ledger-empty">None observed yet.</span>
+            <!-- SUB-TAB: MODULES -->
+            <div id="subtabModules" class="subtab-panel" role="tabpanel" hidden>
+              <div class="sidebar-section">
+                <div class="section-heading">
+                  <span>Modules</span>
+                  <span id="modulesCount" class="gem-count">0/25</span>
+                </div>
+                <div id="loadoutModules" class="catalog-tables">
+                  <span class="ledger-empty">Loading catalog&hellip;</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-TAB: WORKSHOP UPGRADES -->
+            <div id="subtabWorkshop" class="subtab-panel" role="tabpanel" hidden>
+              <div class="sidebar-section">
+                <div class="section-heading">
+                  <span>Workshop Upgrades</span>
+                  <span id="workshopCount" class="gem-count">0/48</span>
+                </div>
+                <div id="loadoutWorkshop" class="catalog-tables">
+                  <span class="ledger-empty">Click Workshop to scan unlocked battle upgrades.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-TAB: ULTIMATE WEAPONS -->
+            <div id="subtabUws" class="subtab-panel" role="tabpanel" hidden>
+              <div class="sidebar-section">
+                <div class="section-heading">
+                  <span>Ultimate Weapons</span>
+                  <span id="uwsCount" class="gem-count">0/9</span>
+                </div>
+                <div id="loadoutUws" class="catalog-tables">
+                  <span class="ledger-empty">Loading catalog&hellip;</span>
+                </div>
               </div>
             </div>
           </div>

@@ -881,6 +881,163 @@ def _preset_sort_key(name: str) -> tuple[int, str]:
     return (int(m.group(1)), name) if m else (999, name)
 
 
+# Battle bottom upgrade panel ROIs (1080x2560 reference)
+REF_WORKSHOP_PANEL_HDR = (0, 1790, 820, 105)
+REF_WORKSHOP_PANEL_BODY = (0, 1890, 1080, 520)
+REF_WORKSHOP_TABS: dict[str, tuple[int, int, int, int]] = {
+    "attack": (10, 2430, 250, 115),
+    "defense": (275, 2430, 250, 115),
+    "utility": (545, 2430, 250, 115),
+    "uw": (815, 2430, 250, 115),
+}
+
+
+def detect_battle_workshop_tab(
+    frame: np.ndarray,
+    *,
+    ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+) -> str | None:
+    """Identify which battle bottom-panel tab is currently open: 'attack', 'defense', 'utility', 'uw', or None."""
+    if frame is None or frame.ndim != 3:
+        return None
+    hx, hy, hw, hh = detectors.scale_rect(REF_WORKSHOP_PANEL_HDR, frame.shape)
+    crop = frame[hy : hy + hh, hx : hx + hw]
+    if crop.size == 0 or int(crop.max()) < 40:
+        return None
+    reader = ocr_fn if ocr_fn is not None else (lambda items: ocr.read_texts(items, scale=1.5, timeout=2.0))
+    try:
+        texts = reader([crop])
+    except Exception:
+        return None
+    up = (texts[0] if texts else "").upper()
+    if "ATTACK" in up and "UPGRADE" in up:
+        return "attack"
+    if "DEFENSE" in up and "UPGRADE" in up:
+        return "defense"
+    if "UTILITY" in up and "UPGRADE" in up:
+        return "utility"
+    if "ULTIMATE" in up and "WEAPON" in up:
+        return "uw"
+    return None
+
+
+def parse_battle_workshop_panel(
+    frame: np.ndarray,
+    *,
+    tab: str | None = None,
+    lines_fn: Callable[[list[np.ndarray]], list[list[tuple[int, int, str]]]] | None = None,
+    header_ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+) -> dict[str, Any]:
+    """Read unlocked Workshop Upgrades (or Ultimate Weapons) from the live battle bottom panel.
+
+    Groups multi-line tile labels in the left (x < 290) and right (x in 540..820) columns
+    and matches each tile against the canonical catalog for the active tab.
+    """
+    active_tab = tab or detect_battle_workshop_tab(frame, ocr_fn=header_ocr_fn)
+    if active_tab not in ("attack", "defense", "utility", "uw"):
+        return {"tab": active_tab, "items": []}
+
+    bx, by, bw, bh = detectors.scale_rect(REF_WORKSHOP_PANEL_BODY, frame.shape)
+    crop = frame[by : by + bh, bx : bx + bw]
+    if crop.size == 0 or int(crop.max()) < 40:
+        return {"tab": active_tab, "items": []}
+
+    reader = lines_fn if lines_fn is not None else (lambda items: ocr.read_lines(items, scale=1.5, timeout=2.5))
+    try:
+        batches = reader([crop])
+    except Exception:
+        return {"tab": active_tab, "items": []}
+    lines = batches[0] if batches else []
+
+    sx = frame.shape[1] / float(detectors.REF_W)
+    sy = frame.shape[0] / float(detectors.REF_H)
+
+    if active_tab == "uw":
+        found_uws: dict[str, dict[str, Any]] = {}
+        for _ly, _lx, text in lines:
+            clean = " ".join(text.strip().split())
+            if not clean:
+                continue
+            hit = wiki.match_name(clean, category="uw")
+            if hit is not None and hit.slug not in found_uws:
+                found_uws[hit.slug] = {"slug": hit.slug, "name": hit.name, "category": "uw", "detail": "Unlocked"}
+        return {"tab": "uw", "items": list(found_uws.values())}
+
+    # Workshop tab: 2-column grid of tiles (left column x < 540, right column x >= 540)
+    mid_x = int(round(540 * sx))
+    label_offset_max = int(round(270 * sx))
+    row_merge_gap = int(round(62 * sy))
+    tile_row_height = int(round(190 * sy))
+
+    col_buckets: dict[int, list[tuple[int, int, str]]] = {0: [], 1: []}
+    max_markers: list[tuple[int, int]] = []
+    for ly, lx, text in lines:
+        clean = " ".join(text.strip().split())
+        if not clean:
+            continue
+        col = 0 if lx < mid_x else 1
+        rel_x = lx if col == 0 else (lx - mid_x)
+        if re.fullmatch(r"MAX", clean, flags=re.IGNORECASE):
+            max_markers.append((col, ly))
+            continue
+        if rel_x <= label_offset_max:
+            col_buckets[col].append((ly, lx, clean))
+
+    slot_items = [it for it in wiki.INDEX if it.category == "workshop" and it.slot == active_tab]
+    slot_by_low: dict[str, wiki.IndexItem] = {}
+    for it in slot_items:
+        for k in (it.name.lower(), it.name.lower().replace(" / ", "/"), *(a.lower() for a in it.aliases)):
+            slot_by_low[k] = it
+
+    def _match_workshop_label(raw: str) -> wiki.IndexItem | None:
+        cleaned = " ".join(raw.strip().split())
+        if not cleaned or len(cleaned) < 3:
+            return None
+        low = cleaned.lower()
+        if low in slot_by_low:
+            return slot_by_low[low]
+        norm = low.replace(" / ", "/")
+        if norm in slot_by_low:
+            return slot_by_low[norm]
+        hit = wiki.match_name(cleaned, category="workshop")
+        if hit is not None and hit.slot == active_tab:
+            return hit
+        return None
+
+    found: dict[str, dict[str, Any]] = {}
+    for col, entries in col_buckets.items():
+        entries.sort(key=lambda e: e[0])
+        # Group adjacent stacked lines belonging to the same tile label (e.g. 'Critical' + 'Chance', 'Damage /' + 'Meter')
+        clusters: list[list[tuple[int, str]]] = []
+        for ly, _lx, txt in entries:
+            if clusters and (ly - clusters[-1][-1][0]) <= row_merge_gap:
+                clusters[-1].append((ly, txt))
+            else:
+                clusters.append([(ly, txt)])
+        for cl in clusters:
+            combined = " ".join(t for _, t in cl)
+            hit = _match_workshop_label(combined)
+            if hit is None and len(cl) > 1:
+                for _, single in cl:
+                    hit = _match_workshop_label(single)
+                    if hit is not None:
+                        break
+            if hit is not None:
+                cy = cl[0][0]
+                is_max = any(mc == col and -int(round(40 * sy)) <= (my - cy) <= tile_row_height for mc, my in max_markers)
+                prev = found.get(hit.slug)
+                if prev is None or (is_max and not prev.get("maxed")):
+                    found[hit.slug] = {
+                        "slug": hit.slug,
+                        "name": hit.name,
+                        "category": "workshop",
+                        "slot": active_tab,
+                        "maxed": is_max,
+                        "detail": "Max" if is_max else "Unlocked",
+                    }
+    return {"tab": active_tab, "items": list(found.values())}
+
+
 class AccountStore:
     """Thread-safe local JSON store (`data/account.json`, git-ignored) for observed loadout."""
 
@@ -955,9 +1112,9 @@ class AccountStore:
                     mod_equipped_in.setdefault(str(entry["slug"]), []).append(preset)
 
         master = wiki.master_catalog()
-        merged: dict[str, list[dict[str, Any]]] = {"cards": [], "modules": [], "uws": []}
+        merged: dict[str, list[dict[str, Any]]] = {"cards": [], "modules": [], "uws": [], "workshop": []}
 
-        for group_key in ("cards", "modules", "uws"):
+        for group_key in ("cards", "modules", "uws", "workshop"):
             for base in master[group_key]:
                 slug = base["slug"]
                 obs = items_by_slug.get(slug)
@@ -1002,13 +1159,15 @@ class AccountStore:
             "modules_total": len(merged["modules"]),
             "uws_owned": sum(1 for it in merged["uws"] if it["owned"]),
             "uws_total": len(merged["uws"]),
+            "workshop_owned": sum(1 for it in merged["workshop"] if it["owned"]),
+            "workshop_total": len(merged["workshop"]),
         }
         return merged, counts
 
     def snapshot(self, include_catalog: bool = True) -> dict[str, Any]:
         with self._lock:
             data = self._read_unlocked()
-        grouped: dict[str, list[dict[str, Any]]] = {"card": [], "module": [], "uw": [], "enemy": []}
+        grouped: dict[str, list[dict[str, Any]]] = {"card": [], "module": [], "uw": [], "workshop": [], "enemy": []}
         for item in data["items"].values():
             cat = item.get("category")
             if cat in grouped:
@@ -1031,6 +1190,7 @@ class AccountStore:
             "cards": grouped["card"],
             "modules": grouped["module"],
             "uws": grouped["uw"],
+            "workshop": grouped["workshop"],
             "enemies": grouped["enemy"],
             "total_items": len(data["items"]),
             "counts": counts,
@@ -1241,6 +1401,39 @@ class AccountStore:
                 }
                 slot_map[clean_slot] = slot_entry
 
+            self._write_unlocked(data)
+        return self.snapshot()
+
+    def record_workshop_scan(self, items: list[dict[str, Any]]) -> dict[str, Any]:
+        """Record unlocked Workshop Upgrades (and/or Ultimate Weapons) observed in the battle panel."""
+        with self._lock:
+            data = self._read_unlocked()
+            now = round(time.time(), 1)
+            data["updated_at"] = now
+            data["last_screen"] = "workshop"
+            for item in items or []:
+                slug = item.get("slug")
+                meta = wiki.BY_SLUG.get(slug) if slug else None
+                if meta is None:
+                    continue
+                prev = data["items"].get(slug) or {}
+                maxed = bool(item.get("maxed")) or bool(prev.get("maxed"))
+                detail = "Max" if maxed else (item.get("detail") or prev.get("detail") or "Unlocked")
+                merged_item = dict(prev)
+                merged_item.update(
+                    {
+                        "slug": slug,
+                        "name": meta.name,
+                        "category": meta.category,
+                        "slot": meta.slot,
+                        "owned": True,
+                        "maxed": maxed,
+                        "detail": detail,
+                        "last_seen": now,
+                        "screen": "workshop",
+                    }
+                )
+                data["items"][slug] = merged_item
             self._write_unlocked(data)
         return self.snapshot()
 

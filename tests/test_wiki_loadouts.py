@@ -597,6 +597,8 @@ def test_account_store_enriched_catalog_and_presets(tmp_path: Path):
         "modules_total": 25,
         "uws_owned": 0,
         "uws_total": 9,
+        "workshop_owned": 0,
+        "workshop_total": 48,
     }
     assert len(empty["catalog"]["cards"]) == 31
     assert len(empty["catalog"]["modules"]) == 25

@@ -1194,6 +1194,12 @@ function getRarityChipClass(item, category) {
   if (category === "uw") {
     return "uw-owned";
   }
+  if (category === "workshop") {
+    const slot = normalizeKey(item.slot);
+    if (slot === "defense") return "ws-defense";
+    if (slot === "utility") return "ws-utility";
+    return "ws-attack";
+  }
   return "";
 }
 
@@ -1384,6 +1390,12 @@ const MODULE_SLOT_GROUPS = [
   { key: "core", label: "Core", tone: "grp-core" },
 ];
 
+const WORKSHOP_SLOT_GROUPS = [
+  { key: "attack", label: "Attack", tone: "grp-attack" },
+  { key: "defense", label: "Defense", tone: "grp-defense" },
+  { key: "utility", label: "Utility", tone: "grp-utility" },
+];
+
 function buildCatalogCell(item, category, membershipMaps, activePresets) {
   const presetAware = category === "card" || category === "module";
   const activePresetForCat = category === "card" ? activePresets.cards : (category === "module" ? activePresets.modules : null);
@@ -1438,7 +1450,11 @@ function buildCatalogCell(item, category, membershipMaps, activePresets) {
 
   const statusTag = document.createElement("span");
   statusTag.className = "cell-status";
-  statusTag.textContent = owned ? (isEquipped ? "Equipped" : "Owned") : "Missing";
+  if (category === "workshop" || category === "uw") {
+    statusTag.textContent = owned ? "Unlocked" : "Locked";
+  } else {
+    statusTag.textContent = owned ? (isEquipped ? "Equipped" : "Owned") : "Missing";
+  }
   subRow.appendChild(statusTag);
 
   if (detailText) {
@@ -1573,6 +1589,15 @@ function renderCatalogSection(container, items, category, membershipMaps, active
     }
     const other = filtered.filter((it) => !MODULE_SLOT_GROUPS.some((d) => d.key === normalizeKey(it.slot)));
     if (other.length > 0) groups.push({ label: "Other", tone: "", items: other });
+  } else if (category === "workshop") {
+    for (const def of WORKSHOP_SLOT_GROUPS) {
+      const members = filtered.filter((it) => normalizeKey(it.slot) === def.key);
+      if (members.length > 0) {
+        groups.push({ label: def.label, tone: def.tone, items: members });
+      }
+    }
+    const other = filtered.filter((it) => !WORKSHOP_SLOT_GROUPS.some((d) => d.key === normalizeKey(it.slot)));
+    if (other.length > 0) groups.push({ label: "Other", tone: "", items: other });
   } else {
     groups.push({ label: "", tone: "grp-uw", items: filtered });
   }
@@ -1694,6 +1719,7 @@ function renderAccount(snap) {
   const catalogCards = getSectionCatalog(snap, "cards", "card");
   const catalogModules = getSectionCatalog(snap, "modules", "module");
   const catalogUws = getSectionCatalog(snap, "uws", "uw");
+  const catalogWorkshop = getSectionCatalog(snap, "workshop", "workshop");
 
   const counts = snap.counts || {};
   const cardsOwned = counts.cards_owned ?? catalogCards.filter((i) => i.owned).length;
@@ -1702,10 +1728,22 @@ function renderAccount(snap) {
   const modsTotal = counts.modules_total ?? catalogModules.length;
   const uwsOwned = counts.uws_owned ?? catalogUws.filter((i) => i.owned).length;
   const uwsTotal = counts.uws_total ?? catalogUws.length;
+  const wsOwned = counts.workshop_owned ?? catalogWorkshop.filter((i) => i.owned).length;
+  const wsTotal = counts.workshop_total ?? catalogWorkshop.length;
 
-  $("cardsCount").textContent = cardsTotal > 0 ? `${cardsOwned}/${cardsTotal}` : String(cardsOwned);
-  $("modulesCount").textContent = modsTotal > 0 ? `${modsOwned}/${modsTotal}` : String(modsOwned);
-  $("uwsCount").textContent = uwsTotal > 0 ? `${uwsOwned}/${uwsTotal}` : String(uwsOwned);
+  const cardsLabel = cardsTotal > 0 ? `${cardsOwned}/${cardsTotal}` : String(cardsOwned);
+  const modsLabel = modsTotal > 0 ? `${modsOwned}/${modsTotal}` : String(modsOwned);
+  const uwsLabel = uwsTotal > 0 ? `${uwsOwned}/${uwsTotal}` : String(uwsOwned);
+  const wsLabel = wsTotal > 0 ? `${wsOwned}/${wsTotal}` : String(wsOwned);
+
+  $("cardsCount").textContent = cardsLabel;
+  $("modulesCount").textContent = modsLabel;
+  $("uwsCount").textContent = uwsLabel;
+  if ($("workshopCount")) $("workshopCount").textContent = wsLabel;
+  if ($("cardsTabBadge")) $("cardsTabBadge").textContent = cardsLabel;
+  if ($("modulesTabBadge")) $("modulesTabBadge").textContent = modsLabel;
+  if ($("workshopTabBadge")) $("workshopTabBadge").textContent = wsLabel;
+  if ($("uwsTabBadge")) $("uwsTabBadge").textContent = uwsLabel;
 
   const slotsBadge = $("cardSlotsBadge");
   if (snap.active_card_slots) {
@@ -1721,6 +1759,9 @@ function renderAccount(snap) {
 
   renderCatalogSection($("loadoutCards"), catalogCards, "card", membershipMaps, activePresets, snap);
   renderCatalogSection($("loadoutModules"), catalogModules, "module", membershipMaps, activePresets, snap);
+  if ($("loadoutWorkshop")) {
+    renderCatalogSection($("loadoutWorkshop"), catalogWorkshop, "workshop", membershipMaps, activePresets, snap);
+  }
   renderCatalogSection($("loadoutUws"), catalogUws, "uw", membershipMaps, activePresets, snap);
   renderPresetSummary(snap, catalogCards, catalogModules, membershipMaps);
 
@@ -2288,7 +2329,7 @@ function render(data) {
       ? `Next in ${fmtDuration(gNext)} (every ${routinesCfg.guild_interval_min || 60}m)`
       : `Every ${routinesCfg.guild_interval_min || 60}m when ON`;
   }
-  for (const id of ["syncHistoryBtn", "runHistoryBtn", "runDailyBtn", "runGuildBtn", "runCardsBtn", "runModulesBtn", "inBattleCardsBtn", "inBattleModulesBtn"]) {
+  for (const id of ["syncHistoryBtn", "runHistoryBtn", "runDailyBtn", "runGuildBtn", "runCardsBtn", "runModulesBtn", "runWorkshopBtn", "inBattleCardsBtn", "inBattleModulesBtn", "inBattleWorkshopBtn"]) {
     const b = $(id);
     if (b) b.disabled = bmActive;
   }
@@ -2301,7 +2342,7 @@ function render(data) {
     if (lastBattleMenuTask === "history") {
       fetchRuns();
       fetchMetrics();
-    } else if (lastBattleMenuTask === "cards" || lastBattleMenuTask === "modules") {
+    } else if (lastBattleMenuTask === "cards" || lastBattleMenuTask === "modules" || lastBattleMenuTask === "workshop") {
       fetchAccount();
     }
   }
@@ -2413,6 +2454,42 @@ $("sidebarTabs").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-tab]");
   if (btn) selectSidebarTab(btn.dataset.tab);
 });
+
+// Loadout inventory sub-tabs (Cards | Modules | Workshop | UWs)
+function selectLoadoutSubtab(sub) {
+  const valid = ["cards", "modules", "workshop", "uws"];
+  const active = valid.includes(sub) ? sub : "cards";
+  const map = {
+    cards: "subtabCards",
+    modules: "subtabModules",
+    workshop: "subtabWorkshop",
+    uws: "subtabUws",
+  };
+  for (const [key, id] of Object.entries(map)) {
+    const panel = $(id);
+    if (panel) panel.hidden = key !== active;
+  }
+  const bar = $("loadoutSubTabs");
+  if (bar) {
+    for (const btn of bar.querySelectorAll("button[data-subtab]")) {
+      const isAct = btn.dataset.subtab === active;
+      btn.classList.toggle("active", isAct);
+      btn.setAttribute("aria-selected", String(isAct));
+    }
+  }
+  // Preset filter only applies to Cards & Modules
+  const presetSel = $("loadoutPresetFilter");
+  if (presetSel) {
+    presetSel.hidden = (active === "workshop" || active === "uws");
+  }
+}
+
+if ($("loadoutSubTabs")) {
+  $("loadoutSubTabs").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-subtab]");
+    if (btn) selectLoadoutSubtab(btn.dataset.subtab);
+  });
+}
 
 // Collapsible sidebar helper (only active when collapse button is present)
 function setSidebarCollapsed(collapsed) {
@@ -2557,6 +2634,12 @@ if ($("inBattleCardsBtn")) {
 }
 if ($("inBattleModulesBtn")) {
   $("inBattleModulesBtn").addEventListener("click", () => runBattleMenuRoutine("modules", "Modules scan"));
+}
+if ($("inBattleWorkshopBtn")) {
+  $("inBattleWorkshopBtn").addEventListener("click", () => runBattleMenuRoutine("workshop", "Workshop & UWs scan"));
+}
+if ($("runWorkshopBtn")) {
+  $("runWorkshopBtn").addEventListener("click", () => runBattleMenuRoutine("workshop", "Workshop & UWs scan"));
 }
 if ($("syncHistoryBtn")) {
   $("syncHistoryBtn").addEventListener("click", () => runBattleMenuRoutine("history", "Battle History sync"));

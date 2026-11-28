@@ -126,6 +126,60 @@ _UWS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Spotlight", ("SL",)),
 )
 
+_WORKSHOP_UPGRADES: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
+    # Attack (17)
+    ("Damage", "attack", "Damage", ()),
+    ("Attack Speed", "attack", "Attack Speed", ()),
+    ("Critical Chance", "attack", "Critical Hits", ()),
+    ("Critical Factor", "attack", "Critical Hits", ()),
+    ("Range", "attack", "Range", ()),
+    ("Damage / Meter", "attack", "Damage Per Meter", ("Damage/Meter", "Damage Per Meter", "Damage / m")),
+    ("Multishot Chance", "attack", "Multishot", ()),
+    ("Multishot Targets", "attack", "Multishot", ()),
+    ("Rapid Fire Chance", "attack", "Rapid Fire", ()),
+    ("Rapid Fire Duration", "attack", "Rapid Fire", ()),
+    ("Bounce Shot Chance", "attack", "Bounce Shot", ()),
+    ("Bounce Shot Targets", "attack", "Bounce Shot", ()),
+    ("Bounce Shot Range", "attack", "Bounce Shot", ()),
+    ("Super Crit Chance", "attack", "Super Critical", ()),
+    ("Super Crit Mult", "attack", "Super Critical", ("Super Crit Multiplier",)),
+    ("Rend Armor Chance", "attack", "Rend Armor", ()),
+    ("Rend Armor Mult", "attack", "Rend Armor", ("Rend Armor Multiplier",)),
+    # Defense (18)
+    ("Health", "defense", "Health", ()),
+    ("Health Regen", "defense", "Health Regen", ()),
+    ("Defense %", "defense", "Defense Percent", ("Defense Percent",)),
+    ("Defense Absolute", "defense", "Defense Absolute", ()),
+    ("Thorns Damage", "defense", "Thorn Damage", ("Thorn Damage", "Thorns")),
+    ("Lifesteal", "defense", "Lifesteal", ()),
+    ("Knockback Chance", "defense", "Knockback", ()),
+    ("Knockback Force", "defense", "Knockback", ()),
+    ("Orb Speed", "defense", "Orbs", ()),
+    ("Orbs", "defense", "Orbs", ()),
+    ("Shockwave Size", "defense", "Shockwave", ()),
+    ("Shockwave Frequency", "defense", "Shockwave", ()),
+    ("Land Mine Chance", "defense", "Land Mine", ()),
+    ("Land Mine Damage", "defense", "Land Mine", ()),
+    ("Land Mine Radius", "defense", "Land Mine", ()),
+    ("Death Defy", "defense", "Death Defy", ()),
+    ("Wall Health", "defense", "Wall", ()),
+    ("Wall Rebuild", "defense", "Wall", ()),
+    # Utility (13)
+    ("Cash Bonus", "utility", "Cash Bonus", ()),
+    ("Cash / Wave", "utility", "Cash Per Wave", ("Cash/Wave", "Cash Per Wave")),
+    ("Coins / Kill Bonus", "utility", "Coins Per Kill Bonus", ("Coins/Kill Bonus", "Coins Per Kill Bonus")),
+    ("Coins / Wave", "utility", "Coins Per Wave", ("Coins/Wave", "Coins Per Wave")),
+    ("Free Attack Upgrade", "utility", "Free Upgrades", ()),
+    ("Free Defense Upgrade", "utility", "Free Upgrades", ()),
+    ("Free Utility Upgrade", "utility", "Free Upgrades", ()),
+    ("Interest / Wave", "utility", "Interest", ("Interest/Wave", "Interest Per Wave")),
+    ("Recovery Amount", "utility", "Recovery Packages", ()),
+    ("Max Recovery", "utility", "Recovery Packages", ()),
+    ("Package Chance", "utility", "Recovery Packages", ("Recovery Package Chance",)),
+    ("Enemy Attack Level Skip", "utility", "Enemy Level Skip", ("EALS",)),
+    ("Enemy Health Level Skip", "utility", "Enemy Level Skip", ("EHLS",)),
+)
+
 _ENEMIES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Basic", ()),
     ("Fast", ()),
@@ -160,6 +214,8 @@ def _build_index() -> list[IndexItem]:
         items.append(IndexItem(f"module:{_slugify(name)}", name, "module", aliases, "Epic Module Unique Effect", name, slot=slot))
     for name, aliases in _UWS:
         items.append(IndexItem(f"uw:{_slugify(name)}", name, "uw", aliases, name, name))
+    for name, slot, page, aliases in _WORKSHOP_UPGRADES:
+        items.append(IndexItem(f"workshop:{_slugify(name)}", name, "workshop", aliases, page, name, slot=slot))
     for name, aliases in _ENEMIES:
         items.append(IndexItem(f"enemy:{_slugify(name)}", name, "enemy", aliases, "Enemies", name))
     for tier in range(1, 25):
@@ -177,7 +233,7 @@ for _item in INDEX:
     for _key in (_item.name.lower(), _item.name.lower().replace("-", " "), _item.slug.lower(), *(a.lower() for a in _item.aliases)):
         cat_map[_key] = _item
 
-_CATEGORY_PRIORITY = ("module", "uw", "card", "enemy", "tier", "topic")
+_CATEGORY_PRIORITY = ("module", "uw", "card", "workshop", "enemy", "tier", "topic")
 
 
 def match_name(
@@ -283,6 +339,7 @@ def master_catalog() -> dict[str, list[dict[str, Any]]]:
         "cards": [_entry(it) for it in INDEX if it.category == "card"],
         "modules": [_entry(it) for it in INDEX if it.category == "module"],
         "uws": [_entry(it) for it in INDEX if it.category == "uw"],
+        "workshop": [_entry(it) for it in INDEX if it.category == "workshop"],
     }
 
 

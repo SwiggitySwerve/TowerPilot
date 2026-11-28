@@ -526,3 +526,42 @@ def test_p2_7_merged_chest_lines_map_distinct_rects_and_unverified_claims_not_co
     rx, _ry, rw, _rh = daily_res["mission_claims"][0]
     assert rx + rw // 2 > 300  # Aimed at CLAIM, NOT at 'Destroy' (x=60)
 
+
+def test_workshop_panel_parser_and_account_store_recording(tmp_path: Path):
+    frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    # Bright pixels in header & panel body
+    frame[1800:1880, 20:400] = 220
+    frame[1900:2380, 20:1040] = 220
+
+    atk_lines = [
+        (80, 40, "Damage"),
+        (110, 320, "Max"),
+        (80, 580, "Attack Speed"),
+        (110, 860, "Max"),
+        (250, 40, "Critical"),
+        (290, 40, "Chance"),
+        (270, 580, "Damage /"),
+        (310, 580, "Meter"),
+    ]
+    parsed = loadouts.parse_battle_workshop_panel(
+        frame,
+        header_ocr_fn=lambda crops: ["ATTACK UPGRADES"],
+        lines_fn=lambda crops: [atk_lines],
+    )
+    assert parsed["tab"] == "attack"
+    slugs = {it["slug"]: it for it in parsed["items"]}
+    assert "workshop:damage" in slugs and slugs["workshop:damage"]["maxed"] is True
+    assert "workshop:attack_speed" in slugs and slugs["workshop:attack_speed"]["maxed"] is True
+    assert "workshop:critical_chance" in slugs
+    assert "workshop:damage_meter" in slugs
+
+    store = loadouts.AccountStore(tmp_path / "account.json")
+    snap = store.record_workshop_scan(parsed["items"])
+    assert snap["counts"]["workshop_owned"] == 4
+    assert snap["counts"]["workshop_total"] == 48
+    ws_map = {w["slug"]: w for w in snap["catalog"]["workshop"]}
+    assert ws_map["workshop:damage"]["owned"] is True
+    assert ws_map["workshop:damage"]["maxed"] is True
+    assert ws_map["workshop:rend_armor_chance"]["owned"] is False
+
+

@@ -603,7 +603,7 @@ def test_flask_api_account_scan_and_cancel_routes(tmp_path: Path):
         res_get = client.get("/api/account")
         assert res_get.status_code == 200
         acc = res_get.get_json()
-        assert "catalog" in acc and set(acc["catalog"].keys()) == {"cards", "modules", "uws"}
+        assert "catalog" in acc and set(acc["catalog"].keys()) == {"cards", "modules", "uws", "workshop"}
         assert "counts" in acc and acc["counts"]["cards_total"] == 31
         assert "scan" in acc and acc["scan"]["running"] is False and acc["scan"]["queued"] is False
 

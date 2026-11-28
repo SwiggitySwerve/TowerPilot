@@ -1905,6 +1905,47 @@
       border-color: var(--amber);
     }
 
+    /* Dedicated Inventory Sub-Tabs (Cards | Modules | Workshop | UWs) */
+    .subtab-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+      padding: 3px;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+
+    .subtab-bar button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      padding: 5px 4px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+
+    .subtab-bar button:hover { color: var(--text); }
+    .subtab-bar button.active {
+      background: var(--cyan-dim);
+      border-color: rgba(34, 211, 238, 0.45);
+      color: var(--cyan);
+    }
+
+    .subtab-count {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      opacity: 0.8;
+    }
+
     /* Structured, auto-aligned color-coded Loadout Grid Tables */
     .catalog-tables {
       display: flex;
@@ -1940,6 +1981,9 @@
     .catalog-group.grp-armor .catalog-group-head { border-left-color: var(--cyan); color: #67e8f9; background: rgba(34, 211, 238, 0.08); }
     .catalog-group.grp-generator .catalog-group-head { border-left-color: var(--amber); color: #fcd34d; background: rgba(251, 191, 36, 0.08); }
     .catalog-group.grp-core .catalog-group-head { border-left-color: var(--pink); color: #f9a8d4; background: rgba(244, 114, 182, 0.08); }
+    .catalog-group.grp-attack .catalog-group-head { border-left-color: #38bdf8; color: #7dd3fc; background: rgba(56, 189, 248, 0.09); }
+    .catalog-group.grp-defense .catalog-group-head { border-left-color: #f472b6; color: #f9a8d4; background: rgba(244, 114, 182, 0.09); }
+    .catalog-group.grp-utility .catalog-group-head { border-left-color: var(--amber); color: #fcd34d; background: rgba(251, 191, 36, 0.09); }
 
     .catalog-group-count {
       font-family: var(--mono);
@@ -2023,6 +2067,9 @@
     .catalog-cell.owned.mod-rare { border-color: rgba(96, 165, 250, 0.68); background: rgba(96, 165, 250, 0.14); color: #dbeafe; }
     .catalog-cell.owned.mod-owned { border-color: rgba(34, 211, 238, 0.55); background: rgba(34, 211, 238, 0.12); color: var(--text); }
     .catalog-cell.owned.uw-owned { border-color: rgba(251, 191, 36, 0.75); background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(245, 158, 11, 0.09)); color: #fef3c7; }
+    .catalog-cell.owned.ws-attack { border-color: rgba(56, 189, 248, 0.62); background: rgba(56, 189, 248, 0.14); color: #e0f2fe; }
+    .catalog-cell.owned.ws-defense { border-color: rgba(244, 114, 182, 0.62); background: rgba(244, 114, 182, 0.14); color: #fdf2f8; }
+    .catalog-cell.owned.ws-utility { border-color: rgba(251, 191, 36, 0.65); background: rgba(251, 191, 36, 0.14); color: #fef3c7; }
 
     .catalog-cell.unowned {
       opacity: 0.4;
