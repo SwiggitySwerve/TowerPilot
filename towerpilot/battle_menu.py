@@ -12,6 +12,10 @@ or disrupting a live battle:
                    5-gem reroll icons) and unlocked Weekly Challenge reward chests.
 - `guild_rewards`: View Guild -> claim unlocked free Guild contribution chests
                    (100 / 250 / 500 / 750), strictly excluding Store and Leave.
+- `event_missions`: View Event (star icon) Missions tab -> claim completed free
+                   mission medals (`CLAIM n`) top-down, verified by the medal counter,
+                   stopping at the first COMPLETED card. Never touches the Event Boost
+                   price button, Event Shop, or Bots.
 
 Safety invariants (CLAUDE.md Rules 2 & 3):
 - Runs 1 step per collector tick (0 extra threads) with fresh ADB + foreground
@@ -50,6 +54,7 @@ REF_MENU_CARDS = (864, 229, 92, 92)
 REF_MENU_MODULES = (969, 334, 92, 92)
 REF_MENU_HISTORY = (864, 544, 92, 92)
 REF_MENU_GUILD = (969, 544, 92, 92)
+REF_MENU_EVENT = (864, 439, 92, 92)  # star icon (Event screen, opens on the Missions tab)
 REF_MENU_CLOSE = (969, 19, 92, 92)
 
 # Bottom "Tap To Return To Game" bar shared across in-battle menu overlays
@@ -63,7 +68,7 @@ REF_FORBIDDEN_EXIT = (850, 640, 230, 110)
 REF_FORBIDDEN_GUILD_LEAVE = (840, 440, 240, 100)
 REF_FORBIDDEN_GUILD_STORE = (620, 235, 330, 105)
 
-VALID_TASKS = ("history", "cards", "modules", "daily_quests", "guild_rewards")
+VALID_TASKS = ("history", "cards", "modules", "daily_quests", "guild_rewards", "event_missions")
 
 _STEP_DELAY_SEC = 1.0
 _MOD_STEP_DELAY_SEC = 0.55
@@ -93,6 +98,7 @@ _TASK_ICON_RECTS: dict[str, tuple[int, int, int, int]] = {
     "modules": REF_MENU_MODULES,
     "daily_quests": REF_MENU_DAILY,
     "guild_rewards": REF_MENU_GUILD,
+    "event_missions": REF_MENU_EVENT,
 }
 
 _TASK_LABELS: dict[str, str] = {
@@ -101,7 +107,23 @@ _TASK_LABELS: dict[str, str] = {
     "modules": "Modules",
     "daily_quests": "Daily Quests",
     "guild_rewards": "Guild Rewards",
+    "event_missions": "Event Missions",
 }
+
+# Event Missions list geometry (1080x2560 reference)
+_REF_EVT_LIST_Y = (380, 2360)       # below the Missions / Event Shop / Bots tab row, above the return bar
+_REF_EVT_CLAIM_LX = (150, 700)      # OCR left edge of a "CLAIM n" button label
+_REF_EVT_MEDALS_BOX = (760, 60, 320, 100)  # top-right medal counter (x, y, w, h)
+_REF_EVT_BUY_GUARD_PX = 200         # never tap within this many px (vertically) of purchase text
+_REF_EVT_SWIPE_X = 540              # scroll lane (same as other menus), left of the $ Event Boost button (x >= 790)
+_MAX_EVT_PAGES = 6
+_MAX_EVT_TOP_SWIPES = 4
+# "CLAIM 10" + medal icon, which OCR reads as nothing, a symbol, an extra 0 ("CLAIM 100"), or a letter ("CLAIM 20 a")
+_EVT_CLAIM_RE = re.compile(r"^\s*CLAIM(?:\s*\d{1,4}(?:\s+[A-Z]{1,2}|\s*\W{1,2})?)?\s*$", re.IGNORECASE)
+_EVT_VERIFY_CHECKS = 4   # extra 0.8s re-reads for the animated medal counter to rise after a claim
+_EVT_SETTLE_CHECKS = 5   # max 0.6s waits for the counter to stop moving before the next claim
+_EVT_PURCHASE_RE = re.compile(r"(\$\s*\d|\bEVENT\s+BOOST\b|\bPURCHASE)", re.IGNORECASE)
+_EVT_STAGE_RE = re.compile(r"^\s*\d\s*/\s*\d\s*$")
 
 # Pixel-verified 1080px horizontal chest centers on Guild screen (measured from live_guild.png)
 _GUILD_CHEST_X_BY_THRESHOLD: dict[int, int] = {
@@ -438,6 +460,94 @@ def detect_daily_missions_claimables(
     }
 
 
+def detect_event_mission_claims(
+    lines: list[tuple[int, int, str]],
+    frame_shape: tuple[int, ...],
+) -> dict[str, Any]:
+    """Read an Event screen Missions tab from full-frame OCR lines `(y, x, text)`.
+
+    Returns the `CLAIM n` button rects (top to bottom), the medal counter, and where the
+    list is: `at_top` (relic track / Event Boost card visible, so no missions hidden above),
+    `completed_seen` (claimed-out cards sort last, so nothing below needs reading) and
+    `end_seen` ("New missions in ..." footer). Claims within `_REF_EVT_BUY_GUARD_PX` of any
+    price / Event Boost text are dropped; mission descriptions such as "Buy 80 cards" are not
+    purchase controls and do not block a claim.
+    """
+    fh, fw = frame_shape[:2]
+    sx, sy = fw / float(detectors.REF_W), fh / float(detectors.REF_H)
+    list_lo, list_hi = int(round(_REF_EVT_LIST_Y[0] * sy)), int(round(_REF_EVT_LIST_Y[1] * sy))
+    lx_lo, lx_hi = int(round(_REF_EVT_CLAIM_LX[0] * sx)), int(round(_REF_EVT_CLAIM_LX[1] * sx))
+    guard = int(round(_REF_EVT_BUY_GUARD_PX * sy))
+    mx, my, mw, mh = _REF_EVT_MEDALS_BOX
+    m_x0, m_y0, m_y1 = int(round(mx * sx)), int(round(my * sy)), int(round((my + mh) * sy))
+
+    medals: int | None = None
+    purchase_ys: list[int] = []
+    raw_claims: list[tuple[int, int]] = []
+    stage_seen = completed_seen = end_seen = at_top = False
+    for ly, lx, text in lines:
+        up = " ".join((text or "").upper().split())
+        if not up:
+            continue
+        if m_y0 <= ly <= m_y1 and lx >= m_x0:
+            m_med = re.search(r"(\d[\d,]*)\s*$", up)
+            if m_med:
+                medals = int(m_med.group(1).replace(",", ""))
+        if _EVT_PURCHASE_RE.search(up):
+            purchase_ys.append(ly)
+        if "RELICS" in up:
+            at_top = True
+        if not (list_lo <= ly <= list_hi):
+            continue
+        if up == "COMPLETED":
+            completed_seen = True
+        elif up.startswith("NEW MISSIONS IN"):
+            end_seen = True
+        elif _EVT_STAGE_RE.match(up):
+            stage_seen = True
+        elif (
+            _EVT_CLAIM_RE.match(up)
+            and lx_lo <= lx <= lx_hi
+            and "$" not in up
+            and "GEM" not in up
+            and not _has_dangerous_overlay_text(up)
+        ):
+            raw_claims.append((ly, lx))
+
+    claims: list[tuple[int, int, int, int]] = []
+    rw, rh = int(round(360 * sx)), int(round(60 * sy))
+    cx = int(round(540 * sx))
+    for ly, _lx in sorted(raw_claims):
+        if any(abs(ly - py) < guard for py in purchase_ys):
+            continue
+        cy = ly + int(round(25 * sy))
+        claims.append((cx - rw // 2, cy - rh // 2, rw, rh))
+
+    # Mission description lines: safe places to start a scroll drag (a drag that starts on a
+    # progress bar does not scroll the list), and a page signature for stall detection.
+    desc: list[tuple[int, str]] = []
+    for ly, lx, text in lines:
+        up = " ".join((text or "").upper().split())
+        if not (list_lo <= ly <= list_hi) or lx > 120 * sx or len(up) < 8 or "/" in up:
+            continue
+        if up == "COMPLETED" or up.startswith(("CLAIM", "NEW MISSIONS")) or not re.search(r"[A-Z]{3}", up):
+            continue
+        if any(abs(ly - py) < guard for py in purchase_ys):
+            continue
+        desc.append((ly, up))
+    desc.sort()
+
+    return {
+        "claims": claims,
+        "desc": desc,
+        "medals": medals,
+        "on_missions": stage_seen or completed_seen or bool(raw_claims),
+        "at_top": at_top,
+        "completed_seen": completed_seen,
+        "end_seen": end_seen,
+    }
+
+
 def detect_guild_claimables(
     frame: np.ndarray,
     lines: list[tuple[int, int, str]],
@@ -646,6 +756,15 @@ class BattleMenuRoutine:
         self._cancelling: bool = False
         self._abort_reason_after_return: str | None = None
         self._reset_module_cursor()
+        self._reset_event_cursor()
+
+    def _reset_event_cursor(self) -> None:
+        self._evt_substate: str = "top"
+        self._evt_top_swipes: int = 0
+        self._evt_tab_taps: int = 0
+        self._evt_last_sig: tuple[str, ...] | None = None
+        self._evt_prev_medals: int | None = None
+        self._evt_settle_waits: int = 0
 
     def _reset_module_cursor(self) -> None:
         self._mod_substate: str = "init"
@@ -702,6 +821,7 @@ class BattleMenuRoutine:
             self._cancelling = False
             self._abort_reason_after_return = None
             self._reset_module_cursor()
+            self._reset_event_cursor()
             self._log(
                 f"Battle Menu routine started: {_TASK_LABELS[task]} ({trigger})",
                 event="battle_menu_started",
@@ -1067,6 +1187,11 @@ class BattleMenuRoutine:
                 {"claimed": self._claims_done},
                 f"Guild Rewards checked ({self._claims_done} claimed)",
             )
+        if task == "event_missions":
+            return self._finish(
+                {"claimed": self._claims_done},
+                f"Event Missions checked ({self._claims_done} claimed)",
+            )
         return self._finish({}, "Routine finished")
 
     def _confirm_pending_claim(self, *, kind: str, still_present: bool) -> None:
@@ -1091,6 +1216,14 @@ class BattleMenuRoutine:
             ms = pending.get("key")
             self.detail = f"Claimed weekly chest ({ms})"
             self._log("Weekly Challenge chest claimed", event="daily_reward_claimed", milestone=ms, count=self._claims_done)
+        elif kind == "event_mission":
+            self.detail = f"Claimed event mission #{self._claims_done}"
+            self._log(
+                "Event Mission claimed",
+                event="event_mission_claimed",
+                medals=pending.get("medals_after"),
+                count=self._claims_done,
+            )
         elif kind == "guild_chest":
             thr = pending.get("key")
             self.detail = f"Claimed Guild chest ({thr})"
@@ -1201,6 +1334,9 @@ class BattleMenuRoutine:
 
         if task == "modules":
             return self._step_modules_work(fresh, disp, now)
+
+        if task == "event_missions":
+            return self._step_event_work(fresh, disp, now)
 
         if task == "daily_quests":
             if self._waiting_dismiss:
@@ -1652,4 +1788,131 @@ class BattleMenuRoutine:
         self._mod_substate = "scan_inv_page"
         self.detail = f"Scrolling Modules inventory (page {self._mod_inv_page + 1}, {len(self._seen_items)} unique)"
         self._next_step_at = now + 0.75
+        return True
+
+    def _step_event_work(self, fresh: np.ndarray, disp: int | None, now: float) -> bool:
+        """Claim completed Event Missions top-down; stop at the first COMPLETED card or the list footer.
+
+        One action per tick: a CLAIM tap is counted only when the medal counter rises on the
+        next frame. Claimed cards advance in place to their next stage (which may already be
+        met), so the same page is re-read after every claim before scrolling on.
+        """
+        hdr = self._read_header(fresh)
+        if "EVENT" not in hdr:
+            self._failures += 1
+            if self._failures >= _MAX_FAILURES:
+                return self._abort_via_return(f"expected EVENT screen, saw '{hdr[:32]}'")
+            self._next_step_at = now + self._step_delay_sec
+            return True
+
+        lines = self._read_lines(fresh, scale=1.0)
+        found = detect_event_mission_claims(lines, fresh.shape)
+        sx = fresh.shape[1] / float(detectors.REF_W)
+        sy = fresh.shape[0] / float(detectors.REF_H)
+
+        medals = found["medals"]
+        prev_medals, self._evt_prev_medals = self._evt_prev_medals, medals
+        if self._pending_claim is not None and self._pending_claim.get("kind") == "event_mission":
+            before = self._pending_claim.get("medals_before")
+            rose = before is not None and medals is not None and medals > before
+            checks = int(self._pending_claim.get("checks", 0))
+            if not rose and checks < _EVT_VERIFY_CHECKS:
+                # The medal counter counts up for ~2s after a claim: re-read before judging
+                self._pending_claim["checks"] = checks + 1
+                self._next_step_at = now + 0.8
+                return True
+            self._pending_claim["medals_after"] = medals
+            self._confirm_pending_claim(kind="event_mission", still_present=not rose)
+
+        if not found["on_missions"]:
+            # The Event screen may reopen on Event Shop / Bots: switch to Missions once, by its re-read label
+            tab = next(
+                (
+                    ly
+                    for ly, lx, t in lines
+                    if t.strip().upper() == "MISSIONS" and lx < 330 * sx and 240 * sy <= ly <= 340 * sy
+                ),
+                None,
+            )
+            if tab is not None and self._evt_tab_taps < 1:
+                self._evt_tab_taps += 1
+                pt = (int(round(170 * sx)), int(tab + round(20 * sy)))
+                if self._safe_tap(pt, fresh, reason="battle_menu:event_missions_tab", input_display=disp) is None:
+                    return self.active
+                self.detail = "Opening Event Missions tab"
+                self._next_step_at = now + self._step_delay_sec
+                return True
+            self._failures += 1
+            if self._failures >= _MAX_FAILURES:
+                return self._abort_via_return("Event Missions list not found")
+            self._next_step_at = now + self._step_delay_sec
+            return True
+        self._failures = 0
+        lane = int(round(_REF_EVT_SWIPE_X * sx))
+        grab_dy = int(round(12 * sy))
+        drag_px = int(round(900 * sy))
+
+        if self._evt_substate == "top":
+            if found["at_top"] or self._evt_top_swipes >= _MAX_EVT_TOP_SWIPES:
+                self._evt_substate = "scan"
+            else:
+                self._evt_top_swipes += 1
+                upper = [y for y, _t in found["desc"] if 400 * sy <= y <= 1400 * sy]
+                y0 = (upper[0] + grab_dy) if upper else int(round(1300 * sy))
+                self._swipe(
+                    (lane, y0),
+                    (lane, min(y0 + drag_px, int(round(2300 * sy)))),
+                    fresh,
+                    duration_ms=480,
+                    reason=f"battle_menu:scroll_event_top_{self._evt_top_swipes}",
+                    input_display=disp,
+                )
+                self.detail = "Scrolling Event Missions to top"
+                self._next_step_at = now + 0.8
+                return True
+
+        if found["claims"] and self._claim_attempts < _MAX_CLAIMS_PER_RUN:
+            # Let the previous claim's count-up finish, so it cannot verify this claim
+            moving = medals is not None and prev_medals is not None and medals != prev_medals
+            if moving and self._evt_settle_waits < _EVT_SETTLE_CHECKS:
+                self._evt_settle_waits += 1
+                self._next_step_at = now + 0.6
+                return True
+            self._evt_settle_waits = 0
+            pt = detectors.sample_interior_point(found["claims"][0], inset_px=16)
+            res = self._safe_tap(pt, fresh, reason="battle_menu:claim_event_mission", input_display=disp)
+            if res is not None:
+                self._claim_attempts += 1
+                self._pending_claim = {"kind": "event_mission", "medals_before": found["medals"]}
+                self.detail = f"Claiming event mission ({self._claim_attempts})"
+                self._next_step_at = now + max(self._step_delay_sec, 1.2)
+            return self.active
+
+        sig = tuple(t for _y, t in found["desc"])
+        if (
+            found["completed_seen"]
+            or found["end_seen"]
+            or self._page >= _MAX_EVT_PAGES
+            or self._claim_attempts >= _MAX_CLAIMS_PER_RUN
+            or sig == self._evt_last_sig  # last scroll did not move the list
+        ):
+            self.detail = f"Event Missions done ({self._claims_done} claimed)"
+            self.phase = "return_to_game"
+            self._next_step_at = now + 0.4
+            return True
+
+        self._evt_last_sig = sig
+        lower = [y for y, _t in found["desc"] if 1500 * sy <= y <= 2300 * sy]
+        y0 = (lower[-1] + grab_dy) if lower else int(round(2200 * sy))
+        self._swipe(
+            (lane, y0),
+            (lane, max(y0 - drag_px, int(round(400 * sy)))),
+            fresh,
+            duration_ms=520,
+            reason=f"battle_menu:scroll_event_{self._page + 1}",
+            input_display=disp,
+        )
+        self._page += 1
+        self.detail = f"Scrolling Event Missions (page {self._page + 1})"
+        self._next_step_at = now + 0.8
         return True

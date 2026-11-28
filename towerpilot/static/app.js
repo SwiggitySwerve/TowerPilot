@@ -2590,6 +2590,7 @@ $("cancelScanBtn").addEventListener("click", cancelInventoryScan);
 $("runHistoryBtn").addEventListener("click", () => runBattleMenuRoutine("history", "Battle History sync"));
 $("runDailyBtn").addEventListener("click", () => runBattleMenuRoutine("daily_quests", "Daily Quests check"));
 $("runGuildBtn").addEventListener("click", () => runBattleMenuRoutine("guild_rewards", "Guild Rewards check"));
+$("runEventBtn").addEventListener("click", () => runBattleMenuRoutine("event_missions", "Event Missions check"));
 $("cancelBattleMenuBtn").addEventListener("click", () => {
   postJson("/api/routines", { action: "cancel" }, "Battle Menu routine cancelled");
 });

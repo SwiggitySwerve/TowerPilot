@@ -866,3 +866,285 @@ def test_battle_menu_modules_scrolls_inventory_to_top_when_opened_at_bottom(tmp_
 
 
 
+
+
+# --- Event Missions (side-menu star icon) ---------------------------------
+
+# Real OCR lines (y, x, text) from the live EVENT - HOWLING WOLF Missions tab (1080x2560)
+_EVENT_TOP_LINES = [
+    (28, 29, "@ 82.80T +17250 A 260 V"),
+    (105, 866, "a 1995"),
+    (114, 33, "EVENT - HOWLING WOLF"),
+    (206, 793, "Ends in 9d 15h"),
+    (289, 57, "Missions"),
+    (290, 397, "Event Shop"),
+    (290, 852, "Bots"),
+    (454, 357, "Claimed"),
+    (456, 45, "FREE"),
+    (502, 45, "RELICS"),
+    (906, 38, "EVENT BOOST + GEMS + RELICS"),
+    (1118, 838, "$14.99"),
+    (1163, 49, "If Event Boost purchased"),
+    (1286, 987, "1/3"),
+    (1320, 43, "Login for 7 days"),
+    (2082, 986, "2/3"),
+    (2116, 43, "Participate in 2 tournaments"),
+    (2438, 235, "Tap To Return To Game"),
+]
+
+_EVENT_CLAIM_LINES = [
+    (105, 866, "a 1995"),
+    (114, 33, "EVENT - HOWLING WOLF"),
+    (289, 57, "Missions"),
+    (290, 397, "Event Shop"),
+    (470, 987, "1/3"),
+    (480, 42, "Reach wave 20 without any card equipped"),
+    (1000, 987, "1/3"),
+    (1035, 43, "Kill 750 enemies with workshop land mines"),
+    (1127, 399, "CLAIM 100"),
+    (1266, 987, "1/3"),
+    (1300, 43, "Have 5 enemies in the same Black Hole"),
+    (1393, 399, "CLAIM 100"),
+    (1566, 43, "Buy 80 cards"),
+    (1665, 369, "COMPLETED"),
+    (2438, 235, "Tap To Return To Game"),
+]
+
+
+def test_detect_event_mission_claims_finds_claim_buttons_and_stop_markers():
+    shape = (2560, 1080, 3)
+    res = battle_menu.detect_event_mission_claims(_EVENT_CLAIM_LINES, shape)
+    assert res["on_missions"] is True
+    assert res["at_top"] is False
+    assert res["completed_seen"] is True
+    assert res["medals"] == 1995
+    # Both CLAIM buttons, aimed at the button centre (x~540), top to bottom.
+    # 'Buy 80 cards' is mission text, not a purchase control, so it never blocks the claim above it.
+    assert len(res["claims"]) == 2
+    (x1, y1, w1, h1), (_x2, y2, _w2, _h2) = res["claims"]
+    assert x1 < 540 < x1 + w1 and y1 < 1127 + 25 < y1 + h1
+    assert y2 > y1
+
+    top = battle_menu.detect_event_mission_claims(_EVENT_TOP_LINES, shape)
+    assert top["on_missions"] is True
+    assert top["at_top"] is True
+    assert top["claims"] == []
+    assert top["completed_seen"] is False
+
+    end = battle_menu.detect_event_mission_claims(_EVENT_TOP_LINES + [(2243, 268, "New missions in 15h 19m")], shape)
+    assert end["end_seen"] is True
+
+
+def test_detect_event_mission_claims_never_targets_purchase_area_or_tabs():
+    shape = (2560, 1080, 3)
+    lines = [
+        (105, 866, "a 1995"),
+        (114, 33, "EVENT - HOWLING WOLF"),
+        (289, 57, "Missions"),
+        (290, 397, "CLAIM 10"),            # in the tab row -> outside the mission list
+        (1000, 987, "1/3"),
+        (1100, 399, "CLAIM 100"),          # within 200px of the $14.99 Event Boost price -> refused
+        (1118, 838, "$14.99"),
+        (1700, 399, "CLAIM 50 GEMS"),      # gem/purchase wording -> refused
+        (1900, 399, "CLAIM $1"),           # price inside the label -> refused
+    ]
+    res = battle_menu.detect_event_mission_claims(lines, shape)
+    assert res["claims"] == []
+
+
+def _event_routine(
+    tmp_path: Path,
+    pages: list[list[tuple[int, int, str]]],
+    taps: list,
+    swipes: list,
+    *,
+    auto_advance: frozenset[int] = frozenset(),
+):
+    """`auto_advance`: page indexes that move on to the next page after being read once (time passing)."""
+    import threading
+
+    frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    state = {"i": 0, "closed": False}
+
+    def fake_lines(imgs):
+        w = imgs[0].shape[1]
+        if w == 740:  # return bar crop
+            return [[(10, 10, "Tap To Return To Game")]]
+        if w == 820:  # header crop
+            return [[(30, 33, "EVENT - HOWLING WOLF")]]
+        idx = min(state["i"], len(pages) - 1)
+        if idx in auto_advance:
+            state["i"] += 1
+        return [pages[idx]]
+
+    def tap(pt, f, **kw):
+        reason = kw.get("reason", "")
+        taps.append((pt, reason))
+        if reason.startswith("battle_menu:claim_event"):
+            state["i"] += 1
+        if reason.startswith("battle_menu:return_"):
+            state["closed"] = True
+        return {"x": pt[0], "y": pt[1]}
+
+    def swipe(start, end, f, **kw):
+        swipes.append((start, end, kw.get("reason", "")))
+        state["i"] += 1
+        return {"ok": True}
+
+    ctrl = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (frame, None),
+        check_foreground=lambda d: (True, "ok"),
+        tap=tap,
+        swipe=swipe,
+        log=lambda *a, **k: None,
+        stop_event=threading.Event(),
+        account_store=loadouts.AccountStore(tmp_path / "a.json"),
+        history_store=battle_menu.BattleHistoryStore(tmp_path / "h.json"),
+        step_delay_sec=0.0,
+        lines_fn=fake_lines,
+    )
+    return ctrl, state, frame
+
+
+def test_event_missions_routine_claims_verifies_by_medals_and_stops_at_completed(tmp_path: Path, monkeypatch):
+    taps: list = []
+    swipes: list = []
+    after_claim = [(y, x, ("a 2005" if t == "a 1995" else t)) for y, x, t in _EVENT_CLAIM_LINES if not (y == 1127)]
+    after_second = [(y, x, ("a 2015" if t == "a 2005" else t)) for y, x, t in after_claim if t != "CLAIM 100"]
+    pages = [
+        _EVENT_TOP_LINES,      # opens at top: nothing claimable, no COMPLETED -> scroll down
+        _EVENT_CLAIM_LINES,    # two claims visible
+        after_claim,           # medals 1995 -> 2005 (verified), one claim left
+        after_second,          # medals 2005 -> 2015 (verified), COMPLETED visible -> stop
+    ]
+    ctrl, state, frame = _event_routine(tmp_path, pages, taps, swipes)
+    monkeypatch.setattr(detectors, "side_menu_state", lambda f: "closed" if state["closed"] else "obscured")
+    ctrl.start("event_missions", battle_live=True)
+    ctrl.phase = "work"
+
+    now = 100.0
+    for _ in range(30):
+        now += 2.0
+        if not ctrl.step(frame, now):
+            break
+
+    assert ctrl.active is False
+    assert ctrl.error is None
+    assert ctrl.last_result["task"] == "event_missions"
+    assert ctrl.last_result["claimed"] == 2
+    claim_taps = [pt for pt, r in taps if r.startswith("battle_menu:claim_event")]
+    assert len(claim_taps) == 2
+    assert all(150 < x < 911 for x, _y in claim_taps)
+    # Scrolled exactly once (top page had nothing), and never past COMPLETED
+    assert len(swipes) == 1
+    assert any(r.startswith("battle_menu:return_event_missions") for _pt, r in taps)
+
+
+def test_event_missions_routine_does_not_count_claim_when_medals_do_not_rise(tmp_path: Path, monkeypatch):
+    taps: list = []
+    swipes: list = []
+    no_change = [(y, x, t) for y, x, t in _EVENT_CLAIM_LINES if t != "CLAIM 100"]
+    ctrl, state, frame = _event_routine(tmp_path, [_EVENT_TOP_LINES, _EVENT_CLAIM_LINES, no_change], taps, swipes)
+    monkeypatch.setattr(detectors, "side_menu_state", lambda f: "closed" if state["closed"] else "obscured")
+    ctrl.start("event_missions", battle_live=True)
+    ctrl.phase = "work"
+
+    now = 100.0
+    for _ in range(30):
+        now += 2.0
+        if not ctrl.step(frame, now):
+            break
+
+    assert ctrl.active is False
+    assert ctrl.last_result["claimed"] == 0
+    assert len([r for _pt, r in taps if r.startswith("battle_menu:claim_event")]) == 1
+
+
+def test_event_missions_routine_scrolls_to_top_when_opened_mid_list(tmp_path: Path, monkeypatch):
+    taps: list = []
+    swipes: list = []
+    mid = [(y, x, t) for y, x, t in _EVENT_CLAIM_LINES if t not in ("CLAIM 100", "COMPLETED")]
+    ctrl, state, frame = _event_routine(tmp_path, [mid, _EVENT_TOP_LINES, _EVENT_TOP_LINES + [(2243, 268, "New missions in 15h")]], taps, swipes)
+    monkeypatch.setattr(detectors, "side_menu_state", lambda f: "closed" if state["closed"] else "obscured")
+    ctrl.start("event_missions", battle_live=True)
+    ctrl.phase = "work"
+
+    now = 100.0
+    for _ in range(30):
+        now += 2.0
+        if not ctrl.step(frame, now):
+            break
+
+    assert ctrl.active is False
+    assert ctrl.error is None
+    # First swipe drags the list down (finger moves downward) to reach the top
+    (sx0, sy0), (sx1, sy1), reason = swipes[0]
+    assert "event_top" in reason and sy1 > sy0
+    # Swipes stay left of the $14.99 Event Boost price button
+    assert all(s[0][0] < 700 and s[1][0] < 700 for s in swipes)
+
+
+def test_event_missions_drags_start_on_description_text_not_progress_bars(tmp_path: Path, monkeypatch):
+    """Live: a drag that starts on a mission progress bar does not scroll the list. Start on description text."""
+    taps: list = []
+    swipes: list = []
+    ctrl, state, frame = _event_routine(tmp_path, [_EVENT_TOP_LINES, _EVENT_CLAIM_LINES], taps, swipes)
+    monkeypatch.setattr(detectors, "side_menu_state", lambda f: "closed" if state["closed"] else "obscured")
+    ctrl.start("event_missions", battle_live=True)
+    ctrl.phase = "work"
+    ctrl.step(frame, 102.0)  # top page: nothing to claim -> scroll down
+
+    assert len(swipes) == 1
+    (x0, y0), (x1, y1), _reason = swipes[0]
+    # Lowest description line on the top page in the drag band is "Participate in 2 tournaments" (y=2116)
+    assert y0 == 2116 + 12 and y1 < y0
+    assert x0 == x1 and x0 < 700  # clear of the $14.99 Event Boost button
+
+
+def test_event_missions_stops_when_a_scroll_does_not_move_the_list(tmp_path: Path, monkeypatch):
+    taps: list = []
+    swipes: list = []
+    ctrl, state, frame = _event_routine(tmp_path, [_EVENT_TOP_LINES], taps, swipes)
+    monkeypatch.setattr(detectors, "side_menu_state", lambda f: "closed" if state["closed"] else "obscured")
+    ctrl.start("event_missions", battle_live=True)
+    ctrl.phase = "work"
+
+    now = 100.0
+    for _ in range(30):
+        now += 2.0
+        if not ctrl.step(frame, now):
+            break
+
+    assert ctrl.active is False
+    assert ctrl.error is None
+    assert len(swipes) == 1  # second identical page means the list is stuck -> stop, no more swipes
+
+
+def test_detect_event_mission_claims_accepts_medal_icon_read_as_letter():
+    """Live OCR reads the medal icon after the reward as a letter: 'CLAIM 20 a'."""
+    lines = [(105, 866, "a 2065"), (1500, 987, "3/3"), (1604, 399, "CLAIM 20 a")]
+    res = battle_menu.detect_event_mission_claims(lines, (2560, 1080, 3))
+    assert len(res["claims"]) == 1
+
+
+def test_event_missions_waits_for_animated_medal_counter_before_verifying(tmp_path: Path, monkeypatch):
+    """The medal counter counts up over ~2s after a claim; a slow counter is not a failed claim."""
+    taps: list = []
+    swipes: list = []
+    no_claim = [(y, x, t) for y, x, t in _EVENT_CLAIM_LINES if t != "CLAIM 100"]
+    lagging = list(no_claim)  # still 1995 right after the tap
+    risen = [(y, x, ("a 2005" if t == "a 1995" else t)) for y, x, t in no_claim]
+    pages = [_EVENT_TOP_LINES, _EVENT_CLAIM_LINES, lagging, lagging, risen]
+    ctrl, state, frame = _event_routine(tmp_path, pages, taps, swipes, auto_advance=frozenset({2, 3}))
+    monkeypatch.setattr(detectors, "side_menu_state", lambda f: "closed" if state["closed"] else "obscured")
+    ctrl.start("event_missions", battle_live=True)
+    ctrl.phase = "work"
+
+    now = 100.0
+    for _ in range(30):
+        now += 2.0
+        if not ctrl.step(frame, now):
+            break
+
+    assert ctrl.active is False
+    assert ctrl.last_result["claimed"] == 1
