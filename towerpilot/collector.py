@@ -57,6 +57,27 @@ _WAVE_SCAN_INTERVAL_SEC = 5.0
 _HUD_META_SCAN_INTERVAL_SEC = 15.0
 _LEGACY_POLICY_HOLDS = frozenset({"finish_and_stop", "max_runs", "no_start_window", "tier_mismatch"})
 
+# Routine goal -> game context -> mechanism. The same goal uses different controls in battle (side
+# menu) and on Home; a missing context means the goal cannot run there. Nothing ever leaves a live
+# run (end round / pause / surrender) to reach another context. Home paths for the side-menu claims
+# are not mapped yet.
+ROUTINE_PATHS: dict[str, dict[str, str]] = {
+    "history": {"battle": "battle_menu"},
+    "daily_quests": {"battle": "battle_menu"},
+    "guild_rewards": {"battle": "battle_menu"},
+    "event_missions": {"battle": "battle_menu"},
+    "cards": {"battle": "battle_menu", "home": "scan"},
+    "modules": {"battle": "battle_menu", "home": "scan"},
+}
+
+_ROUTINE_REFUSALS: dict[str, str] = {
+    "harvesting_off": "Turn Gem Harvesting ON before running a routine",
+    "setup_test_active": "Cannot run a routine while a Setup Test is active",
+    "routine_active": "Another Battle Menu routine is already running",
+    "scan_running": "An inventory scan is already running",
+    "battle_only": "{label} runs only from the battle side menu; start it during a live battle",
+}
+
 
 class _MemoryProfileStore(ProfileStore):
     """In-memory ProfileStore used when GemCollector is constructed without an explicit store."""
@@ -358,6 +379,61 @@ class GemCollector:
                 battle_live = (not self._cfg["safety"]["battle_only"]) or menu_state in ("closed", "open")
         return bool(battle_live)
 
+    def _routine_decision(self, task: str) -> dict[str, Any]:
+        """Where the game is and which path `task` takes from there (no side effects)."""
+        paths = ROUTINE_PATHS.get(task)
+        if paths is None:
+            raise ValueError(f"task must be one of {tuple(ROUTINE_PATHS)}")
+        context = "battle" if self._effective_battle_live() else "off_battle"
+        via = paths.get("battle") if context == "battle" else paths.get("home")
+        reason: str | None = None
+        if not self.running:
+            reason = "harvesting_off"
+        elif self._setup_tester.active:
+            reason = "setup_test_active"
+        elif self._battle_menu.active:
+            reason = "routine_active"
+        elif self._scanner.running:
+            reason = "scan_running"
+        elif via is None:
+            reason = "battle_only"
+        message = None
+        if reason is not None:
+            message = _ROUTINE_REFUSALS[reason].format(label=task.replace("_", " ").title())
+        return {"context": context, "via": via, "available": reason is None, "reason": reason, "message": message}
+
+    def routine_availability(self) -> dict[str, dict[str, Any]]:
+        with self._lock:
+            return {task: self._routine_decision(task) for task in ROUTINE_PATHS}
+
+    def request_routine(self, task: str, *, trigger: str = "manual") -> dict[str, Any]:
+        """Run `task` by the path that fits where the game is now; never leave a live run to get elsewhere."""
+        with self._lock:
+            dec = {"task": task, **self._routine_decision(task)}
+            label = task.replace("_", " ").title()
+            if dec["reason"] is not None:
+                return {**dec, "outcome": "refused"}
+            if dec["via"] == "battle_menu":
+                self._battle_menu.start(task, battle_live=True, trigger=trigger)
+                return {**dec, "outcome": "started", "message": f"Started {label} (battle side menu)"}
+            scan = self._queue_scan_until_home(task)
+            if scan["running"]:
+                return {**dec, "outcome": "started", "message": f"Started {label} scan from Home"}
+            return {
+                **dec,
+                "outcome": "queued",
+                "reason": "waiting_for_home",
+                "message": f"{label} scan queued; it starts once the Home screen is confirmed",
+            }
+
+    def _queue_scan_until_home(self, scope: str) -> dict[str, Any]:
+        """Off-battle is not proof of Home (popups, run-end stats): queue, then start only on a confirmed screen."""
+        self._scanner.request_scan(scope=scope, battle_live=True, queue_if_battle=True)
+        frame = getattr(self._frames, "last_frame", None)
+        if frame is not None:
+            self._scanner.try_start_from_frame(frame, time.monotonic())
+        return self._scanner.status()
+
     def request_scan(
         self,
         *,
@@ -368,11 +444,9 @@ class GemCollector:
         with self._lock:
             if require_running and not self.running:
                 raise RuntimeError("Turn Gem Harvesting ON before starting an inventory scan")
-            return self._scanner.request_scan(
-                scope=scope,
-                battle_live=self._effective_battle_live(),
-                queue_if_battle=queue_if_battle,
-            )
+            if self._effective_battle_live():
+                return self._scanner.request_scan(scope=scope, battle_live=True, queue_if_battle=queue_if_battle)
+            return self._queue_scan_until_home(scope)
 
     def cancel_scan(self) -> dict[str, Any]:
         with self._lock:
@@ -1723,6 +1797,7 @@ class GemCollector:
                     "history_interval_min": int(self._routines_cfg().get("history_interval_min", 60) or 60),
                     "daily_interval_min": int(self._routines_cfg().get("daily_interval_min", 30) or 30),
                     "guild_interval_min": int(self._routines_cfg().get("guild_interval_min", 60) or 60),
+                    "availability": self.routine_availability(),
                 },
                 "battle_menu": self.battle_menu_status(),
                 "recent": self._telemetry.recent(limit=20),
