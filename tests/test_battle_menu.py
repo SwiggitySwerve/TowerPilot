@@ -666,4 +666,110 @@ def test_p2_c_api_observe_refuses_workshop_when_collector_reports_battle_live(tm
     assert body["account"]["counts"]["workshop_owned"] == 0
 
 
+def test_battle_menu_modules_sweep_reads_main_slots_and_epic_plus_inventory(tmp_path: Path):
+    import threading
+
+    mod_frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    battle_closed = _battle_frame(menu_open=False)
+    state = {"popup": None, "frame": mod_frame}
+    taps: list[tuple[int, int, str]] = []
+    store = loadouts.AccountStore(tmp_path / "account.json")
+    hist = battle_menu.BattleHistoryStore(tmp_path / "history.json")
+
+    slot_details = {
+        "cannon": {"slug": "module:death_penalty", "name": "Death Penalty", "slot": "cannon", "level": 137, "rarity": "Ancestral", "substats": ["+5% Attack Speed"], "close_center": (820, 260), "forbidden": False},
+        "armor": {"slug": "module:anti_cube_portal", "name": "Anti-Cube Portal", "slot": "armor", "level": 100, "rarity": "Legendary", "substats": [], "close_center": (820, 260), "forbidden": False},
+        "generator": {"slug": "module:galaxy_compressor", "name": "Galaxy Compressor", "slot": "generator", "level": 136, "rarity": "Mythic", "substats": [], "close_center": (820, 260), "forbidden": False},
+        "core": {"slug": "module:dimension_core", "name": "Dimension Core", "slot": "core", "level": 100, "rarity": "Legendary", "substats": [], "close_center": (820, 260), "forbidden": False},
+    }
+    inv_details = [
+        {"slug": "module:multiverse_nexus", "name": "Multiverse Nexus", "slot": "core", "level": 1, "rarity": "Epic+", "substats": [], "close_center": (820, 260), "forbidden": False},
+        {"slug": None, "name": "", "slot": "", "level": 1, "rarity": "Legendary+", "substats": [], "close_center": (820, 260), "forbidden": False, "non_unique": True},
+    ]
+
+    def fake_tap(pt, frame, *, reason="", input_display=None):
+        taps.append((pt[0], pt[1], reason))
+        if reason.startswith("battle_menu:mod_slot_"):
+            slot = reason.split("battle_menu:mod_slot_")[1]
+            state["popup"] = slot_details[slot]
+        elif reason.startswith("battle_menu:mod_inv_close") or reason.startswith("battle_menu:mod_close_"):
+            state["popup"] = None
+        elif reason.startswith("battle_menu:mod_inv_"):
+            idx = int(reason.split("battle_menu:mod_inv_")[1])
+            state["popup"] = inv_details[idx]
+        elif reason.startswith("battle_menu:return_"):
+            state["frame"] = battle_closed
+        return {"ok": True}
+
+    def fake_lines(crops):
+        if state["frame"] is battle_closed:
+            return [[]]
+        if len(crops) == 1 and crops[0].shape[0] <= 150:
+            if crops[0].shape[1] == 820:
+                return [[(100, 40, "MODULES")]]
+            return [[(40, 200, "Tap To Return To Game")]]
+        return [[]]
+
+    ctrl = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (state["frame"].copy(), None),
+        check_foreground=lambda disp: (True, ""),
+        tap=fake_tap,
+        swipe=lambda *a, **k: {"ok": True},
+        log=lambda *a, **k: None,
+        notify=lambda *a, **k: None,
+        stop_event=threading.Event(),
+        account_store=store,
+        history_store=hist,
+        step_delay_sec=0.0,
+        lines_fn=fake_lines,
+        parse_modules_fn=lambda f: {
+            "active_preset": "Preset 1",
+            "slots": {
+                "cannon": {"center": (305, 530), "level": 137, "rarity": "Ancestral"},
+                "armor": {"center": (305, 770), "level": 100, "rarity": "Legendary"},
+                "generator": {"center": (770, 530), "level": 136, "rarity": "Mythic"},
+                "core": {"center": (770, 770), "level": 100, "rarity": "Legendary"},
+            },
+        },
+        parse_detail_fn=lambda f: state["popup"],
+        detect_mod_inv_fn=lambda f: {
+            "tiles": [
+                {"center": (144, 1198), "rarity": "Epic", "sig": np.full((16, 16), 10.0, dtype=np.float32)},
+                {"center": (343, 1198), "rarity": "Legendary", "sig": np.full((16, 16), 80.0, dtype=np.float32)},
+                # Identical signature to tile 2 -> must be skipped without tapping
+                {"center": (542, 1198), "rarity": "Legendary", "sig": np.full((16, 16), 80.0, dtype=np.float32)},
+            ],
+            "has_lower_tier": True,  # stops scrolling once lower-tier Rare/Common appears
+            "total_tiles": 5,
+        },
+    )
+    ctrl.active = True
+    ctrl.task = "modules"
+    ctrl.phase = "work"
+
+    now = 100.0
+    for _ in range(40):
+        now += 1.0
+        if not ctrl.step(state["frame"], now):
+            break
+
+    assert ctrl.active is False
+    assert ctrl.error is None
+    snap = store.snapshot()
+    # 4 main slots + 1 unique Epic+ inventory module (generic fodder ignored, duplicate fodder skipped)
+    assert snap["counts"]["modules_owned"] == 5
+    owned_slugs = {m["slug"] for m in snap["catalog"]["modules"] if m["owned"]}
+    assert owned_slugs == {
+        "module:death_penalty",
+        "module:anti_cube_portal",
+        "module:galaxy_compressor",
+        "module:dimension_core",
+        "module:multiverse_nexus",
+    }
+    # Only 2 inventory tiles tapped (3rd was visual duplicate)
+    inv_taps = [r for _, _, r in taps if r.startswith("battle_menu:mod_inv_") and not r.startswith("battle_menu:mod_inv_close")]
+    assert len(inv_taps) == 2
+
+
+
 

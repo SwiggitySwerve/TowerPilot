@@ -53,6 +53,26 @@ REF_MODULE_LEVEL_BOXES: dict[str, tuple[int, int, int, int]] = {
 REF_CARDS_ACTIVE_SLOTS_BOX = (300, 475, 480, 130)
 MODULE_SLOT_ORDER: tuple[str, ...] = ("cannon", "armor", "generator", "core")
 
+# Reference 1080x2560 Modules Inventory 5-column grid geometry (pixel-calibrated from live_modules_grid.png)
+REF_MODULE_INV_COLS: tuple[int, ...] = (50, 249, 448, 647, 846)
+REF_MODULE_INV_TILE_W = 188
+REF_MODULE_INV_TILE_H = 188
+REF_MODULE_INV_Y0 = 1090
+REF_MODULE_INV_Y1 = 2260
+MODULE_EPIC_PLUS_RARITIES: frozenset[str] = frozenset({"Ancestral", "Mythic", "Legendary", "Epic"})
+_MODULE_RARITY_RANK: dict[str, int] = {
+    "ancestral": 7,
+    "mythic+": 6,
+    "mythic": 5,
+    "legendary+": 4,
+    "legendary": 3,
+    "epic+": 2,
+    "epic": 1,
+    "rare+": 0,
+    "rare": 0,
+    "common": 0,
+}
+
 _RARITY_RE = re.compile(r"\b(Ancestral|Mythic\+?|Legendary\+?|Epic\+?|Rare\+?|Common)\b", re.IGNORECASE)
 _LEVEL_RE = re.compile(r"\b(?:Lv\.?|Level|L[cvg]\.?)\s*[:.-]?\s*([0-9OoIl|]{1,4})\b", re.IGNORECASE)
 _LEVEL_SLASH_RE = re.compile(r"\b(\d{1,3})\s*/\s*(\d{2,3})\b")
@@ -824,6 +844,124 @@ def parse_modules_equipped(
     }
 
 
+def _module_tile_signature(patch: np.ndarray) -> np.ndarray:
+    """Compact 16x16 grayscale inner-icon fingerprint for deduplicating identical fodder copies."""
+    if patch is None or patch.size == 0:
+        return np.zeros((16, 16), dtype=np.float32)
+    h, w = patch.shape[:2]
+    inner = patch[int(h * 0.22) : max(int(h * 0.22) + 1, int(h * 0.78)), int(w * 0.22) : max(int(w * 0.22) + 1, int(w * 0.78))]
+    gray = cv2.cvtColor(inner, cv2.COLOR_BGR2GRAY) if inner.ndim == 3 else inner
+    return cv2.resize(gray, (16, 16), interpolation=cv2.INTER_AREA).astype(np.float32)
+
+
+def is_duplicate_module_sig(
+    rarity: str,
+    sig: np.ndarray,
+    seen_sigs: list[tuple[str, np.ndarray]],
+    *,
+    threshold: float = 14.0,
+) -> bool:
+    """Return True if an identical (rarity, icon) tile was already inspected during this sweep."""
+    for prev_rar, prev_sig in seen_sigs:
+        if prev_rar == rarity and prev_sig.shape == sig.shape:
+            if float(np.mean(np.abs(prev_sig - sig))) < threshold:
+                return True
+    return False
+
+
+def detect_module_inventory_tiles(
+    frame: np.ndarray,
+    *,
+    min_rarities: frozenset[str] = MODULE_EPIC_PLUS_RARITIES,
+) -> dict[str, Any]:
+    """Detect fully visible Epic+ module tiles in the 5-column Modules Inventory grid.
+
+    Skips lower-tier Rare (blue) and Common (grey) fodder tiles and reports `has_lower_tier=True`
+    once lower-tier tiles appear so callers can stop scrolling the descending-rarity list.
+    """
+    if frame is None or frame.ndim != 3:
+        return {"tiles": [], "has_lower_tier": False, "total_tiles": 0}
+
+    fh, fw = frame.shape[:2]
+    sx, sy = fw / REF_W, fh / REF_H
+    inv_y0 = max(0, int(round(REF_MODULE_INV_Y0 * sy)))
+    inv_y1 = min(fh, int(round(REF_MODULE_INV_Y1 * sy)))
+    tile_w = max(20, int(round(REF_MODULE_INV_TILE_W * sx)))
+    tile_h = max(20, int(round(REF_MODULE_INV_TILE_H * sy)))
+    if inv_y1 - inv_y0 < tile_h:
+        return {"tiles": [], "has_lower_tier": False, "total_tiles": 0}
+
+    inv = frame[inv_y0:inv_y1, :]
+    hsv = cv2.cvtColor(inv, cv2.COLOR_BGR2HSV)
+    active = ((hsv[..., 1] >= 75) & (hsv[..., 2] >= 110)).astype(np.float32)
+    # Also allow bright grey Common tiles to contribute weak row energy so lower-tier rows are detected
+    bright_grey = ((hsv[..., 1] < 60) & (hsv[..., 2] >= 145)).astype(np.float32) * 0.6
+    row_energy = np.maximum(active, bright_grey).mean(axis=1)
+
+    scores: list[tuple[float, int]] = []
+    gap_px = max(4, int(round(10 * sy)))
+    for rel_y in range(0, inv.shape[0] - tile_h + 1):
+        inside = float(row_energy[rel_y : rel_y + tile_h].mean())
+        if inside < 0.12:
+            continue
+        top_gap = float(row_energy[max(0, rel_y - gap_px) : rel_y].mean()) if rel_y >= 4 else 0.0
+        bot_gap = (
+            float(row_energy[rel_y + tile_h : min(inv.shape[0], rel_y + tile_h + gap_px)].mean())
+            if rel_y + tile_h + 4 <= inv.shape[0]
+            else 0.0
+        )
+        scores.append((inside - 0.6 * (top_gap + bot_gap), rel_y))
+
+    scores.sort(reverse=True)
+    min_row_gap = max(20, int(round(170 * sy)))
+    row_ys: list[int] = []
+    for _, ry in scores:
+        if all(abs(ry - prev) >= min_row_gap for prev in row_ys):
+            row_ys.append(ry)
+    row_ys.sort()
+
+    col_xs = [int(round(c * sx)) for c in REF_MODULE_INV_COLS]
+    tiles: list[dict[str, Any]] = []
+    has_lower_tier = False
+    total_tiles = 0
+
+    for rel_y in row_ys:
+        ay = inv_y0 + rel_y
+        if ay + tile_h > inv_y1:
+            continue
+        for cx in col_xs:
+            if cx < 0 or cx + tile_w > fw:
+                continue
+            patch = frame[ay : ay + tile_h, cx : cx + tile_w]
+            rar = _detect_rarity_ring(patch)
+            if rar in min_rarities:
+                total_tiles += 1
+                tiles.append(
+                    {
+                        "rect": (cx, ay, tile_w, tile_h),
+                        "center": (cx + tile_w // 2, ay + tile_h // 2),
+                        "rarity": rar,
+                        "sig": _module_tile_signature(patch),
+                    }
+                )
+            elif rar == "Rare":
+                total_tiles += 1
+                has_lower_tier = True
+            else:
+                # Check if an unsaturated bright Common tile occupies this slot
+                p_hsv = cv2.cvtColor(patch, cv2.COLOR_BGR2HSV)
+                grey_ratio = float(np.count_nonzero((p_hsv[..., 1] < 55) & (p_hsv[..., 2] >= 145))) / float(patch.shape[0] * patch.shape[1])
+                if grey_ratio >= 0.09:
+                    total_tiles += 1
+                    has_lower_tier = True
+
+    return {
+        "tiles": tiles,
+        "has_lower_tier": has_lower_tier,
+        "total_tiles": total_tiles,
+    }
+
+
 # --- Pure Module Detail Popup Parser -------------------------------------
 
 def _is_static_modules_chrome(y: int, text: str, sy: float) -> bool:
@@ -923,6 +1061,26 @@ def parse_module_detail(
                 "close_center": close_center,
                 "forbidden": True,
                 "forbidden_text": forbidden_text,
+                "popup_text": popup_text,
+                "raw_text": popup_text,
+            }
+        # Generic / fodder module detail popup (e.g. Solar Dyson Sphere): open modal, not in 25-module catalog
+        has_modal_chrome = bool(
+            close_center is not None
+            or re.search(r"\b(?:EQUIP|UNEQUIP|RESTORE|SUB-?MODULE|FAVORITE)\b", popup_text, re.IGNORECASE)
+        )
+        if has_modal_chrome and (rarity or level is not None or close_center is not None):
+            return {
+                "slug": None,
+                "name": "",
+                "slot": "",
+                "rarity": rarity,
+                "level": level,
+                "substats": [],
+                "close_center": close_center,
+                "forbidden": False,
+                "forbidden_text": "",
+                "non_unique": True,
                 "popup_text": popup_text,
                 "raw_text": popup_text,
             }
@@ -1299,6 +1457,93 @@ class AccountStore:
             self._write_unlocked(data)
         return self.snapshot()
 
+    @staticmethod
+    def _best_rarity(new_rarity: str, prev_rarity: str) -> str:
+        if not new_rarity:
+            return prev_rarity
+        if not prev_rarity:
+            return new_rarity
+        nr = _MODULE_RARITY_RANK.get(new_rarity.strip().lower(), -1)
+        pr = _MODULE_RARITY_RANK.get(prev_rarity.strip().lower(), -1)
+        return new_rarity if nr >= pr else prev_rarity
+
+    def _upsert_module_item(
+        self,
+        data: dict[str, Any],
+        *,
+        slug: str,
+        name: str,
+        slot: str,
+        level: int | None,
+        rarity: str,
+        substats: list[str],
+        now: float,
+    ) -> None:
+        prev = data["items"].get(slug) or {}
+        prev_level = prev.get("level")
+        eff_level = (
+            max(int(prev_level), int(level))
+            if (level is not None and prev_level is not None)
+            else (level if level is not None else prev_level)
+        )
+        eff_rarity = self._best_rarity(rarity, str(prev.get("rarity") or ""))
+        eff_substats = substats if substats else list(prev.get("substats") or [])
+        detail_bits = [b for b in (eff_rarity, f"Lv.{eff_level}" if eff_level is not None else "") if b]
+        detail = " ".join(detail_bits) or prev.get("detail") or ""
+
+        merged_item = dict(prev)
+        merged_item.update(
+            {
+                "slug": slug,
+                "name": name or prev.get("name") or slug,
+                "category": "module",
+                "slot": slot or prev.get("slot") or "",
+                "owned": True,
+                "level": eff_level,
+                "rarity": eff_rarity,
+                "substats": eff_substats,
+                "detail": detail,
+                "last_seen": now,
+                "screen": "modules",
+            }
+        )
+        data["items"][slug] = merged_item
+
+    def record_module_item(self, info: dict[str, Any]) -> dict[str, Any]:
+        """Record an owned unique module observed in the Modules Inventory grid (preserves highest rarity/level)."""
+        with self._lock:
+            data = self._read_unlocked()
+            now = round(time.time(), 1)
+            data["updated_at"] = now
+            data["last_screen"] = "modules"
+
+            slug = info.get("slug")
+            item_meta = wiki.BY_SLUG.get(slug) if slug else None
+            if item_meta is None and info.get("name"):
+                item_meta = wiki.match_name(str(info["name"]), category="module")
+                if item_meta is not None:
+                    slug = item_meta.slug
+
+            if slug and (item_meta is None or item_meta.category == "module"):
+                name = info.get("name") or (item_meta.name if item_meta is not None else "")
+                level = info.get("level")
+                level = int(level) if level is not None else None
+                rarity = _normalize_rarity(str(info.get("rarity") or ""))
+                substats = [str(s).strip() for s in (info.get("substats") or []) if str(s).strip()]
+                slot = (item_meta.slot if item_meta and item_meta.slot else str(info.get("slot") or "").strip().lower())
+                self._upsert_module_item(
+                    data,
+                    slug=slug,
+                    name=name,
+                    slot=slot,
+                    level=level,
+                    rarity=rarity,
+                    substats=substats,
+                    now=now,
+                )
+                self._write_unlocked(data)
+        return self.snapshot()
+
     def record_module_slot(
         self,
         preset_name: str | None,
@@ -1330,30 +1575,16 @@ class AccountStore:
             substats = [str(s).strip() for s in (info.get("substats") or []) if str(s).strip()]
 
             if slug:
-                prev = data["items"].get(slug) or {}
-                eff_level = level if level is not None else prev.get("level")
-                eff_rarity = rarity or prev.get("rarity") or ""
-                eff_substats = substats if substats else list(prev.get("substats") or [])
-                detail_bits = [b for b in (eff_rarity, f"Lv.{eff_level}" if eff_level is not None else "") if b]
-                detail = " ".join(detail_bits) or prev.get("detail") or ""
-
-                merged_item = dict(prev)
-                merged_item.update(
-                    {
-                        "slug": slug,
-                        "name": name or prev.get("name") or slug,
-                        "category": "module",
-                        "slot": (item_meta.slot if item_meta and item_meta.slot else clean_slot),
-                        "owned": True,
-                        "level": eff_level,
-                        "rarity": eff_rarity,
-                        "substats": eff_substats,
-                        "detail": detail,
-                        "last_seen": now,
-                        "screen": "modules",
-                    }
+                self._upsert_module_item(
+                    data,
+                    slug=slug,
+                    name=name,
+                    slot=(item_meta.slot if item_meta and item_meta.slot else clean_slot),
+                    level=level,
+                    rarity=rarity,
+                    substats=substats,
+                    now=now,
                 )
-                data["items"][slug] = merged_item
 
             clean_preset = " ".join(preset_name.strip().split()) if preset_name else None
             if clean_preset:

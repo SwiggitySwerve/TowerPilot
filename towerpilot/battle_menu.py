@@ -66,10 +66,25 @@ REF_FORBIDDEN_GUILD_STORE = (620, 235, 330, 105)
 VALID_TASKS = ("history", "cards", "modules", "daily_quests", "guild_rewards")
 
 _STEP_DELAY_SEC = 1.0
+_MOD_STEP_DELAY_SEC = 0.55
 _MAX_FAILURES = 4
 _MAX_SCROLL_PAGES = 3
+_MAX_MOD_INV_PAGES = 5
+_MAX_MOD_INV_TAPS = 50
+_MOD_INV_STALL_MAD = 2.5
 _MAX_CLAIMS_PER_RUN = 10
 _MAX_RETURN_ATTEMPTS = 4
+
+# Module scan safety fences (1080x2560 reference)
+_REF_MOD_SLOT_X = (100, 980)
+_REF_MOD_SLOT_Y = (450, 870)
+_REF_MOD_INV_X = (40, 1040)
+_REF_MOD_INV_Y = (1100, 2235)
+_REF_MOD_INV_ROI = (30, 1090, 1020, 1170)
+_REF_MOD_SAFE_DISMISS = (540, 140)
+_REF_MOD_BUY_Y = (310, 420)
+_REF_MOD_CLOSE_X_MIN = 680
+_REF_MOD_CLOSE_Y = (130, 900)
 
 _TASK_ICON_RECTS: dict[str, tuple[int, int, int, int]] = {
     "history": REF_MENU_HISTORY,
@@ -588,6 +603,9 @@ class BattleMenuRoutine:
         step_delay_sec: float = _STEP_DELAY_SEC,
         lines_fn: Callable[[list[np.ndarray]], list[list[tuple[int, int, str]]]] | None = None,
         button_ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
+        parse_modules_fn: Callable[[np.ndarray], dict[str, Any]] | None = None,
+        parse_detail_fn: Callable[[np.ndarray], dict[str, Any] | None] | None = None,
+        detect_mod_inv_fn: Callable[[np.ndarray], dict[str, Any]] | None = None,
     ) -> None:
         self._grab = grab_verified_frame
         self._check_fg = check_foreground
@@ -601,6 +619,9 @@ class BattleMenuRoutine:
         self._step_delay_sec = step_delay_sec
         self._lines_fn = lines_fn
         self._button_ocr_fn = button_ocr_fn
+        self._parse_modules_fn = parse_modules_fn
+        self._parse_detail_fn = parse_detail_fn
+        self._detect_mod_inv_fn = detect_mod_inv_fn
 
         self._lock = threading.RLock()
         self.active: bool = False
@@ -623,6 +644,22 @@ class BattleMenuRoutine:
         self._waiting_dismiss: bool = False
         self._cancelling: bool = False
         self._abort_reason_after_return: str | None = None
+        self._reset_module_cursor()
+
+    def _reset_module_cursor(self) -> None:
+        self._mod_substate: str = "init"
+        self._mod_preset: str | None = None
+        self._mod_slots: dict[str, dict[str, Any]] = {}
+        self._mod_slot_idx: int = 0
+        self._mod_current_slot: str | None = None
+        self._mod_current_base: dict[str, Any] = {}
+        self._mod_inv_page: int = 0
+        self._mod_inv_queue: list[dict[str, Any]] = []
+        self._mod_inv_taps: int = 0
+        self._mod_inv_has_lower: bool = False
+        self._mod_inv_prev_roi: np.ndarray | None = None
+        self._mod_seen_sigs: list[tuple[str, np.ndarray]] = []
+        self._mod_current_tile: dict[str, Any] | None = None
 
     def status(self) -> dict[str, Any]:
         with self._lock:
@@ -662,6 +699,7 @@ class BattleMenuRoutine:
             self._waiting_dismiss = False
             self._cancelling = False
             self._abort_reason_after_return = None
+            self._reset_module_cursor()
             self._log(
                 f"Battle Menu routine started: {_TASK_LABELS[task]} ({trigger})",
                 event="battle_menu_started",
@@ -682,7 +720,12 @@ class BattleMenuRoutine:
                 self._waiting_dismiss = False
                 self._pending_claim = None
                 self._return_attempts = 0
-                self.phase = "return_to_game"
+                if not (
+                    self.task == "modules"
+                    and self.phase == "work"
+                    and self._mod_substate in ("read_slot_detail", "verify_slot_closed", "read_inv_detail", "verify_inv_closed")
+                ):
+                    self.phase = "return_to_game"
                 self.detail = "Cancelling — returning cleanly to battle"
                 self._next_step_at = 0.0
                 self._log(f"Battle Menu routine cancelling ({task})", event="battle_menu_cancelled", task=task)
@@ -1155,38 +1198,7 @@ class BattleMenuRoutine:
             return True
 
         if task == "modules":
-            hdr = self._read_header(fresh)
-            if "MODULE" not in hdr and self._page == 0:
-                self._failures += 1
-                if self._failures >= _MAX_FAILURES:
-                    return self._abort_via_return(f"expected MODULES, saw '{hdr[:32]}'")
-                self._next_step_at = now + self._step_delay_sec
-                return True
-            obs = loadouts.parse_modules_equipped(fresh)
-            slots = obs.get("slots") or {}
-            preset = obs.get("active_preset")
-            for slot_key, entry in slots.items():
-                if not isinstance(entry, dict):
-                    continue
-                if entry.get("level") is None and not entry.get("rarity") and not entry.get("slug"):
-                    continue
-                self._account_store.record_module_slot(
-                    preset,
-                    slot_key,
-                    {
-                        "slug": entry.get("slug"),
-                        "name": entry.get("name"),
-                        "level": entry.get("level"),
-                        "rarity": entry.get("rarity") or "",
-                    },
-                )
-                self._seen_items.add(str(entry.get("slug") or slot_key))
-            self._page += 1
-            self.detail = f"Modules read ({len(self._seen_items)} slots)"
-            self.phase = "return_to_game"
-            self._failures = 0
-            self._next_step_at = now + 0.4
-            return True
+            return self._step_modules_work(fresh, disp, now)
 
         if task == "daily_quests":
             if self._waiting_dismiss:
@@ -1293,4 +1305,313 @@ class BattleMenuRoutine:
             return True
 
         self.phase = "return_to_game"
+        return True
+
+    @staticmethod
+    def _is_forbidden_module_detail(detail: dict[str, Any]) -> bool:
+        if detail.get("forbidden"):
+            return True
+        for key in ("name", "forbidden_text", "popup_text", "raw_text"):
+            val = detail.get(key)
+            if isinstance(val, str) and screens.is_forbidden_label(val):
+                return True
+        for sub in detail.get("substats") or ():
+            if isinstance(sub, str) and screens.is_forbidden_label(sub):
+                return True
+        return False
+
+    @staticmethod
+    def _safe_mod_dismiss_pt(close_center: Any, frame_shape: tuple[int, ...]) -> tuple[int, int]:
+        fh, fw = int(frame_shape[0]), int(frame_shape[1])
+        sx, sy = fw / float(detectors.REF_W), fh / float(detectors.REF_H)
+        if isinstance(close_center, (tuple, list)) and len(close_center) == 2:
+            cx, cy = int(round(close_center[0])), int(round(close_center[1]))
+            in_buy = int(round(_REF_MOD_BUY_Y[0] * sy)) <= cy <= int(round(_REF_MOD_BUY_Y[1] * sy))
+            in_exit = _pt_in_rect((cx, cy), detectors.scale_rect(REF_FORBIDDEN_EXIT, frame_shape))
+            in_store = _pt_in_rect((cx, cy), detectors.scale_rect(REF_FORBIDDEN_STORE, frame_shape))
+            if (
+                not in_buy
+                and not in_exit
+                and not in_store
+                and int(round(_REF_MOD_CLOSE_X_MIN * sx)) <= cx < fw
+                and int(round(_REF_MOD_CLOSE_Y[0] * sy)) <= cy <= int(round(_REF_MOD_CLOSE_Y[1] * sy))
+            ):
+                return (cx, cy)
+        dx, dy = detectors.scale_point(_REF_MOD_SAFE_DISMISS, frame_shape)
+        return (int(round(dx)), int(round(dy)))
+
+    def _mod_inv_roi(self, frame: np.ndarray) -> np.ndarray:
+        x, y, w, h = detectors.scale_rect(_REF_MOD_INV_ROI, frame.shape)
+        return frame[y : y + h, x : x + w].copy()
+
+    def _step_modules_work(self, fresh: np.ndarray, disp: int | None, now: float) -> bool:
+        """Walk all 4 main equipped module slots + Epic+ inventory tiles (ignoring Rare/Common)."""
+        parse_eq = self._parse_modules_fn or loadouts.parse_modules_equipped
+        parse_det = self._parse_detail_fn or loadouts.parse_module_detail
+        detect_inv = self._detect_mod_inv_fn or loadouts.detect_module_inventory_tiles
+        delay = min(self._step_delay_sec, _MOD_STEP_DELAY_SEC)
+        fh, fw = fresh.shape[:2]
+        sx, sy = fw / float(detectors.REF_W), fh / float(detectors.REF_H)
+
+        # 1) Initial screen verify + read 4 outer equipped slots
+        if self._mod_substate == "init":
+            hdr = self._read_header(fresh)
+            if "MODULE" not in hdr:
+                self._failures += 1
+                if self._failures >= _MAX_FAILURES:
+                    return self._abort_via_return(f"expected MODULES, saw '{hdr[:32]}'")
+                self._next_step_at = now + self._step_delay_sec
+                return True
+            obs = parse_eq(fresh)
+            self._mod_preset = obs.get("active_preset")
+            self._mod_slots = dict(obs.get("slots") or {})
+            self._mod_slot_idx = 0
+            self._failures = 0
+            for slot_key, entry in self._mod_slots.items():
+                if not isinstance(entry, dict):
+                    continue
+                if entry.get("level") is None and not entry.get("rarity") and not entry.get("slug"):
+                    continue
+                self._account_store.record_module_slot(
+                    self._mod_preset,
+                    slot_key,
+                    {
+                        "slug": entry.get("slug"),
+                        "name": entry.get("name"),
+                        "level": entry.get("level"),
+                        "rarity": entry.get("rarity") or "",
+                    },
+                )
+            self._mod_substate = "tap_slot"
+
+        # 2) Tap each of the 4 main equipped slots to read exact module name & substats
+        if self._mod_substate == "tap_slot":
+            if self._mod_slot_idx >= len(loadouts.MODULE_SLOT_ORDER):
+                self._mod_substate = "scan_inv_page"
+            else:
+                slot = loadouts.MODULE_SLOT_ORDER[self._mod_slot_idx]
+                slot_info = dict(self._mod_slots.get(slot) or {})
+                center = slot_info.get("center")
+                if isinstance(center, (tuple, list)) and len(center) == 2:
+                    cx, cy = int(round(center[0])), int(round(center[1]))
+                else:
+                    rx, ry, rw, rh = detectors.scale_rect(loadouts.REF_MODULE_SLOTS[slot], fresh.shape)
+                    cx, cy = rx + rw // 2, ry + rh // 2
+                if not (
+                    int(round(_REF_MOD_SLOT_X[0] * sx)) <= cx <= int(round(_REF_MOD_SLOT_X[1] * sx))
+                    and int(round(_REF_MOD_SLOT_Y[0] * sy)) <= cy <= int(round(_REF_MOD_SLOT_Y[1] * sy))
+                ):
+                    self._mod_slot_idx += 1
+                    return True
+                res = self._safe_tap((cx, cy), fresh, reason=f"battle_menu:mod_slot_{slot}", input_display=disp)
+                if res is None:
+                    return self.active
+                self._mod_current_slot = slot
+                self._mod_current_base = slot_info
+                self._mod_substate = "read_slot_detail"
+                self.detail = f"Reading equipped {slot.title()} ({self._mod_slot_idx + 1}/4)"
+                self._next_step_at = now + delay
+                return True
+
+        # 3) Read opened equipped-slot detail popup & dismiss safely
+        if self._mod_substate == "read_slot_detail":
+            slot = self._mod_current_slot or loadouts.MODULE_SLOT_ORDER[min(self._mod_slot_idx, 3)]
+            detail = parse_det(fresh)
+            if detail is not None:
+                if self._is_forbidden_module_detail(detail):
+                    return self._abort("forbidden prompt detected on module popup")
+                if detail.get("slug"):
+                    merged = {
+                        "slug": detail.get("slug"),
+                        "name": detail.get("name"),
+                        "slot": detail.get("slot") or slot,
+                        "level": detail.get("level") if detail.get("level") is not None else self._mod_current_base.get("level"),
+                        "rarity": detail.get("rarity") or self._mod_current_base.get("rarity") or "",
+                        "substats": list(detail.get("substats") or []),
+                    }
+                    self._account_store.record_module_slot(self._mod_preset, slot, merged)
+                    self._seen_items.add(str(merged["slug"]))
+                pt = self._safe_mod_dismiss_pt(detail.get("close_center"), fresh.shape)
+                if self._safe_tap(pt, fresh, reason=f"battle_menu:mod_close_{slot}", input_display=disp) is None:
+                    return self.active
+                self._mod_slot_idx += 1
+                self._mod_substate = "verify_slot_closed"
+                self._failures = 0
+                self._next_step_at = now + delay
+                return True
+            hdr = self._read_header(fresh)
+            if "MODULE" in hdr:
+                self._mod_slot_idx += 1
+                self._mod_substate = "tap_slot"
+                self._failures = 0
+                self._next_step_at = now + 0.25
+                return True
+            self._failures += 1
+            if self._failures >= _MAX_FAILURES:
+                return self._abort_via_return(f"could not read module detail for {slot}")
+            self._next_step_at = now + delay
+            return True
+
+        if self._mod_substate == "verify_slot_closed":
+            detail = parse_det(fresh)
+            if detail is None and "MODULE" in self._read_header(fresh):
+                self._failures = 0
+                if self._cancelling:
+                    self.phase = "return_to_game"
+                    self._next_step_at = now + 0.2
+                    return True
+                self._mod_substate = "tap_slot"
+                self._next_step_at = now + 0.2
+                return True
+            self._failures += 1
+            if self._failures >= _MAX_FAILURES:
+                return self._abort_via_return("module detail popup did not close")
+            if detail is not None:
+                if self._is_forbidden_module_detail(detail):
+                    return self._abort("forbidden prompt detected on module popup")
+                pt = self._safe_mod_dismiss_pt(detail.get("close_center"), fresh.shape)
+                self._safe_tap(pt, fresh, reason="battle_menu:mod_close_retry", input_display=disp)
+            self._next_step_at = now + delay
+            return self.active
+
+        # 4) Scan visible Epic+ inventory tiles (skip Rare/Common & visual dupes)
+        if self._mod_substate == "scan_inv_page":
+            inv_roi = self._mod_inv_roi(fresh)
+            if self._mod_inv_page > 0 and self._mod_inv_prev_roi is not None:
+                if inv_roi.shape == self._mod_inv_prev_roi.shape and inv_roi.size > 0:
+                    mad = float(np.mean(np.abs(inv_roi.astype(np.float32) - self._mod_inv_prev_roi.astype(np.float32))))
+                    if mad < _MOD_INV_STALL_MAD:
+                        self.phase = "return_to_game"
+                        self._next_step_at = now + 0.4
+                        return True
+            self._mod_inv_prev_roi = inv_roi
+
+            detected = detect_inv(fresh)
+            self._mod_inv_has_lower = bool(detected.get("has_lower_tier"))
+            queue: list[dict[str, Any]] = []
+            for tile in detected.get("tiles") or []:
+                if self._mod_inv_taps + len(queue) >= _MAX_MOD_INV_TAPS:
+                    break
+                rar = str(tile.get("rarity") or "")
+                sig = tile.get("sig")
+                if isinstance(sig, np.ndarray) and loadouts.is_duplicate_module_sig(rar, sig, self._mod_seen_sigs):
+                    continue
+                if isinstance(sig, np.ndarray):
+                    self._mod_seen_sigs.append((rar, sig))
+                queue.append(tile)
+            self._mod_inv_queue = queue
+            if queue:
+                self._mod_substate = "tap_inv_tile"
+            else:
+                return self._advance_mod_inv_page(fresh, disp, now)
+
+        # 5) Tap queued Epic+ inventory tile -> read detail -> record unique module -> dismiss
+        if self._mod_substate == "tap_inv_tile":
+            if not self._mod_inv_queue or self._mod_inv_taps >= _MAX_MOD_INV_TAPS:
+                return self._advance_mod_inv_page(fresh, disp, now)
+            tile = self._mod_inv_queue.pop(0)
+            cx, cy = int(round(tile["center"][0])), int(round(tile["center"][1]))
+            if not (
+                int(round(_REF_MOD_INV_X[0] * sx)) <= cx <= int(round(_REF_MOD_INV_X[1] * sx))
+                and int(round(_REF_MOD_INV_Y[0] * sy)) <= cy <= int(round(_REF_MOD_INV_Y[1] * sy))
+            ):
+                self._next_step_at = now + 0.1
+                return True
+            res = self._safe_tap((cx, cy), fresh, reason=f"battle_menu:mod_inv_{self._mod_inv_taps}", input_display=disp)
+            if res is None:
+                return self.active
+            self._mod_inv_taps += 1
+            self._mod_current_tile = tile
+            self._mod_substate = "read_inv_detail"
+            self.detail = f"Inspecting Epic+ inventory ({len(self._seen_items)} unique, {self._mod_inv_taps} checked)"
+            self._next_step_at = now + delay
+            return True
+
+        if self._mod_substate == "read_inv_detail":
+            detail = parse_det(fresh)
+            if detail is not None:
+                if self._is_forbidden_module_detail(detail):
+                    return self._abort("forbidden prompt detected on module popup")
+                if detail.get("slug"):
+                    tile_rar = (self._mod_current_tile or {}).get("rarity") or ""
+                    self._account_store.record_module_item(
+                        {
+                            "slug": detail.get("slug"),
+                            "name": detail.get("name"),
+                            "slot": detail.get("slot") or "",
+                            "level": detail.get("level"),
+                            "rarity": detail.get("rarity") or tile_rar,
+                            "substats": list(detail.get("substats") or []),
+                        }
+                    )
+                    self._seen_items.add(str(detail["slug"]))
+                pt = self._safe_mod_dismiss_pt(detail.get("close_center"), fresh.shape)
+                if self._safe_tap(pt, fresh, reason="battle_menu:mod_inv_close", input_display=disp) is None:
+                    return self.active
+                self._mod_substate = "verify_inv_closed"
+                self._failures = 0
+                self._next_step_at = now + delay
+                return True
+            if "MODULE" in self._read_header(fresh):
+                self._mod_substate = "tap_inv_tile"
+                self._failures = 0
+                self._next_step_at = now + 0.2
+                return True
+            self._failures += 1
+            if self._failures >= _MAX_FAILURES:
+                return self._abort_via_return("could not read inventory module detail")
+            self._next_step_at = now + delay
+            return True
+
+        if self._mod_substate == "verify_inv_closed":
+            detail = parse_det(fresh)
+            if detail is None and "MODULE" in self._read_header(fresh):
+                self._failures = 0
+                if self._cancelling:
+                    self.phase = "return_to_game"
+                    self._next_step_at = now + 0.2
+                    return True
+                self._mod_substate = "tap_inv_tile"
+                self._next_step_at = now + 0.2
+                return True
+            self._failures += 1
+            if self._failures >= _MAX_FAILURES:
+                return self._abort_via_return("inventory module popup did not close")
+            if detail is not None:
+                if self._is_forbidden_module_detail(detail):
+                    return self._abort("forbidden prompt detected on module popup")
+                pt = self._safe_mod_dismiss_pt(detail.get("close_center"), fresh.shape)
+                self._safe_tap(pt, fresh, reason="battle_menu:mod_inv_close_retry", input_display=disp)
+            self._next_step_at = now + delay
+            return self.active
+
+        self.phase = "return_to_game"
+        return True
+
+    def _advance_mod_inv_page(self, fresh: np.ndarray, disp: int | None, now: float) -> bool:
+        """Scroll Modules Inventory down one page if Epic+ rows remain, else return to battle."""
+        if (
+            self._mod_inv_has_lower
+            or self._mod_inv_page + 1 >= _MAX_MOD_INV_PAGES
+            or self._mod_inv_taps >= _MAX_MOD_INV_TAPS
+        ):
+            self.detail = f"Modules scan done ({len(self._seen_items)} unique)"
+            self.phase = "return_to_game"
+            self._failures = 0
+            self._next_step_at = now + 0.4
+            return True
+        sx = fresh.shape[1] / float(detectors.REF_W)
+        sy = fresh.shape[0] / float(detectors.REF_H)
+        self._swipe(
+            (int(round(540 * sx)), int(round(2060 * sy))),
+            (int(round(540 * sx)), int(round(1240 * sy))),
+            fresh,
+            duration_ms=520,
+            reason=f"battle_menu:scroll_mod_inv_{self._mod_inv_page + 1}",
+            input_display=disp,
+        )
+        self._mod_inv_page += 1
+        self._mod_substate = "scan_inv_page"
+        self.detail = f"Scrolling Modules inventory (page {self._mod_inv_page + 1}, {len(self._seen_items)} unique)"
+        self._next_step_at = now + 0.75
         return True

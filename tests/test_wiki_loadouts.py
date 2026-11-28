@@ -786,3 +786,66 @@ def test_card_mastery_parsing_and_store_persistence(tmp_path: Path):
     assert cat_cards4["card:damage"]["mastery_level"] is None
     assert snap4["counts"]["cards_mastered"] == 0
 
+
+def test_detect_module_inventory_tiles_filters_epic_plus_and_dedupes_fodder(tmp_path: Path):
+    frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    # Draw row 1 (y=1104): Mythic (red), Legendary (orange), Epic (magenta), Rare (blue), Common (grey)
+    colors_bgr = [
+        (40, 40, 240),    # col 0: Mythic (red)
+        (20, 150, 240),   # col 1: Legendary (orange)
+        (230, 50, 220),   # col 2: Epic (magenta)
+        (240, 130, 30),   # col 3: Rare (blue) -> MUST BE SKIPPED
+        (185, 185, 185),  # col 4: Common (grey) -> MUST BE SKIPPED
+    ]
+    for idx, bgr in enumerate(colors_bgr):
+        x0 = loadouts.REF_MODULE_INV_COLS[idx]
+        y0 = 1104
+        cv2.rectangle(frame, (x0 + 8, y0 + 8), (x0 + 180, y0 + 180), bgr, 18)
+        # Distinct inner icon shapes for Epic+ tiles
+        cv2.circle(frame, (x0 + 94, y0 + 94), 25 + idx * 8, (255, 255, 255), -1 if idx % 2 == 0 else 4)
+
+    # Row 2 (y=1307): two identical Epic fodder tiles -> second should match visual signature duplicate
+    for col in (0, 1):
+        x0 = loadouts.REF_MODULE_INV_COLS[col]
+        y0 = 1307
+        cv2.rectangle(frame, (x0 + 8, y0 + 8), (x0 + 180, y0 + 180), (230, 50, 220), 18)
+        cv2.rectangle(frame, (x0 + 60, y0 + 60), (x0 + 128, y0 + 128), (220, 220, 220), -1)
+
+    res = loadouts.detect_module_inventory_tiles(frame)
+    assert res["has_lower_tier"] is True
+    assert res["total_tiles"] == 7
+    assert len(res["tiles"]) == 5  # 3 from row 1 + 2 from row 2 (Rare & Common excluded)
+    assert [t["rarity"] for t in res["tiles"]] == ["Mythic", "Legendary", "Epic", "Epic", "Epic"]
+
+    # Visual signature dedupe skips identical second fodder tile on row 2
+    seen: list[tuple[str, np.ndarray]] = []
+    unique_tiles = []
+    for t in res["tiles"]:
+        if not loadouts.is_duplicate_module_sig(t["rarity"], t["sig"], seen):
+            seen.append((t["rarity"], t["sig"]))
+            unique_tiles.append(t)
+    assert len(unique_tiles) == 4
+
+    # Generic non-unique fodder popup returns non_unique=True, slug=None (so scanner dismisses cleanly)
+    fodder_lines = [[(220, 200, "Photon Counter"), (260, 820, "X"), (300, 220, "Legendary+"), (1500, 300, "EQUIP")]]
+    fodder = loadouts.parse_module_detail(frame, lines_fn=lambda crops: fodder_lines)
+    assert fodder is not None
+    assert fodder["slug"] is None
+    assert fodder["forbidden"] is False
+    assert fodder["non_unique"] is True
+
+    # AccountStore.record_module_item preserves higher rarity/level across dupes
+    store = loadouts.AccountStore(tmp_path / "account.json")
+    store.record_module_slot("Preset 1", "cannon", {"slug": "module:death_penalty", "name": "Death Penalty", "level": 137, "rarity": "Ancestral"})
+    snap = store.record_module_item({"slug": "module:death_penalty", "name": "Death Penalty", "level": 1, "rarity": "Epic"})
+    dp = {m["slug"]: m for m in snap["catalog"]["modules"]}["module:death_penalty"]
+    assert dp["rarity"] == "Ancestral"
+    assert dp["level"] == 137
+    snap2 = store.record_module_item({"slug": "module:anti_cube_portal", "name": "Anti-Cube Portal", "level": 1, "rarity": "Epic+"})
+    assert snap2["counts"]["modules_owned"] == 2
+    acp = {m["slug"]: m for m in snap2["catalog"]["modules"]}["module:anti_cube_portal"]
+    assert acp["owned"] is True
+    assert acp["rarity"] == "Epic+"
+    assert acp["equipped_in"] == []
+
+

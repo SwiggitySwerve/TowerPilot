@@ -25,15 +25,20 @@ _MAX_CARD_PAGES = 8
 _CARD_STALL_THRESHOLD = 2
 _CARD_STALL_MAD = 2.5
 _MAX_SCROLL_TOP_SWIPES = 6
+_MAX_MOD_INV_PAGES = 5
+_MAX_MOD_INV_TAPS = 50
 _SWIPE_DURATION_MS = 550
 
 # Reference 1080x2560 geometry fences
 _REF_INV_ROI = (30, 1000, 1020, 1360)
+_REF_MOD_INV_ROI = (30, 1090, 1020, 1170)
 _REF_INV_SWIPE_X, _REF_INV_SWIPE_BOT_Y, _REF_INV_SWIPE_TOP_Y = 540, 2050, 1250
 _REF_MOD_SLOT_X = (100, 980)
 _REF_MOD_SLOT_Y = (450, 870)
+_REF_MOD_INV_X = (40, 1040)
+_REF_MOD_INV_Y = (1100, 2235)
 _REF_MOD_SAFE_DISMISS = (540, 140)
-_REF_MOD_CLOSE_X_MIN, _REF_MOD_CLOSE_Y = 680, (80, 900)
+_REF_MOD_CLOSE_X_MIN, _REF_MOD_CLOSE_Y = 680, (130, 900)
 _REF_MOD_BUY_Y = (310, 420)
 
 
@@ -114,6 +119,7 @@ class InventoryScanner:
         parse_cards_fn: Callable[[np.ndarray], dict[str, Any]] | None = None,
         parse_modules_fn: Callable[[np.ndarray], dict[str, Any]] | None = None,
         parse_detail_fn: Callable[[np.ndarray], dict[str, Any] | None] | None = None,
+        detect_mod_inv_fn: Callable[[np.ndarray], dict[str, Any]] | None = None,
     ) -> None:
         self._grab_verified_frame = grab_verified_frame
         self._check_foreground = check_foreground
@@ -129,6 +135,7 @@ class InventoryScanner:
         self._parse_cards_fn = parse_cards_fn
         self._parse_modules_fn = parse_modules_fn
         self._parse_detail_fn = parse_detail_fn
+        self._detect_mod_inv_fn = detect_mod_inv_fn
 
         self.running: bool = False
         self.queued: bool = False
@@ -164,6 +171,13 @@ class InventoryScanner:
         self._mod_slot_idx: int = 0
         self._mod_current_slot: str | None = None
         self._mod_current_base: dict[str, Any] = {}
+        self._mod_inv_page: int = 0
+        self._mod_inv_queue: list[dict[str, Any]] = []
+        self._mod_inv_taps: int = 0
+        self._mod_inv_has_lower: bool = False
+        self._mod_inv_prev_roi: np.ndarray | None = None
+        self._mod_seen_sigs: list[tuple[str, np.ndarray]] = []
+        self._mod_current_tile: dict[str, Any] | None = None
 
     def status(self) -> dict[str, Any]:
         return {
@@ -285,6 +299,9 @@ class InventoryScanner:
 
     def _parse_detail(self, frame: np.ndarray) -> dict[str, Any] | None:
         return self._parse_detail_fn(frame) if self._parse_detail_fn is not None else loadouts.parse_module_detail(frame)
+
+    def _detect_mod_inv(self, frame: np.ndarray) -> dict[str, Any]:
+        return self._detect_mod_inv_fn(frame) if self._detect_mod_inv_fn is not None else loadouts.detect_module_inventory_tiles(frame)
 
     def try_start_from_frame(self, frame: np.ndarray, now: float) -> bool:
         """Promote a queued scan to running once cleanly on home, cards, or modules."""
@@ -569,6 +586,8 @@ class InventoryScanner:
     def _step_modules(self, fresh: np.ndarray, input_display: int | None, now: float, get_screen: Callable[[], screens.Screen]) -> bool:
         if self._substate == "read_detail":
             return self._step_module_read_detail(fresh, input_display, now, get_screen)
+        if self._substate == "inv_read":
+            return self._step_module_inv_read(fresh, input_display, now, get_screen)
 
         try:
             screen = get_screen()
@@ -576,10 +595,10 @@ class InventoryScanner:
             self._record_failure(f"Modules identify failed: {exc}")
             return True
 
-        if self._substate == "verify_closed":
+        if self._substate in ("verify_closed", "inv_verify_closed"):
             if screen.name == "modules":
                 self._failures = 0
-                self._substate = "tap_slot"
+                self._substate = "tap_slot" if self._substate == "verify_closed" else "inv_tap"
             else:
                 if self._record_failure(f"Expected modules after closing detail, got {screen.name}"):
                     return True
@@ -622,7 +641,7 @@ class InventoryScanner:
         if self._substate == "tap_slot":
             if self._mod_slot_idx >= len(loadouts.MODULE_SLOT_ORDER):
                 self._mod_preset_idx += 1
-                self._substate = "preset_select" if self._mod_preset_idx < len(self._mod_presets) else "restore"
+                self._substate = "preset_select" if self._mod_preset_idx < len(self._mod_presets) else "inv_scan"
                 return False
 
             slot = loadouts.MODULE_SLOT_ORDER[self._mod_slot_idx]
@@ -643,11 +662,120 @@ class InventoryScanner:
             self._arm_delay(now)
             return True
 
+        if self._substate == "inv_scan":
+            rx, ry, rw, rh = detectors.scale_rect(_REF_MOD_INV_ROI, fresh.shape)
+            inv_roi = fresh[ry : ry + rh, rx : rx + rw].copy()
+            if self._mod_inv_page > 0 and self._mod_inv_prev_roi is not None and _roi_mad(self._mod_inv_prev_roi, inv_roi) < _CARD_STALL_MAD:
+                self._substate = "restore"
+                return False
+            self._mod_inv_prev_roi = inv_roi
+
+            detected = self._detect_mod_inv(fresh)
+            if self._mod_inv_page == 0 and int(detected.get("total_tiles") or 0) == 0:
+                self._substate = "restore"
+                return False
+            self._mod_inv_has_lower = bool(detected.get("has_lower_tier"))
+            queue: list[dict[str, Any]] = []
+            for tile in detected.get("tiles") or []:
+                if self._mod_inv_taps + len(queue) >= _MAX_MOD_INV_TAPS:
+                    break
+                rar = str(tile.get("rarity") or "")
+                sig = tile.get("sig")
+                if isinstance(sig, np.ndarray) and loadouts.is_duplicate_module_sig(rar, sig, self._mod_seen_sigs):
+                    continue
+                if isinstance(sig, np.ndarray):
+                    self._mod_seen_sigs.append((rar, sig))
+                queue.append(tile)
+            self._mod_inv_queue = queue
+            if queue:
+                self._substate = "inv_tap"
+            else:
+                return self._advance_mod_inv_page(fresh, input_display, now)
+
+        if self._substate == "inv_tap":
+            if not self._mod_inv_queue or self._mod_inv_taps >= _MAX_MOD_INV_TAPS:
+                return self._advance_mod_inv_page(fresh, input_display, now)
+            tile = self._mod_inv_queue.pop(0)
+            fh, fw = fresh.shape[:2]
+            sx, sy = fw / detectors.REF_W, fh / detectors.REF_H
+            cx, cy = int(round(tile["center"][0])), int(round(tile["center"][1]))
+            if not (
+                int(round(_REF_MOD_INV_X[0] * sx)) <= cx <= int(round(_REF_MOD_INV_X[1] * sx))
+                and int(round(_REF_MOD_INV_Y[0] * sy)) <= cy <= int(round(_REF_MOD_INV_Y[1] * sy))
+            ):
+                return False
+            if self._tap((cx, cy), fresh, reason=f"scan:module_inv_{self._mod_inv_taps}", input_display=input_display) is None:
+                self._record_failure("Tap refused for module inventory tile")
+                return True
+            self._mod_inv_taps += 1
+            self._mod_current_tile = tile
+            self._substate = "inv_read"
+            self.detail = f"Epic+ inventory · tile {self._mod_inv_taps}"
+            self.progress = f"Inventory page {self._mod_inv_page + 1}"
+            self._arm_delay(now)
+            return True
+
         if self._substate == "restore":
             if not self._ensure_preset(fresh, input_display, screen, self._orig_mod_preset, detail_prefix="Restoring", reason_prefix="scan:modules_restore", now=now):
                 return True
             self._advance_phase()
             return False
+        return True
+
+    def _advance_mod_inv_page(self, fresh: np.ndarray, input_display: int | None, now: float) -> bool:
+        if (
+            self._mod_inv_has_lower
+            or self._mod_inv_page + 1 >= _MAX_MOD_INV_PAGES
+            or self._mod_inv_taps >= _MAX_MOD_INV_TAPS
+        ):
+            self._substate = "restore"
+            return False
+        self._mod_inv_page += 1
+        self._substate = "inv_scan"
+        self.detail = f"Modules inventory · page {self._mod_inv_page + 1}"
+        self._swipe_inventory(fresh, input_display, direction="down", reason="scan:modules_scroll_down", now=now)
+        return True
+
+    def _step_module_inv_read(self, fresh: np.ndarray, input_display: int | None, now: float, get_screen: Callable[[], screens.Screen]) -> bool:
+        try:
+            detail = self._parse_detail(fresh)
+        except Exception as exc:
+            self._record_failure(f"Module inventory detail parse failed: {exc}")
+            return True
+        if detail is not None:
+            if _is_forbidden_detail(detail):
+                self._abort("Forbidden prompt detected on module popup", reason="forbidden_prompt")
+                return True
+            if detail.get("slug"):
+                tile_rar = (self._mod_current_tile or {}).get("rarity") or ""
+                self._account_store.record_module_item(
+                    {
+                        "slug": detail.get("slug"),
+                        "name": detail.get("name"),
+                        "slot": detail.get("slot") or "",
+                        "level": detail.get("level"),
+                        "rarity": detail.get("rarity") or tile_rar,
+                        "substats": list(detail.get("substats") or []),
+                    }
+                )
+            pt = self._safe_module_dismiss_point(detail.get("close_center"), fresh.shape)
+            if self._tap(pt, fresh, reason="scan:module_inv_close", input_display=input_display) is None:
+                self._record_failure("Tap refused dismissing module inventory detail")
+                return True
+            self._substate = "inv_verify_closed"
+            self._failures = 0
+            self._arm_delay(now)
+            return True
+        try:
+            scr = get_screen()
+        except Exception as exc:
+            self._record_failure(f"Identify failed on module inventory check: {exc}")
+            return True
+        if scr.name == "modules":
+            self._substate = "inv_tap"
+            self._failures = 0
+            return False
+        self._record_failure(f"Unexpected screen '{scr.name}' while reading module inventory detail")
         return True
 
     def _step_module_read_detail(self, fresh: np.ndarray, input_display: int | None, now: float, get_screen: Callable[[], screens.Screen]) -> bool:
