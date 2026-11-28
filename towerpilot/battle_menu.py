@@ -1431,6 +1431,13 @@ class BattleMenuRoutine:
                     }
                     self._account_store.record_module_slot(self._mod_preset, slot, merged)
                     self._seen_items.add(str(merged["slug"]))
+                else:
+                    self._log(
+                        f"Equipped module slot '{slot}' did not match catalog",
+                        event="module_slot_unmatched",
+                        slot=slot,
+                        popup_text=str(detail.get("popup_text") or "")[:240],
+                    )
                 pt = self._safe_mod_dismiss_pt(detail.get("close_center"), fresh.shape)
                 if self._safe_tap(pt, fresh, reason=f"battle_menu:mod_close_{slot}", input_display=disp) is None:
                     return self.active

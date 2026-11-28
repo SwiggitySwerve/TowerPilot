@@ -1002,6 +1002,9 @@ def parse_module_detail(
     popup_lines: list[str] = []
     forbidden_hits: list[str] = []
 
+    top_bar_y = int(round(200 * sy))
+    body_lines: list[tuple[int, int, str]] = []
+
     for y, x, text in lines:
         cleaned = " ".join(str(text).strip().split())
         if not cleaned:
@@ -1015,8 +1018,13 @@ def parse_module_detail(
                 if cleaned not in forbidden_hits:
                     forbidden_hits.append(cleaned)
 
+        # Ignore top currency/ticket status bar (e.g. '10' tickets) for popup fields
+        if iy < top_bar_y:
+            continue
+        body_lines.append((iy, int(x), cleaned))
+
         # Detect close 'X' button in top-right popup region
-        if close_center is None and cleaned.upper() in ("X", "×", "✕") and x >= int(round(680 * sx)) and y <= int(round(900 * sy)):
+        if close_center is None and cleaned.upper() in ("X", "×", "✕") and x >= int(round(680 * sx)) and iy <= int(round(900 * sy)):
             close_center = (int(x), iy)
 
         if hit is None:
@@ -1035,15 +1043,34 @@ def parse_module_detail(
                 rarity = _normalize_rarity(m_rar.group(1))
 
         if level is None:
-            lv = _parse_level_int(cleaned)
+            lv = _parse_level_int(cleaned, strict=True, max_val=500)
             if lv is None:
                 m_sl = _LEVEL_SLASH_RE.search(cleaned)
                 if m_sl:
-                    cand_lv = int(m_sl.group(1))
-                    if 1 <= cand_lv <= 500:
+                    cand_lv, cand_cap = int(m_sl.group(1)), int(m_sl.group(2))
+                    if 1 <= cand_lv <= 500 and cand_cap >= 40:
                         lv = cand_lv
             if lv is not None:
                 level = lv
+
+    # Fallback: join adjacent vertically stacked title lines in case a module name wrapped
+    if hit is None and len(body_lines) >= 2:
+        max_dy = max(12, int(round(60 * sy)))
+        for idx in range(len(body_lines) - 1):
+            y1, _x1, t1 = body_lines[idx]
+            y2, _x2, t2 = body_lines[idx + 1]
+            if 0 <= (y2 - y1) <= max_dy:
+                joined_title = f"{t1} {t2}"
+                for phrase in _candidate_phrases(joined_title):
+                    if wiki.match_name(phrase, category="topic", exact_only=True) is not None:
+                        break
+                    cand = wiki.match_name(phrase, category="module", exact_only=True) or wiki.match_name(phrase, category="module")
+                    if cand is not None:
+                        hit = cand
+                        name_y = y2
+                        break
+            if hit is not None:
+                break
 
     popup_text = "\n".join(popup_lines)
     forbidden = bool(forbidden_hits)
@@ -1098,7 +1125,14 @@ def parse_module_detail(
             continue
         if re.search(r"\b(UNIQUE\s+EFFECT|EQUIP|UNEQUIP|RESTORE|FAVORITE|REROLL|LEVEL\s+UP|UPGRADE|BUY|MERGE|SHATTER)\b", cleaned, re.IGNORECASE):
             continue
-        if _SUBSTAT_RE.search(cleaned) and re.search(r"[A-Za-z]{2,}", cleaned):
+        # Sub-module stats begin with '+' or '-' and are not prose sentences from Unique Effect descriptions
+        if (
+            cleaned.startswith(("+", "-"))
+            and not cleaned.endswith(".")
+            and ". " not in cleaned
+            and _SUBSTAT_RE.search(cleaned)
+            and re.search(r"[A-Za-z]{2,}", cleaned)
+        ):
             key = cleaned.lower()
             if key not in seen_sub:
                 seen_sub.add(key)

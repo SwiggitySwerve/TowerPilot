@@ -834,6 +834,23 @@ def test_detect_module_inventory_tiles_filters_epic_plus_and_dedupes_fodder(tmp_
     assert fodder["forbidden"] is False
     assert fodder["non_unique"] is True
 
+    # Top-bar ticket counter ('10' at y=110) must NOT hijack module level; Unique Effect prose excluded from substats
+    header_ticket_lines = [[
+        (110, 960, "10"),
+        (360, 240, "Primordial Collapse"),
+        (430, 260, "Legendary"),
+        (510, 260, "Lv.100"),
+        (720, 120, "Spawn +1 Black Hole. Reduces Damage of"),
+        (760, 120, "Enemies in Black Hole Range by 65%."),
+        (920, 120, "+10x Spotlight - Bonus"),
+        (960, 120, "+8m Black Hole - Size"),
+    ]]
+    pc = loadouts.parse_module_detail(frame, lines_fn=lambda crops: header_ticket_lines)
+    assert pc is not None
+    assert pc["slug"] == "module:primordial_collapse"
+    assert pc["level"] == 100
+    assert pc["substats"] == ["+10x Spotlight - Bonus", "+8m Black Hole - Size"]
+
     # AccountStore.record_module_item preserves higher rarity/level across dupes
     store = loadouts.AccountStore(tmp_path / "account.json")
     store.record_module_slot("Preset 1", "cannon", {"slug": "module:death_penalty", "name": "Death Penalty", "level": 137, "rarity": "Ancestral"})
