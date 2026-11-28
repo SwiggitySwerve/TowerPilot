@@ -855,19 +855,38 @@ def test_detect_module_inventory_tiles_filters_epic_plus_and_dedupes_fodder(tmp_
     assert pc["level"] == 100
     assert pc["substats"] == ["+10x Spotlight - Bonus", "+8m Black Hole - Size"]
 
-    # AccountStore.record_module_item preserves higher rarity/level across dupes
+    # AccountStore.record_module_item preserves higher rarity/level AND substats across dupes
     store = loadouts.AccountStore(tmp_path / "account.json")
-    store.record_module_slot("Preset 1", "cannon", {"slug": "module:death_penalty", "name": "Death Penalty", "level": 137, "rarity": "Ancestral"})
-    snap = store.record_module_item({"slug": "module:death_penalty", "name": "Death Penalty", "level": 1, "rarity": "Epic"})
+    store.record_module_slot(
+        "Preset 1",
+        "cannon",
+        {"slug": "module:death_penalty", "name": "Death Penalty", "level": 137, "rarity": "Ancestral", "substats": ["+5x Attack Speed"]},
+    )
+    snap = store.record_module_item(
+        {"slug": "module:death_penalty", "name": "Death Penalty", "level": 1, "rarity": "Epic", "substats": ["+1% Crit Chance"]}
+    )
     dp = {m["slug"]: m for m in snap["catalog"]["modules"]}["module:death_penalty"]
     assert dp["rarity"] == "Ancestral"
     assert dp["level"] == 137
+    assert dp["substats"] == ["+5x Attack Speed"]
     snap2 = store.record_module_item({"slug": "module:anti_cube_portal", "name": "Anti-Cube Portal", "level": 1, "rarity": "Epic+"})
     assert snap2["counts"]["modules_owned"] == 2
     acp = {m["slug"]: m for m in snap2["catalog"]["modules"]}["module:anti_cube_portal"]
     assert acp["owned"] is True
     assert acp["rarity"] == "Epic+"
     assert acp["equipped_in"] == []
+
+    # Dimmed background equipped slot ('Lv.137' at y=582) must NOT hijack inventory popup's real Lv.1 below title
+    bg_bleed_lines = [[
+        (582, 260, "Lv.137"),
+        (680, 260, "EPIC"),
+        (735, 240, "Galaxy Compressor"),
+        (820, 260, "Lv. 1 / 60"),
+        (1100, 120, "+0.3x Cash Bonus"),
+    ]]
+    gc_bg = loadouts.parse_module_detail(frame, lines_fn=lambda crops: bg_bleed_lines)
+    assert gc_bg is not None and gc_bg["slug"] == "module:galaxy_compressor"
+    assert gc_bg["rarity"] == "Epic" and gc_bg["level"] == 1
 
     # v29 unique modules & live OCR artifacts ('Lv. 136 1160', 'ANCESTRAL a', Solar Dyson Sphere as fodder)
     gs_lines = [[

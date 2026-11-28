@@ -1037,22 +1037,6 @@ def parse_module_detail(
                     name_y = iy
                     break
 
-        if not rarity:
-            m_rar = _RARITY_RE.search(cleaned)
-            if m_rar:
-                rarity = _normalize_rarity(m_rar.group(1))
-
-        if level is None:
-            lv = _parse_level_int(cleaned, strict=True, max_val=500)
-            if lv is None:
-                m_sl = _LEVEL_SLASH_RE.search(cleaned)
-                if m_sl:
-                    cand_lv, cand_cap = int(m_sl.group(1)), int(m_sl.group(2))
-                    if 1 <= cand_lv <= 500 and cand_cap >= 40:
-                        lv = cand_lv
-            if lv is not None:
-                level = lv
-
     # Fallback: join adjacent vertically stacked title lines in case a module name wrapped
     if hit is None and len(body_lines) >= 2:
         max_dy = max(12, int(round(60 * sy)))
@@ -1071,6 +1055,27 @@ def parse_module_detail(
                         break
             if hit is not None:
                 break
+
+    # Extract rarity & level relative to the popup title (`name_y`) so dimmed background
+    # equipped slot levels (e.g. Cannon Lv.137 at y=582) never bleed into inventory popups.
+    rar_min_y = (name_y - int(round(160 * sy))) if name_y is not None else top_bar_y
+    rar_max_y = (name_y + int(round(200 * sy))) if name_y is not None else fh
+    lv_min_y = name_y if name_y is not None else top_bar_y
+    for iy, _ix, cleaned in body_lines:
+        if not rarity and rar_min_y <= iy <= rar_max_y:
+            m_rar = _RARITY_RE.search(cleaned)
+            if m_rar:
+                rarity = _normalize_rarity(m_rar.group(1))
+        if level is None and iy >= lv_min_y:
+            lv = _parse_level_int(cleaned, strict=True, max_val=500)
+            if lv is None:
+                m_sl = _LEVEL_SLASH_RE.search(cleaned)
+                if m_sl:
+                    cand_lv, cand_cap = int(m_sl.group(1)), int(m_sl.group(2))
+                    if 1 <= cand_lv <= 500 and cand_cap >= 40:
+                        lv = cand_lv
+            if lv is not None:
+                level = lv
 
     popup_text = "\n".join(popup_lines)
     forbidden = bool(forbidden_hits)
@@ -1512,16 +1517,30 @@ class AccountStore:
         rarity: str,
         substats: list[str],
         now: float,
+        from_equipped: bool = False,
     ) -> None:
         prev = data["items"].get(slug) or {}
         prev_level = prev.get("level")
+        prev_rarity = str(prev.get("rarity") or "")
+        new_rank = _MODULE_RARITY_RANK.get(rarity.strip().lower(), -1) if rarity else -1
+        prev_rank = _MODULE_RARITY_RANK.get(prev_rarity.strip().lower(), -1) if prev_rarity else -1
+        is_better_or_eq = (
+            from_equipped
+            or not prev
+            or (new_rank > prev_rank)
+            or (new_rank == prev_rank and (level or 0) >= (prev_level or 0))
+        )
         eff_level = (
             max(int(prev_level), int(level))
             if (level is not None and prev_level is not None)
             else (level if level is not None else prev_level)
         )
-        eff_rarity = self._best_rarity(rarity, str(prev.get("rarity") or ""))
-        eff_substats = substats if substats else list(prev.get("substats") or [])
+        eff_rarity = self._best_rarity(rarity, prev_rarity)
+        prev_substats = list(prev.get("substats") or [])
+        if substats and (is_better_or_eq or not prev_substats):
+            eff_substats = substats
+        else:
+            eff_substats = prev_substats
         detail_bits = [b for b in (eff_rarity, f"Lv.{eff_level}" if eff_level is not None else "") if b]
         detail = " ".join(detail_bits) or prev.get("detail") or ""
 
@@ -1574,6 +1593,7 @@ class AccountStore:
                     rarity=rarity,
                     substats=substats,
                     now=now,
+                    from_equipped=False,
                 )
                 self._write_unlocked(data)
         return self.snapshot()
@@ -1618,6 +1638,7 @@ class AccountStore:
                     rarity=rarity,
                     substats=substats,
                     now=now,
+                    from_equipped=True,
                 )
 
             clean_preset = " ".join(preset_name.strip().split()) if preset_name else None
