@@ -590,6 +590,21 @@ def test_s1_live_coins_self_heals_from_bad_initial_baseline(tmp_path: Path, monk
     assert c2.current_coins_raw == "66.77T"
     assert c2.live_coins_per_hour == pytest.approx(5.0e12, rel=1e-2)
 
+    # Case 3 (S10): Established rate + two 100x decimal-drop misreads (6.62T -> 662T) must rebase, never inflate Coins/hr
+    c3 = GemCollector(frames, cfg, event_log_path=tmp_path / "events3.jsonl")
+    s3 = iter([
+        {"tier": 10, "coins": 6.62e12, "coins_raw": "6.62T", "tournament": False},
+        {"tier": 10, "coins": 6.80e12, "coins_raw": "6.80T", "tournament": False},
+        {"tier": 10, "coins": 662.0e12, "coins_raw": "662T", "tournament": False},
+        {"tier": 10, "coins": 662.0e12, "coins_raw": "662T", "tournament": False},
+    ])
+    monkeypatch.setattr(detectors, "read_battle_hud_meta", lambda f: next(s3))
+    c3._hud_meta_last_scan = 0.0
+    for idx, wall in enumerate((10000.0, 10360.0, 10380.0, 10400.0)):
+        monkeypatch.setattr(time, "time", lambda w=wall: w)
+        c3._step_hud_meta(frames.frame, 1000.0 + idx * 20.0)
+    assert c3.live_coins_per_hour is None  # Rebased cleanly instead of publishing ~6500T/hr fake earnings
+
 
 def test_p3_routine_countdown_is_none_off_battle_and_failed_start_backs_off(tmp_path: Path, monkeypatch):
     cfg = copy.deepcopy(DEFAULT_CONFIG)

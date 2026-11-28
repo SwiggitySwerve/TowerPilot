@@ -1369,13 +1369,15 @@ class GemCollector:
                     return
                 self._high_coins_streak = 0
                 self._pending_coin_val = None
-                if self.live_coins_per_hour is None:
-                    # Confirmed much higher than unestablished baseline -> rebase cleanly rather than faking earnings
-                    self._run_start_coins = cval
-                    self._run_start_coins_at = now_wall
-                    self.current_coins = cval
-                    self.current_coins_raw = fmt_raw
-                    return
+                # Confirmed upward jump (>1.5x): always rebase cleanly so a decimal-drop misread
+                # (e.g. 6.62T -> 662T twice) never inflates Coins/hr as fake earnings.
+                self._run_start_coins = cval
+                self._run_start_coins_at = now_wall
+                self.current_coins = cval
+                self.current_coins_raw = fmt_raw
+                self.live_coins_per_hour = None
+                self.live_coins_per_hour_fmt = None
+                return
 
             self._low_coins_streak = 0
             self._high_coins_streak = 0

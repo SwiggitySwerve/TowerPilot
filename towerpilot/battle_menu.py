@@ -807,7 +807,7 @@ class BattleMenuRoutine:
         menu_state = detectors.side_menu_state(frame)
         forbidden: list[tuple[int, int, int, int]] = []
         # Keep EXIT BATTLE & STORE fences unconditional; exempt only header-verified Guild 750 chest
-        if not (allow_guild_750_chest and menu_state == "obscured"):
+        if not (allow_guild_750_chest and guild_guard and menu_state == "obscured"):
             forbidden.append(REF_FORBIDDEN_EXIT)
         if not allow_close_toggle:
             forbidden.append(REF_FORBIDDEN_STORE)
