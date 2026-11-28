@@ -63,17 +63,13 @@ REF_FORBIDDEN_EXIT = (850, 640, 230, 110)
 REF_FORBIDDEN_GUILD_LEAVE = (840, 440, 240, 100)
 REF_FORBIDDEN_GUILD_STORE = (620, 235, 330, 105)
 
-VALID_TASKS = ("history", "cards", "modules", "workshop", "daily_quests", "guild_rewards")
+VALID_TASKS = ("history", "cards", "modules", "daily_quests", "guild_rewards")
 
 _STEP_DELAY_SEC = 1.0
 _MAX_FAILURES = 4
 _MAX_SCROLL_PAGES = 3
-_MAX_WORKSHOP_SCROLLS = 7
-_MAX_UW_SCROLLS = 3
-_WORKSHOP_SCROLL_TOP_SWIPES = 3
 _MAX_CLAIMS_PER_RUN = 10
 _MAX_RETURN_ATTEMPTS = 4
-_WORKSHOP_TAB_ORDER = ("attack", "defense", "utility", "uw")
 
 _TASK_ICON_RECTS: dict[str, tuple[int, int, int, int]] = {
     "history": REF_MENU_HISTORY,
@@ -87,7 +83,6 @@ _TASK_LABELS: dict[str, str] = {
     "history": "Battle History",
     "cards": "Cards",
     "modules": "Modules",
-    "workshop": "Workshop & UWs",
     "daily_quests": "Daily Quests",
     "guild_rewards": "Guild Rewards",
 }
@@ -654,21 +649,13 @@ class BattleMenuRoutine:
                 raise RuntimeError(f"Battle Menu routine already running ({self.task})")
             self.active = True
             self.task = task
-            self.phase = "workshop_scan" if task == "workshop" else "open_menu"
-            self.detail = (
-                "Scanning Workshop & UWs in battle"
-                if task == "workshop"
-                else f"Opening Battle Menu for {_TASK_LABELS[task]}"
-            )
+            self.phase = "open_menu"
+            self.detail = f"Opening Battle Menu for {_TASK_LABELS[task]}"
             self.error = None
             self._next_step_at = 0.0
             self._failures = 0
             self._return_attempts = 0
             self._page = 0
-            self._workshop_tab_idx = 0
-            self._workshop_tab_pages = 0
-            self._workshop_top_swipes = 0
-            self._workshop_seen_uws: set[str] = set()
             self._claims_done = 0
             self._claim_attempts = 0
             self._pending_claim = None
@@ -905,9 +892,6 @@ class BattleMenuRoutine:
             if now < self._next_step_at:
                 return True
 
-            if self.phase == "workshop_scan":
-                return self._step_workshop_scan(now)
-
             if self.phase == "open_menu":
                 grabbed = self._verified_grab_and_fg()
                 if grabbed is None:
@@ -1029,11 +1013,6 @@ class BattleMenuRoutine:
                 {"modules_seen": len(self._seen_items)},
                 f"Modules scanned in battle ({len(self._seen_items)} modules)",
             )
-        if task == "workshop":
-            return self._finish(
-                {"workshop_seen": len(self._seen_items), "uws_seen": len(self._workshop_seen_uws)},
-                f"Workshop & UWs scanned ({len(self._seen_items)} upgrades, {len(self._workshop_seen_uws)} UWs)",
-            )
         if task == "daily_quests":
             return self._finish(
                 {"claimed": self._claims_done},
@@ -1078,115 +1057,6 @@ class BattleMenuRoutine:
                 total_contribution=pending.get("total_contribution"),
                 count=self._claims_done,
             )
-
-    def _step_workshop_scan(self, now: float) -> bool:
-        """Read unlocked Attack/Defense/Utility Workshop upgrades & UWs from the live battle bottom panel.
-
-        Never taps inside buyable upgrade tiles — only taps bottom tab icons (only when switching
-        away from the active tab so it never collapses the panel) and drags to scroll vertically.
-        """
-        grabbed = self._verified_grab_and_fg()
-        if grabbed is None:
-            return self.active
-        fresh, disp = grabbed
-        mstate = detectors.side_menu_state(fresh)
-        if mstate == "obscured":
-            return self._abort("battle HUD obscured during workshop scan")
-        if mstate == "open":
-            rect = detectors.scale_rect(REF_MENU_CLOSE, fresh.shape)
-            pt = detectors.sample_interior_point(rect, inset_px=12)
-            self._safe_tap(pt, fresh, reason="battle_menu:close_for_workshop", input_display=disp, allow_close_toggle=True)
-            self._next_step_at = now + 0.8
-            return self.active
-
-        # Done walking all 4 tabs -> restore Attack tab and finish
-        if self._workshop_tab_idx >= len(_WORKSHOP_TAB_ORDER):
-            cur_tab = loadouts.detect_battle_workshop_tab(fresh)
-            if cur_tab != "attack":
-                rect = detectors.scale_rect(loadouts.REF_WORKSHOP_TABS["attack"], fresh.shape)
-                pt = detectors.sample_interior_point(rect, inset_px=16)
-                self._tap(pt, fresh, reason="battle_menu:workshop_restore_attack", input_display=disp)
-                self._next_step_at = now + 0.6
-                return True
-            return self._complete_current_task()
-
-        target_tab = _WORKSHOP_TAB_ORDER[self._workshop_tab_idx]
-        cur_tab = loadouts.detect_battle_workshop_tab(fresh)
-        if cur_tab != target_tab:
-            rect = detectors.scale_rect(loadouts.REF_WORKSHOP_TABS[target_tab], fresh.shape)
-            pt = detectors.sample_interior_point(rect, inset_px=16)
-            res = self._tap(pt, fresh, reason=f"battle_menu:workshop_tab_{target_tab}", input_display=disp)
-            if res is None:
-                self._failures += 1
-                if self._failures >= _MAX_FAILURES:
-                    return self._abort(f"could not switch to workshop tab '{target_tab}'")
-            else:
-                self._failures = 0
-                self.detail = f"Opening {target_tab.title()} upgrades"
-            self._next_step_at = now + self._step_delay_sec
-            return True
-
-        # Scroll to top of each tab first so previously scrolled-down panels never miss top items
-        if self._workshop_tab_pages == 0 and self._workshop_top_swipes < _WORKSHOP_SCROLL_TOP_SWIPES:
-            sx = fresh.shape[1] / float(detectors.REF_W)
-            sy = fresh.shape[0] / float(detectors.REF_H)
-            self._swipe(
-                (int(round(540 * sx)), int(round(1940 * sy))),
-                (int(round(540 * sx)), int(round(2360 * sy))),
-                fresh,
-                duration_ms=260,
-                reason=f"battle_menu:workshop_top_{target_tab}_{self._workshop_top_swipes}",
-                input_display=disp,
-            )
-            self._workshop_top_swipes += 1
-            self.detail = f"Scrolling {target_tab.title()} to top"
-            self._next_step_at = now + 0.45
-            return True
-
-        # Active tab matches target_tab -> OCR visible items & merge into AccountStore
-        parsed = loadouts.parse_battle_workshop_panel(fresh, tab=target_tab, lines_fn=self._lines_fn)
-        items = parsed.get("items") or []
-        new_count = 0
-        for it in items:
-            slug = str(it.get("slug") or "")
-            if not slug:
-                continue
-            if target_tab == "uw":
-                if slug not in self._workshop_seen_uws:
-                    self._workshop_seen_uws.add(slug)
-                    new_count += 1
-            else:
-                if slug not in self._seen_items:
-                    self._seen_items.add(slug)
-                    new_count += 1
-        if items:
-            self._account_store.record_workshop_scan(items)
-
-        self._workshop_tab_pages += 1
-        self._failures = 0
-        self.detail = f"Scanning {target_tab.title()} (page {self._workshop_tab_pages}, {len(self._seen_items)} upgrades, {len(self._workshop_seen_uws)} UWs)"
-
-        max_scrolls = _MAX_UW_SCROLLS if target_tab == "uw" else _MAX_WORKSHOP_SCROLLS
-        if self._workshop_tab_pages < max_scrolls and (new_count > 0 or self._workshop_tab_pages == 1):
-            sx = fresh.shape[1] / float(detectors.REF_W)
-            sy = fresh.shape[0] / float(detectors.REF_H)
-            self._swipe(
-                (int(round(540 * sx)), int(round(2340 * sy))),
-                (int(round(540 * sx)), int(round(1940 * sy))),
-                fresh,
-                duration_ms=420,
-                reason=f"battle_menu:scroll_workshop_{target_tab}_{self._workshop_tab_pages}",
-                input_display=disp,
-            )
-            self._next_step_at = now + 0.65
-            return True
-
-        # Advance to next tab
-        self._workshop_tab_idx += 1
-        self._workshop_tab_pages = 0
-        self._workshop_top_swipes = 0
-        self._next_step_at = now + 0.4
-        return True
 
     def _step_work(self, now: float) -> bool:
         grabbed = self._verified_grab_and_fg()

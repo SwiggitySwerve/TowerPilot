@@ -529,7 +529,7 @@ def test_p2_7_merged_chest_lines_map_distinct_rects_and_unverified_claims_not_co
 
 def test_workshop_panel_parser_and_account_store_recording(tmp_path: Path):
     frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
-    # Bright pixels in header & panel body
+    # Bright pixels in header & panel body (off-battle: no side-menu toggle at top-right)
     frame[1800:1880, 20:400] = 220
     frame[1900:2380, 20:1040] = 220
 
@@ -556,12 +556,88 @@ def test_workshop_panel_parser_and_account_store_recording(tmp_path: Path):
     assert "workshop:damage_meter" in slugs
 
     store = loadouts.AccountStore(tmp_path / "account.json")
-    snap = store.record_workshop_scan(parsed["items"])
+    # Battle-sourced workshop/UW writes are strictly rejected
+    with pytest.raises(ValueError, match="live-battle"):
+        store.record_workshop_scan(parsed["items"], source="battle")
+
+    snap = store.record_workshop_scan(parsed["items"], source="home")
     assert snap["counts"]["workshop_owned"] == 4
     assert snap["counts"]["workshop_total"] == 48
     ws_map = {w["slug"]: w for w in snap["catalog"]["workshop"]}
     assert ws_map["workshop:damage"]["owned"] is True
     assert ws_map["workshop:damage"]["maxed"] is True
     assert ws_map["workshop:rend_armor_chance"]["owned"] is False
+
+
+def test_never_records_battle_perks_or_in_battle_workshop_as_base_unlocks(tmp_path: Path):
+    import threading
+
+    live_frame = _battle_frame(menu_open=False)
+    store = loadouts.AccountStore(tmp_path / "account.json")
+    hist = battle_menu.BattleHistoryStore(tmp_path / "history.json")
+    ctrl = battle_menu.BattleMenuRoutine(
+        grab_verified_frame=lambda: (live_frame.copy(), None),
+        check_foreground=lambda disp: (True, ""),
+        tap=lambda *a, **k: {"ok": True},
+        swipe=lambda *a, **k: {"ok": True},
+        log=lambda *a, **k: None,
+        notify=lambda *a, **k: None,
+        stop_event=threading.Event(),
+        account_store=store,
+        history_store=hist,
+    )
+    # 1) BattleMenuController rejects 'workshop' task (never scrapes live battle panel)
+    with pytest.raises(ValueError):
+        ctrl.start("workshop", battle_live=True)
+
+    # 2) Live battle frame (menu toggle visible) is ignored by observe_frame() and parse_battle_workshop_panel()
+    obs_battle = loadouts.observe_frame(
+        live_frame,
+        lines_fn=lambda crops: [[(1820, 40, "ULTIMATE WEAPONS"), (1950, 80, "Poison Swamp"), (2050, 80, "Inner Land Mines")]],
+    )
+    assert obs_battle["screen"] == "battle"
+    assert obs_battle["items"] == []
+
+    parsed_battle = loadouts.parse_battle_workshop_panel(
+        live_frame,
+        tab="uw",
+        lines_fn=lambda crops: [[(80, 80, "Poison Swamp")]],
+    )
+    assert parsed_battle["items"] == []
+
+    # 3) Off-battle Home Workshop & Home UWs screens record permanently unlocked items while skipping locked UNLOCK rows
+    home_frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    obs_ws = loadouts.observe_frame(
+        home_frame,
+        lines_fn=lambda crops: [[
+            (1820, 40, "ATTACK UPGRADES"),
+            (1940, 60, "Damage"),
+            (1960, 260, "Lv.1500"),
+            (2120, 60, "Rend Armor Chance"),
+            (2140, 240, "UNLOCK 500B"),
+        ]],
+    )
+    assert obs_ws["screen"] == "workshop"
+    ws_slugs = {it["slug"] for it in obs_ws["items"]}
+    assert "workshop:damage" in ws_slugs
+    assert "workshop:rend_armor_chance" not in ws_slugs
+
+    obs_uw = loadouts.observe_frame(
+        home_frame,
+        lines_fn=lambda crops: [[
+            (1820, 40, "ULTIMATE WEAPONS"),
+            (1940, 60, "Golden Tower"),
+            (2080, 60, "Golden Combo"),
+            (2220, 60, "Unlock New Ultimate Weapon"),
+        ]],
+    )
+    assert obs_uw["screen"] == "ultimate_weapons"
+    uw_slugs = {it["slug"] for it in obs_uw["items"]}
+    assert "uw:golden_tower" in uw_slugs
+    assert "uw_plus:golden_combo" in uw_slugs
+    snap = store.merge_observation(obs_uw)
+    assert snap["counts"]["uws_owned"] == 1
+    assert snap["counts"]["uw_plus_owned"] == 1
+
 
 

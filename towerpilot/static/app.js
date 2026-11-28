@@ -2364,7 +2364,7 @@ function render(data) {
     if (lastBattleMenuTask === "history") {
       fetchRuns();
       fetchMetrics();
-    } else if (lastBattleMenuTask === "cards" || lastBattleMenuTask === "modules" || lastBattleMenuTask === "workshop") {
+    } else if (lastBattleMenuTask === "cards" || lastBattleMenuTask === "modules") {
       fetchAccount();
     }
   }
@@ -2656,12 +2656,6 @@ if ($("inBattleCardsBtn")) {
 }
 if ($("inBattleModulesBtn")) {
   $("inBattleModulesBtn").addEventListener("click", () => runBattleMenuRoutine("modules", "Modules scan"));
-}
-if ($("inBattleWorkshopBtn")) {
-  $("inBattleWorkshopBtn").addEventListener("click", () => runBattleMenuRoutine("workshop", "Workshop & UWs scan"));
-}
-if ($("runWorkshopBtn")) {
-  $("runWorkshopBtn").addEventListener("click", () => runBattleMenuRoutine("workshop", "Workshop & UWs scan"));
 }
 if ($("syncHistoryBtn")) {
   $("syncHistoryBtn").addEventListener("click", () => runBattleMenuRoutine("history", "Battle History sync"));

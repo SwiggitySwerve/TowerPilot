@@ -121,6 +121,8 @@ def _classify_screen(lines: list[tuple[int, int, str]]) -> str:
         return "game_stats"
     if "ULTIMATE WEAPON" in joined:
         return "ultimate_weapons"
+    if any(hdr in joined for hdr in ("ATTACK UPGRADE", "DEFENSE UPGRADE", "UTILITY UPGRADE")):
+        return "workshop"
     if "SHATTER" in joined or "MERGE" in joined or "BUY MODULE" in joined or "MODULES" in joined:
         return "modules"
     if "CARDS" in joined or "BUY CARD" in joined or "EQUIPPED" in joined:
@@ -167,20 +169,37 @@ def observe_frame(
     lines_fn: Callable[[list[np.ndarray]], list[list[tuple[int, int, str]]]] | None = None,
     timeout: float = 4.0,
 ) -> dict[str, Any]:
-    """Read positioned OCR lines on `frame` and match known game items (zero taps)."""
+    """Read positioned OCR lines on `frame` and match known game items (zero taps).
+
+    Never reads live-battle HUD panels (Workshop / Ultimate Weapons) into permanent
+    base inventory — battle perks (e.g. Unlock Random Ultimate Weapon) and in-run
+    upgrades do not represent base account unlocks.
+    """
     if frame is None or frame.ndim != 3:
         raise ValueError("Valid frame required")
+
+    # Never infer permanent base unlocks from an active battle HUD
+    if detectors.menu_toggle_visible(frame):
+        return {
+            "screen": "battle",
+            "observed_at": round(time.time(), 1),
+            "tier": None,
+            "presets": [],
+            "items": [],
+            "line_count": 0,
+        }
 
     reader = lines_fn if lines_fn is not None else (lambda items: ocr.read_lines(items, scale=1.5, timeout=timeout))
     batches = reader([frame])
     lines = batches[0] if batches else []
 
     screen = _classify_screen(lines)
-    preferred_cat: str | None = {
-        "cards": "card",
-        "modules": "module",
-        "ultimate_weapons": "uw",
-    }.get(screen)
+    preferred_cats: tuple[str, ...] = {
+        "cards": ("card",),
+        "modules": ("module",),
+        "ultimate_weapons": ("uw", "uw_plus"),
+        "workshop": ("workshop",),
+    }.get(screen, ())
 
     tier: int | None = None
     presets: list[str] = []
@@ -195,8 +214,8 @@ def observe_frame(
             if label not in presets:
                 presets.append(label)
 
-        # Only record loadout items from recognized loadout screens (never from battle HUD or Home)
-        if preferred_cat is None:
+        # Only record loadout items from recognized off-battle loadout/workshop screens
+        if not preferred_cats:
             continue
 
         nearby = [
@@ -204,6 +223,11 @@ def observe_frame(
             for j, (oy, ox, other_text) in enumerate(lines)
             if j != idx and abs(oy - y) <= 90 and abs(ox - x) <= 260
         ]
+        # Skip locked items / "Unlock New ..." buttons on off-battle Workshop / UW screens
+        if screen in ("workshop", "ultimate_weapons"):
+            local_text = " ".join([text] + nearby)
+            if re.search(r"\b(?:UNLOCK|LOCKED)\b", local_text, re.IGNORECASE):
+                continue
 
         hit: wiki.IndexItem | None = None
         for phrase in _candidate_phrases(text):
@@ -211,10 +235,16 @@ def observe_frame(
             if wiki.match_name(phrase, category="topic", exact_only=True) is not None:
                 hit = None
                 break
-            hit = wiki.match_name(phrase, category=preferred_cat, exact_only=True)
+            for cat in preferred_cats:
+                hit = wiki.match_name(phrase, category=cat, exact_only=True)
+                if hit is not None:
+                    break
             if hit is not None:
                 break
-            hit = wiki.match_name(phrase, category=preferred_cat)
+            for cat in preferred_cats:
+                hit = wiki.match_name(phrase, category=cat)
+                if hit is not None:
+                    break
             if hit is not None:
                 break
 
@@ -976,11 +1006,13 @@ def parse_battle_workshop_panel(
     lines_fn: Callable[[list[np.ndarray]], list[list[tuple[int, int, str]]]] | None = None,
     header_ocr_fn: Callable[[list[np.ndarray]], list[str]] | None = None,
 ) -> dict[str, Any]:
-    """Read unlocked Workshop Upgrades (or Ultimate Weapons) from the live battle bottom panel.
+    """Read unlocked Workshop Upgrades (or Ultimate Weapons) from an off-battle Home Workshop panel.
 
-    Groups multi-line tile labels in the left (x < 290) and right (x in 540..820) columns
-    and matches each tile against the canonical catalog for the active tab.
+    Refuses to scrape live-battle frames (`menu_toggle_visible`) so in-run perks
+    (e.g. Unlock Random Ultimate Weapon) and in-run cash upgrades never pollute base unlocks.
     """
+    if frame is None or frame.ndim != 3 or detectors.menu_toggle_visible(frame):
+        return {"tab": None, "items": []}
     active_tab = tab or detect_battle_workshop_tab(frame, ocr_fn=header_ocr_fn)
     if active_tab not in ("attack", "defense", "utility", "uw"):
         return {"tab": active_tab, "items": []}
@@ -1255,6 +1287,9 @@ class AccountStore:
         return out
 
     def merge_observation(self, obs: dict[str, Any]) -> dict[str, Any]:
+        # Never mutate base account unlocks from a live battle HUD frame
+        if str(obs.get("screen") or "").strip().lower() == "battle":
+            return self.snapshot()
         with self._lock:
             data = self._read_unlocked()
             now = obs.get("observed_at") or round(time.time(), 1)
@@ -1271,6 +1306,7 @@ class AccountStore:
 
             for item in obs.get("items") or []:
                 slug = item["slug"]
+                meta = wiki.BY_SLUG.get(slug)
                 prev = data["items"].get(slug) or {}
                 detail = item.get("detail") or prev.get("detail") or ""
                 m_rar = _RARITY_RE.search(detail)
@@ -1285,6 +1321,8 @@ class AccountStore:
                         "slug": slug,
                         "name": item["name"],
                         "category": item["category"],
+                        "slot": (meta.slot if meta else prev.get("slot", "")),
+                        "owned": True,
                         "detail": detail,
                         "rarity": rarity,
                         "level": lv,
@@ -1473,13 +1511,15 @@ class AccountStore:
             self._write_unlocked(data)
         return self.snapshot()
 
-    def record_workshop_scan(self, items: list[dict[str, Any]]) -> dict[str, Any]:
-        """Record unlocked Workshop Upgrades (and/or Ultimate Weapons) observed in the battle panel."""
+    def record_workshop_scan(self, items: list[dict[str, Any]], *, source: str = "home") -> dict[str, Any]:
+        """Record permanently unlocked base Workshop Upgrades / UWs from out-of-battle Home Workshop."""
+        if str(source).strip().lower() == "battle":
+            raise ValueError("Cannot record live-battle Workshop/UW state as base account unlocks")
         with self._lock:
             data = self._read_unlocked()
             now = round(time.time(), 1)
             data["updated_at"] = now
-            data["last_screen"] = "workshop"
+            data["last_screen"] = "home_workshop"
             for item in items or []:
                 slug = item.get("slug")
                 meta = wiki.BY_SLUG.get(slug) if slug else None
@@ -1499,7 +1539,7 @@ class AccountStore:
                         "maxed": maxed,
                         "detail": detail,
                         "last_seen": now,
-                        "screen": "workshop",
+                        "screen": "home_workshop",
                     }
                 )
                 data["items"][slug] = merged_item

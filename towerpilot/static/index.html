@@ -189,7 +189,6 @@
                   <div class="routine-controls">
                     <button id="runCardsBtn" class="mini-btn" type="button" title="Open Cards from Battle Menu &amp; inventory">Cards</button>
                     <button id="runModulesBtn" class="mini-btn" type="button" title="Open Modules from Battle Menu &amp; inventory">Modules</button>
-                    <button id="runWorkshopBtn" class="mini-btn" type="button" title="Scan Workshop Upgrades &amp; UWs in battle">Workshop</button>
                   </div>
                 </div>
               </div>
@@ -375,15 +374,14 @@
                 <button id="scanInventoryBtn" class="primary-btn" type="button" title="Automated inventory scan across Cards and Modules">Scan Presets</button>
                 <button id="inBattleCardsBtn" class="mini-btn cyan" type="button" title="View Cards via Battle Menu (works in battle)">Cards</button>
                 <button id="inBattleModulesBtn" class="mini-btn cyan" type="button" title="View Modules via Battle Menu (works in battle)">Mods</button>
-                <button id="inBattleWorkshopBtn" class="mini-btn cyan" type="button" title="Scan Workshop Upgrades &amp; UWs live in battle">Workshop</button>
-                <button id="observeBtn" class="mini-btn" type="button" title="Quick zero-tap single-screen read">Observe</button>
+                <button id="observeBtn" class="mini-btn" type="button" title="Zero-tap read on out-of-battle Home Workshop, UWs, Cards, or Modules">Observe</button>
                 <button id="resetAccountBtn" class="mini-btn" type="button" title="Clear observed loadout">Clear</button>
               </div>
               <div id="scanBanner" class="alert-banner loadout-scan-banner cyan" hidden>
                 <span id="scanBannerText" class="scan-banner-text">Scanning inventory&hellip;</span>
                 <button id="cancelScanBtn" class="mini-btn" type="button">Cancel</button>
               </div>
-              <div id="observeMeta" class="gem-status">Scan inventory or open Cards/Modules/Workshop/UWs.</div>
+              <div id="observeMeta" class="gem-status">Base unlocks only &mdash; Workshop &amp; UWs are read from Home between runs (never live battle perks).</div>
               <div class="loadout-filters">
                 <div id="loadoutOwnerFilter" class="mini-seg" role="group" aria-label="Ownership filter">
                   <button type="button" data-filter="all" aria-pressed="true" class="active">All</button>
@@ -444,7 +442,7 @@
                   <span id="workshopCount" class="gem-count">0/48</span>
                 </div>
                 <div id="loadoutWorkshop" class="catalog-tables">
-                  <span class="ledger-empty">Click Workshop to scan unlocked battle upgrades.</span>
+                  <span class="ledger-empty">Open Home Workshop between runs and click Observe (never pulled from battle).</span>
                 </div>
               </div>
             </div>
