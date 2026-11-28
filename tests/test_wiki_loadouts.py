@@ -665,7 +665,7 @@ def test_account_store_enriched_catalog_and_presets(tmp_path: Path):
     assert gc["owned"] is True
     assert gc["slot"] == "generator"
     assert gc["rarity"] == "Ancestral"
-    assert gc["level"] == 132
+    assert gc["level"] is None  # level lives on the preset slot (asserted above), not the module
     assert gc["substats"] == ["+8% Package Chance"]
     assert gc["equipped_in"] == ["Preset 1"]
 
@@ -855,7 +855,7 @@ def test_detect_module_inventory_tiles_filters_epic_plus_and_dedupes_fodder(tmp_
     assert pc["level"] == 100
     assert pc["substats"] == ["+10x Spotlight - Bonus", "+8m Black Hole - Size"]
 
-    # AccountStore.record_module_item preserves higher rarity/level AND substats across dupes
+    # AccountStore.record_module_item preserves higher rarity AND substats across dupes
     store = loadouts.AccountStore(tmp_path / "account.json")
     store.record_module_slot(
         "Preset 1",
@@ -867,7 +867,10 @@ def test_detect_module_inventory_tiles_filters_epic_plus_and_dedupes_fodder(tmp_
     )
     dp = {m["slug"]: m for m in snap["catalog"]["modules"]}["module:death_penalty"]
     assert dp["rarity"] == "Ancestral"
-    assert dp["level"] == 137
+    # Modules have no level; only the player's slot does (kept on the preset slot entry)
+    assert dp.get("level") is None
+    assert "Lv." not in str(dp.get("detail") or "")
+    assert snap["module_presets"]["Preset 1"]["cannon"]["level"] == 137
     assert dp["substats"] == ["+5x Attack Speed"]
     snap2 = store.record_module_item({"slug": "module:anti_cube_portal", "name": "Anti-Cube Portal", "level": 1, "rarity": "Epic+"})
     assert snap2["counts"]["modules_owned"] == 2
@@ -875,6 +878,13 @@ def test_detect_module_inventory_tiles_filters_epic_plus_and_dedupes_fodder(tmp_
     assert acp["owned"] is True
     assert acp["rarity"] == "Epic+"
     assert acp["equipped_in"] == []
+
+    # Blue Rare / grey Common inventory popups are never recorded as owned (Epic+ inventory only)
+    snap3 = store.record_module_item({"slug": "module:om_chip", "name": "Om Chip", "level": 20, "rarity": "Rare"})
+    snap3 = store.record_module_item({"slug": "module:sharp_fortitude", "name": "Sharp Fortitude", "level": 5, "rarity": "Common"})
+    assert snap3["counts"]["modules_owned"] == 2
+    owned3 = {m["slug"] for m in snap3["catalog"]["modules"] if m["owned"]}
+    assert "module:om_chip" not in owned3 and "module:sharp_fortitude" not in owned3
 
     # Dimmed background equipped slot ('Lv.137' at y=582) must NOT hijack inventory popup's real Lv.1 below title
     bg_bleed_lines = [[

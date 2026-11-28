@@ -781,7 +781,6 @@ class InventoryScanner:
                         "slug": detail.get("slug"),
                         "name": detail.get("name"),
                         "slot": detail.get("slot") or "",
-                        "level": detail.get("level"),
                         "rarity": detail.get("rarity") or tile_rar,
                         "substats": list(detail.get("substats") or []),
                     }
@@ -824,7 +823,8 @@ class InventoryScanner:
                 "slug": detail.get("slug"),
                 "name": detail.get("name"),
                 "slot": detail.get("slot") or slot,
-                "level": detail.get("level") if detail.get("level") is not None else base.get("level"),
+                # Slot level (player's slot, read off the Modules screen); modules have no level
+                "level": base.get("level") if base.get("level") is not None else detail.get("level"),
                 "rarity": detail.get("rarity") or base.get("rarity") or "",
                 "substats": list(detail.get("substats") or []),
             }

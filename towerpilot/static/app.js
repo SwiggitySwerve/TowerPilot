@@ -1212,14 +1212,8 @@ function formatCatalogDetail(item, category) {
     return item.detail ? String(item.detail) : "";
   }
   if (category === "module") {
-    const parts = [];
-    if (item.level !== null && item.level !== undefined && Number(item.level) > 0) {
-      parts.push(`Lv.${item.level}`);
-    }
-    if (item.rarity) {
-      parts.push(String(item.rarity));
-    }
-    if (parts.length > 0) return parts.join(" ");
+    // Modules have no level; only the player's slot does (shown on the preset slots).
+    if (item.rarity) return String(item.rarity);
     return item.detail ? String(item.detail) : "";
   }
   if (item.detail) return String(item.detail);

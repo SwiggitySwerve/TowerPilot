@@ -1361,6 +1361,8 @@ class AccountStore:
                 lv = _parse_level_int(detail, strict=True, max_val=5000)
                 if lv is None:
                     lv = prev.get("level")
+                if item["category"] == "module":
+                    lv = None  # modules have no level; only the player's slot does
                 maxed = bool(re.search(r"\bMAX\b", detail, re.IGNORECASE)) or bool(prev.get("maxed"))
                 merged_item = dict(prev)
                 merged_item.update(
@@ -1513,36 +1515,24 @@ class AccountStore:
         slug: str,
         name: str,
         slot: str,
-        level: int | None,
         rarity: str,
         substats: list[str],
         now: float,
         from_equipped: bool = False,
     ) -> None:
+        # Modules carry no level of their own; only the player's slot has one (module_presets).
         prev = data["items"].get(slug) or {}
-        prev_level = prev.get("level")
         prev_rarity = str(prev.get("rarity") or "")
         new_rank = _MODULE_RARITY_RANK.get(rarity.strip().lower(), -1) if rarity else -1
         prev_rank = _MODULE_RARITY_RANK.get(prev_rarity.strip().lower(), -1) if prev_rarity else -1
-        is_better_or_eq = (
-            from_equipped
-            or not prev
-            or (new_rank > prev_rank)
-            or (new_rank == prev_rank and (level or 0) >= (prev_level or 0))
-        )
-        eff_level = (
-            max(int(prev_level), int(level))
-            if (level is not None and prev_level is not None)
-            else (level if level is not None else prev_level)
-        )
+        is_better_or_eq = from_equipped or not prev or new_rank >= prev_rank
         eff_rarity = self._best_rarity(rarity, prev_rarity)
         prev_substats = list(prev.get("substats") or [])
         if substats and (is_better_or_eq or not prev_substats):
             eff_substats = substats
         else:
             eff_substats = prev_substats
-        detail_bits = [b for b in (eff_rarity, f"Lv.{eff_level}" if eff_level is not None else "") if b]
-        detail = " ".join(detail_bits) or prev.get("detail") or ""
+        detail = eff_rarity
 
         merged_item = dict(prev)
         merged_item.update(
@@ -1552,7 +1542,7 @@ class AccountStore:
                 "category": "module",
                 "slot": slot or prev.get("slot") or "",
                 "owned": True,
-                "level": eff_level,
+                "level": None,
                 "rarity": eff_rarity,
                 "substats": eff_substats,
                 "detail": detail,
@@ -1563,7 +1553,7 @@ class AccountStore:
         data["items"][slug] = merged_item
 
     def record_module_item(self, info: dict[str, Any]) -> dict[str, Any]:
-        """Record an owned unique module observed in the Modules Inventory grid (preserves highest rarity/level)."""
+        """Record an owned unique module observed in the Modules Inventory grid (preserves highest rarity)."""
         with self._lock:
             data = self._read_unlocked()
             now = round(time.time(), 1)
@@ -1579,9 +1569,10 @@ class AccountStore:
 
             if slug and (item_meta is None or item_meta.category == "module"):
                 name = info.get("name") or (item_meta.name if item_meta is not None else "")
-                level = info.get("level")
-                level = int(level) if level is not None else None
                 rarity = _normalize_rarity(str(info.get("rarity") or ""))
+                if rarity.rstrip("+") in ("Rare", "Common"):
+                    # Blue Rare / grey Common copies are fodder; the inventory tracks Epic+ only.
+                    return self.snapshot()
                 substats = [str(s).strip() for s in (info.get("substats") or []) if str(s).strip()]
                 slot = (item_meta.slot if item_meta and item_meta.slot else str(info.get("slot") or "").strip().lower())
                 self._upsert_module_item(
@@ -1589,7 +1580,6 @@ class AccountStore:
                     slug=slug,
                     name=name,
                     slot=slot,
-                    level=level,
                     rarity=rarity,
                     substats=substats,
                     now=now,
@@ -1634,7 +1624,6 @@ class AccountStore:
                     slug=slug,
                     name=name,
                     slot=(item_meta.slot if item_meta and item_meta.slot else clean_slot),
-                    level=level,
                     rarity=rarity,
                     substats=substats,
                     now=now,
