@@ -78,6 +78,7 @@ _CARDS: tuple[tuple[str, str], ...] = (
     ("Berserker", "epic"),
     ("Ultimate Crit", "epic"),
     ("Nuke", "epic"),
+    ("Area of Effect", "epic"),
 )
 
 _CARD_NAMES: tuple[str, ...] = tuple(name for name, _ in _CARDS)
@@ -124,6 +125,19 @@ _UWS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Poison Swamp", ("PS",)),
     ("Smart Missiles", ("SM",)),
     ("Spotlight", ("SL",)),
+)
+
+# Ultimate Weapon Plus (UW+) abilities unlocked after owning all 9 base UWs (Lv. 0..10 each)
+_UW_PLUS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    ("Consume", "Black Hole", ("BH+",)),
+    ("Smite", "Chain Lightning", ("CL+",)),
+    ("Chrono Loop", "Chrono Field", ("CF+",)),
+    ("Kill Wall", "Death Wave", ("DW+",)),
+    ("Golden Combo", "Golden Tower", ("GT+",)),
+    ("Charged Mines", "Inner Land Mines", ("ILM+",)),
+    ("Death Creep", "Poison Swamp", ("PS+",)),
+    ("Cover Fire", "Smart Missiles", ("SM+",)),
+    ("Light Range", "Spotlight", ("SL+",)),
 )
 
 _WORKSHOP_UPGRADES: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
@@ -214,6 +228,18 @@ def _build_index() -> list[IndexItem]:
         items.append(IndexItem(f"module:{_slugify(name)}", name, "module", aliases, "Epic Module Unique Effect", name, slot=slot))
     for name, aliases in _UWS:
         items.append(IndexItem(f"uw:{_slugify(name)}", name, "uw", aliases, name, name))
+    for name, parent_uw, aliases in _UW_PLUS:
+        items.append(
+            IndexItem(
+                f"uw_plus:{_slugify(name)}",
+                name,
+                "uw_plus",
+                aliases,
+                "Ultimate Weapons/Ultimate Weapon Plus",
+                name,
+                slot=parent_uw,
+            )
+        )
     for name, slot, page, aliases in _WORKSHOP_UPGRADES:
         items.append(IndexItem(f"workshop:{_slugify(name)}", name, "workshop", aliases, page, name, slot=slot))
     for name, aliases in _ENEMIES:
@@ -233,7 +259,7 @@ for _item in INDEX:
     for _key in (_item.name.lower(), _item.name.lower().replace("-", " "), _item.slug.lower(), *(a.lower() for a in _item.aliases)):
         cat_map[_key] = _item
 
-_CATEGORY_PRIORITY = ("module", "uw", "card", "workshop", "enemy", "tier", "topic")
+_CATEGORY_PRIORITY = ("module", "uw", "uw_plus", "card", "workshop", "enemy", "tier", "topic")
 
 
 def match_name(
@@ -339,6 +365,7 @@ def master_catalog() -> dict[str, list[dict[str, Any]]]:
         "cards": [_entry(it) for it in INDEX if it.category == "card"],
         "modules": [_entry(it) for it in INDEX if it.category == "module"],
         "uws": [_entry(it) for it in INDEX if it.category == "uw"],
+        "uw_plus": [_entry(it) for it in INDEX if it.category == "uw_plus"],
         "workshop": [_entry(it) for it in INDEX if it.category == "workshop"],
     }
 

@@ -307,11 +307,37 @@ def _parse_card_footer(text: str) -> tuple[bool, str]:
     return False, ""
 
 
+_MASTERY_LEVEL_RE = re.compile(
+    r"(?:\b(?:MASTERY|M|LV\.?)\s*([0-9])(?!\s*[★*])\b|\+\s*([0-9])(?!\s*[★*])\b|\bMAX\s+([0-9])(?!\s*[★*])\b)",
+    re.IGNORECASE,
+)
+
+
+def _parse_card_mastery(footer_text: str, extra_text: str = "", *, maxed: bool = False) -> tuple[bool, int | None]:
+    """Parse Tier 16 Card Mastery enhancement level (0..9) appearing after card stars/Max."""
+    for chunk in (footer_text, extra_text):
+        cleaned = (chunk or "").strip()
+        if not cleaned:
+            continue
+        m = _MASTERY_LEVEL_RE.search(cleaned)
+        if m:
+            lvl_str = next(g for g in m.groups() if g is not None)
+            return True, int(lvl_str)
+    # Standalone single mastery digit 0..9 in star/badge band on an already-maxed card
+    if maxed and extra_text:
+        m_bare = re.fullmatch(r"\s*[★*#•·+]?\s*([0-9])\s*", extra_text)
+        if m_bare:
+            return True, int(m_bare.group(1))
+    return False, None
+
+
 def _build_card_entry(
     hit: wiki.IndexItem,
     frame: np.ndarray,
     tile_rect: tuple[int, int, int, int],
     footer_text: str,
+    *,
+    star_band_text: str = "",
 ) -> dict[str, Any]:
     fh, fw = frame.shape[:2]
     sx, sy = fw / REF_W, fh / REF_H
@@ -325,10 +351,15 @@ def _build_card_entry(
     m_stars, y_stars = _count_stars_in_band(frame[sb_y0:sb_y1, sb_x0:sb_x1])
 
     maxed, progress = _parse_card_footer(footer_text)
+    mastery_unlocked, mastery_level = _parse_card_mastery(footer_text, star_band_text, maxed=maxed)
+    if mastery_unlocked:
+        maxed = True
+        progress = progress or "Max"
+
     raw_stars = min(7, m_stars + y_stars)
-    if maxed and m_stars >= 5:
+    if maxed:
         stars = 7
-    elif not maxed and m_stars >= 5 and progress.endswith("/32"):
+    elif m_stars >= 5 and progress.endswith("/32"):
         stars = 6
     else:
         stars = raw_stars
@@ -337,7 +368,9 @@ def _build_card_entry(
     bits: list[str] = []
     if stars > 0:
         bits.append(f"{stars}★")
-    if progress:
+    if mastery_unlocked and mastery_level is not None:
+        bits.append(f"M{mastery_level}")
+    elif progress:
         bits.append(progress)
     level_text = " ".join(bits)
 
@@ -347,6 +380,8 @@ def _build_card_entry(
         "owned": True,
         "maxed": maxed,
         "stars": stars,
+        "mastery_unlocked": mastery_unlocked,
+        "mastery_level": mastery_level,
         "progress": progress,
         "equipped": equipped,
         "level_text": level_text,
@@ -521,17 +556,21 @@ def _parse_cards_from_lines(
         tile_y = max(0, int(round(y - 16 * sy)))
         tile_rect = (tile_x, tile_y, cw, ch)
 
-        # Find footer OCR line below this tile
+        # Find star-band mastery digit & footer OCR line below this tile
         footer_text = ""
+        star_band_text = ""
+        star_y0 = int(round(y + 195 * sy))
+        star_y1 = int(round(y + 275 * sy))
         foot_y0 = int(round(y + 255 * sy))
         foot_y1 = int(round(y + 340 * sy))
         for _, (fy, fx, ftext) in enumerate(inv_lines):
-            if foot_y0 <= fy <= foot_y1 and tile_x - int(round(15 * sx)) <= fx <= tile_x + cw + int(round(15 * sx)):
-                if _MAX_WORD_RE.search(ftext) or _PROGRESS_RE.search(ftext):
+            if tile_x - int(round(15 * sx)) <= fx <= tile_x + cw + int(round(15 * sx)):
+                if star_y0 <= fy <= star_y1 and (re.fullmatch(r"\s*[0-9]\s*", ftext) or _MASTERY_LEVEL_RE.search(ftext)):
+                    star_band_text = ftext
+                if foot_y0 <= fy <= foot_y1 and (_MAX_WORD_RE.search(ftext) or _PROGRESS_RE.search(ftext) or _MASTERY_LEVEL_RE.search(ftext)):
                     footer_text = ftext
-                    break
 
-        cards.append(_build_card_entry(hit, frame, tile_rect, footer_text))
+        cards.append(_build_card_entry(hit, frame, tile_rect, footer_text, star_band_text=star_band_text))
         seen_slugs.add(hit.slug)
 
     return {
@@ -564,7 +603,7 @@ def parse_cards_page(
         lines = batches[0] if batches else []
         return _parse_cards_from_lines(frame, lines)
 
-    # Batch-OCR: [0] ACTIVE header, [1] optional active preset pill, then (title, footer) per tile
+    # Batch-OCR: [0] ACTIVE header, [1] optional active preset pill, then (title, star_band, footer) per tile
     crops: list[np.ndarray] = []
     ax, ay, aw, ah = detectors.scale_rect(REF_CARDS_ACTIVE_SLOTS_BOX, frame.shape)
     crops.append(frame[ay : ay + ah, ax : ax + aw])
@@ -582,18 +621,26 @@ def parse_cards_page(
     pad_t = max(2, int(round(5 * sy)))
     title_h = max(12, int(round(49 * sy)))
     pad_x = max(2, int(round(4 * sx)))
+    star_pad_x = max(2, int(round(8 * sx)))
+    star_y0_off = int(round(221 * sy))
+    star_y1_off = int(round(294 * sy))
     foot_pad_x = max(4, int(round(20 * sx)))
     foot_offset = int(round(292 * sy))
     foot_h = max(12, int(round(56 * sy)))
 
     for tx, ty, tw, th in tiles:
         tc = frame[max(0, ty + pad_t) : min(fh, ty + title_h), max(0, tx + pad_x) : min(fw, tx + tw - pad_x)]
+        sy0 = min(fh - 1, ty + star_y0_off)
+        sy1 = min(fh, ty + star_y1_off)
+        sx0 = max(0, tx + star_pad_x)
+        sx1 = min(fw, tx + tw - star_pad_x)
+        sc = frame[sy0:sy1, sx0:sx1] if (sy1 - sy0 >= 8 and sx1 - sx0 >= 8) else np.zeros((0, 0, 3), dtype=np.uint8)
         fy0 = min(fh - 1, ty + foot_offset)
         fy1 = min(fh, fy0 + foot_h)
         fx0 = max(0, tx + foot_pad_x)
         fx1 = min(fw, tx + tw - foot_pad_x)
         fc = frame[fy0:fy1, fx0:fx1] if (fy1 - fy0 >= 8 and fx1 - fx0 >= 8) else np.zeros((0, 0, 3), dtype=np.uint8)
-        crops.extend([tc, fc])
+        crops.extend([tc, sc, fc])
 
     texts = ocr.read_texts(crops, scale=2.5, timeout=timeout)
 
@@ -615,13 +662,14 @@ def parse_cards_page(
     cards: list[dict[str, Any]] = []
     seen_slugs: set[str] = set()
     for idx, tile_rect in enumerate(tiles):
-        t_idx = offset + 2 * idx
+        t_idx = offset + 3 * idx
         title_txt = texts[t_idx] if t_idx < len(texts) else ""
-        foot_txt = texts[t_idx + 1] if (t_idx + 1) < len(texts) else ""
+        star_txt = texts[t_idx + 1] if (t_idx + 1) < len(texts) else ""
+        foot_txt = texts[t_idx + 2] if (t_idx + 2) < len(texts) else ""
         hit = _match_card_phrase(title_txt)
         if hit is None or hit.slug in seen_slugs:
             continue
-        cards.append(_build_card_entry(hit, frame, tile_rect, foot_txt))
+        cards.append(_build_card_entry(hit, frame, tile_rect, foot_txt, star_band_text=star_txt))
         seen_slugs.add(hit.slug)
 
     return {
@@ -1112,9 +1160,9 @@ class AccountStore:
                     mod_equipped_in.setdefault(str(entry["slug"]), []).append(preset)
 
         master = wiki.master_catalog()
-        merged: dict[str, list[dict[str, Any]]] = {"cards": [], "modules": [], "uws": [], "workshop": []}
+        merged: dict[str, list[dict[str, Any]]] = {"cards": [], "modules": [], "uws": [], "uw_plus": [], "workshop": []}
 
-        for group_key in ("cards", "modules", "uws", "workshop"):
+        for group_key in ("cards", "modules", "uws", "uw_plus", "workshop"):
             for base in master[group_key]:
                 slug = base["slug"]
                 obs = items_by_slug.get(slug)
@@ -1127,6 +1175,8 @@ class AccountStore:
                 level = obs.get("level") if obs else None
                 stars = obs.get("stars") if obs else None
                 maxed = bool(obs.get("maxed")) if obs else False
+                mastery_unlocked = bool(obs.get("mastery_unlocked")) if obs else False
+                mastery_level = obs.get("mastery_level") if obs else None
                 progress = (obs.get("progress") or "") if obs else ""
                 detail = (obs.get("detail") or "") if obs else ""
                 substats = list(obs.get("substats") or []) if obs else []
@@ -1144,6 +1194,8 @@ class AccountStore:
                         "level": level,
                         "stars": stars,
                         "maxed": maxed,
+                        "mastery_unlocked": mastery_unlocked,
+                        "mastery_level": mastery_level,
                         "progress": progress,
                         "detail": detail,
                         "equipped_in": equipped_in,
@@ -1155,10 +1207,13 @@ class AccountStore:
         counts = {
             "cards_owned": sum(1 for it in merged["cards"] if it["owned"]),
             "cards_total": len(merged["cards"]),
+            "cards_mastered": sum(1 for it in merged["cards"] if it["mastery_unlocked"]),
             "modules_owned": sum(1 for it in merged["modules"] if it["owned"]),
             "modules_total": len(merged["modules"]),
             "uws_owned": sum(1 for it in merged["uws"] if it["owned"]),
             "uws_total": len(merged["uws"]),
+            "uw_plus_owned": sum(1 for it in merged["uw_plus"] if it["owned"]),
+            "uw_plus_total": len(merged["uw_plus"]),
             "workshop_owned": sum(1 for it in merged["workshop"] if it["owned"]),
             "workshop_total": len(merged["workshop"]),
         }
@@ -1289,13 +1344,25 @@ class AccountStore:
                 if maxed and (stars is None or stars < 7):
                     stars = 7
 
+                mastery_unlocked = bool(card.get("mastery_unlocked")) or bool(prev.get("mastery_unlocked"))
+                raw_mlvl = card.get("mastery_level")
+                prev_mlvl = prev.get("mastery_level")
+                if raw_mlvl is not None:
+                    mastery_level: int | None = max(int(prev_mlvl or 0), int(raw_mlvl))
+                    mastery_unlocked = True
+                else:
+                    mastery_level = int(prev_mlvl) if prev_mlvl is not None else None
+                if mastery_unlocked:
+                    maxed = True
+                    stars = 7
+
                 progress = "Max" if maxed else (card.get("progress") or prev.get("progress") or "")
-                level_text = card.get("level_text") or ""
-                if not level_text:
-                    bits = [f"{stars}★"] if stars else []
-                    if progress:
-                        bits.append(progress)
-                    level_text = " ".join(bits)
+                bits = [f"{stars}★"] if stars else []
+                if mastery_unlocked and mastery_level is not None:
+                    bits.append(f"M{mastery_level}")
+                elif progress:
+                    bits.append(progress)
+                level_text = " ".join(bits)
                 detail = level_text or prev.get("detail") or ""
 
                 merged_item = dict(prev)
@@ -1307,6 +1374,8 @@ class AccountStore:
                         "owned": True,
                         "maxed": maxed,
                         "stars": stars,
+                        "mastery_unlocked": mastery_unlocked,
+                        "mastery_level": mastery_level,
                         "progress": progress,
                         "detail": detail,
                         "last_seen": now,

@@ -385,14 +385,16 @@ def test_tapper_swipe_gates_and_dispatch(monkeypatch):
 def test_wiki_master_catalog_slots_and_rarities():
     cat = wiki.master_catalog()
     assert cat == wiki.catalog()
-    assert len(cat["cards"]) == 31
+    assert len(cat["cards"]) == 32
     assert len(cat["modules"]) == 25
     assert len(cat["uws"]) == 9
+    assert len(cat["uw_plus"]) == 9
+    assert len(cat["workshop"]) == 48
 
     card_by_name = {c["name"]: c for c in cat["cards"]}
     assert sum(1 for c in cat["cards"] if c["rarity"] == "common") == 12
     assert sum(1 for c in cat["cards"] if c["rarity"] == "rare") == 9
-    assert sum(1 for c in cat["cards"] if c["rarity"] == "epic") == 10
+    assert sum(1 for c in cat["cards"] if c["rarity"] == "epic") == 11
     assert card_by_name["Damage"]["rarity"] == "common"
     assert card_by_name["Free Upgrades"]["rarity"] == "rare"
     assert card_by_name["Death Ray"]["rarity"] == "epic"
@@ -592,17 +594,21 @@ def test_account_store_enriched_catalog_and_presets(tmp_path: Path):
     empty = store.snapshot()
     assert empty["counts"] == {
         "cards_owned": 0,
-        "cards_total": 31,
+        "cards_total": 32,
+        "cards_mastered": 0,
         "modules_owned": 0,
         "modules_total": 25,
         "uws_owned": 0,
         "uws_total": 9,
+        "uw_plus_owned": 0,
+        "uw_plus_total": 9,
         "workshop_owned": 0,
         "workshop_total": 48,
     }
-    assert len(empty["catalog"]["cards"]) == 31
+    assert len(empty["catalog"]["cards"]) == 32
     assert len(empty["catalog"]["modules"]) == 25
     assert len(empty["catalog"]["uws"]) == 9
+    assert len(empty["catalog"]["uw_plus"]) == 9
     assert all(it["owned"] is False for it in empty["catalog"]["cards"])
 
     # Record cards scan across Preset 1 & Preset 2
@@ -677,3 +683,91 @@ def test_account_store_enriched_catalog_and_presets(tmp_path: Path):
     assert cleared["card_presets"] == {}
     assert cleared["module_presets"] == {}
     assert cleared["active_card_slots"] is None
+
+
+def test_master_catalog_includes_area_of_effect_and_uw_plus():
+    cat = wiki.master_catalog()
+    card_slugs = {c["slug"]: c for c in cat["cards"]}
+    assert len(card_slugs) == 32
+    assert "card:area_of_effect" in card_slugs
+    assert card_slugs["card:area_of_effect"]["rarity"] == "epic"
+
+    uw_plus = {u["slug"]: u for u in cat["uw_plus"]}
+    assert len(uw_plus) == 9
+    assert uw_plus["uw_plus:golden_combo"]["slot"] == "Golden Tower"
+    assert uw_plus["uw_plus:consume"]["slot"] == "Black Hole"
+    assert uw_plus["uw_plus:kill_wall"]["slot"] == "Death Wave"
+    assert uw_plus["uw_plus:light_range"]["slot"] == "Spotlight"
+    assert uw_plus["uw_plus:chrono_loop"]["slot"] == "Chrono Field"
+    assert uw_plus["uw_plus:smite"]["slot"] == "Chain Lightning"
+    assert uw_plus["uw_plus:cover_fire"]["slot"] == "Smart Missiles"
+    assert uw_plus["uw_plus:charged_mines"]["slot"] == "Inner Land Mines"
+    assert uw_plus["uw_plus:death_creep"]["slot"] == "Poison Swamp"
+
+    # Aliases resolve cleanly
+    assert wiki.match_name("GT+", category="uw_plus").slug == "uw_plus:golden_combo"
+    assert wiki.match_name("BH+", category="uw_plus").slug == "uw_plus:consume"
+    assert wiki.match_name("Area of Effect", category="card").slug == "card:area_of_effect"
+
+
+def test_card_mastery_parsing_and_store_persistence(tmp_path: Path):
+    # Direct _parse_card_mastery cases
+    assert loadouts._parse_card_mastery("Max 3") == (True, 3)
+    assert loadouts._parse_card_mastery("M5") == (True, 5)
+    assert loadouts._parse_card_mastery("Lv. 2") == (True, 2)
+    assert loadouts._parse_card_mastery("+4") == (True, 4)
+    assert loadouts._parse_card_mastery("Max", "7", maxed=True) == (True, 7)
+    assert loadouts._parse_card_mastery("Max", "★ 0", maxed=True) == (True, 0)
+    # Non-maxed card or star count string must NOT false-positive
+    assert loadouts._parse_card_mastery("12/32", "5", maxed=False) == (False, None)
+    assert loadouts._parse_card_mastery("Max", "7★", maxed=True) == (False, None)
+
+    # Full lines parse with star-band mastery digit on a maxed card
+    frame = np.zeros((2560, 1080, 3), dtype=np.uint8)
+    lines = [
+        (820, 420, "ACTIVE 20/20"),
+        (1120, 80, "Damage"),
+        (1340, 140, "3"),      # star-band mastery digit (y + 220)
+        (1400, 110, "Max"),    # footer Max (y + 280)
+        (1120, 330, "Coins"),
+        (1400, 360, "Max"),
+    ]
+    parsed = loadouts.parse_cards_page(frame, lines_fn=lambda _: [lines])
+    by_slug = {c["slug"]: c for c in parsed["cards"]}
+    assert by_slug["card:damage"]["maxed"] is True
+    assert by_slug["card:damage"]["stars"] == 7
+    assert by_slug["card:damage"]["mastery_unlocked"] is True
+    assert by_slug["card:damage"]["mastery_level"] == 3
+    assert by_slug["card:damage"]["level_text"] == "7★ M3"
+    assert by_slug["card:coins"]["maxed"] is True
+    assert by_slug["card:coins"]["stars"] == 7
+    assert by_slug["card:coins"]["mastery_unlocked"] is False
+    assert by_slug["card:coins"]["mastery_level"] is None
+    assert by_slug["card:coins"]["level_text"] == "7★ Max"
+
+    # AccountStore persists mastery and never regresses mastery level on re-scan
+    store = loadouts.AccountStore(tmp_path / "account.json")
+    snap = store.record_cards_scan("Preset 1", parsed["cards"], active_slots="20/20")
+    assert snap["counts"]["cards_mastered"] == 1
+    cat_cards = {c["slug"]: c for c in snap["catalog"]["cards"]}
+    assert cat_cards["card:damage"]["mastery_unlocked"] is True
+    assert cat_cards["card:damage"]["mastery_level"] == 3
+
+    # Re-scan where mastery wasn't read in OCR preserves existing mastery level
+    snap2 = store.record_cards_scan(
+        "Preset 1",
+        [{"slug": "card:damage", "name": "Damage", "maxed": True, "stars": 7, "equipped": True}],
+    )
+    cat_cards2 = {c["slug"]: c for c in snap2["catalog"]["cards"]}
+    assert cat_cards2["card:damage"]["mastery_unlocked"] is True
+    assert cat_cards2["card:damage"]["mastery_level"] == 3
+    assert snap2["counts"]["cards_mastered"] == 1
+
+    # Higher mastery level updates cleanly
+    snap3 = store.record_cards_scan(
+        "Preset 1",
+        [{"slug": "card:damage", "name": "Damage", "maxed": True, "stars": 7, "mastery_unlocked": True, "mastery_level": 6}],
+    )
+    cat_cards3 = {c["slug"]: c for c in snap3["catalog"]["cards"]}
+    assert cat_cards3["card:damage"]["mastery_level"] == 6
+

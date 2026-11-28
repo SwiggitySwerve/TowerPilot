@@ -1194,6 +1194,9 @@ function getRarityChipClass(item, category) {
   if (category === "uw") {
     return "uw-owned";
   }
+  if (category === "uw_plus") {
+    return "mod-ancestral";
+  }
   if (category === "workshop") {
     const slot = normalizeKey(item.slot);
     if (slot === "defense") return "ws-defense";
@@ -1204,6 +1207,9 @@ function getRarityChipClass(item, category) {
 }
 
 function getDetailRarityClass(item, category, detailText) {
+  if (category === "card" && item.mastery_unlocked && item.mastery_level !== null && item.mastery_level !== undefined) {
+    return "rarity-mastery";
+  }
   if (item.maxed || /^max$/i.test(detailText)) return "rarity-max";
   const r = normalizeKey(item.rarity || detailText);
   if (category === "module") {
@@ -1219,7 +1225,10 @@ function getDetailRarityClass(item, category, detailText) {
 function formatCatalogDetail(item, category) {
   if (!item.owned) return "";
   if (category === "card") {
-    if (item.maxed) return "Max";
+    if (item.mastery_unlocked && item.mastery_level !== null && item.mastery_level !== undefined) {
+      return `7\u2605 M${item.mastery_level}`;
+    }
+    if (item.maxed) return "7\u2605 Max";
     if (item.stars !== null && item.stars !== undefined && Number(item.stars) > 0) {
       return `${item.stars}\u2605`;
     }
@@ -1254,6 +1263,9 @@ function buildItemTooltip(item, category, detailText, equippedIn) {
   }
   if (item.rarity) meta.push(String(item.rarity));
   if (detailText && !meta.includes(detailText)) meta.push(detailText);
+  if (item.mastery_unlocked && item.mastery_level !== null && item.mastery_level !== undefined) {
+    meta.push(`Mastery Lv.${item.mastery_level}/9`);
+  }
   meta.push(item.owned ? "Owned" : "Not owned");
   lines.push(meta.join(" \u00b7 "));
   if (equippedIn.length > 0) {
@@ -1422,6 +1434,7 @@ function buildCatalogCell(item, category, membershipMaps, activePresets) {
   if (owned) {
     const rarityCls = getRarityChipClass(item, category);
     if (rarityCls) classes.push(rarityCls);
+    if (category === "card" && item.mastery_unlocked) classes.push("is-mastered");
   }
   if (isEquipped) classes.push("is-equipped");
   if (notInSelectedPreset) classes.push("not-in-preset");
@@ -1450,8 +1463,8 @@ function buildCatalogCell(item, category, membershipMaps, activePresets) {
 
   const statusTag = document.createElement("span");
   statusTag.className = "cell-status";
-  if (category === "workshop" || category === "uw") {
-    statusTag.textContent = owned ? "Unlocked" : "Locked";
+  if (category === "workshop" || category === "uw" || category === "uw_plus") {
+    statusTag.textContent = owned ? "Unlocked" : (category === "uw_plus" && item.slot ? item.slot : "Locked");
   } else {
     statusTag.textContent = owned ? (isEquipped ? "Equipped" : "Owned") : "Missing";
   }
@@ -1719,6 +1732,7 @@ function renderAccount(snap) {
   const catalogCards = getSectionCatalog(snap, "cards", "card");
   const catalogModules = getSectionCatalog(snap, "modules", "module");
   const catalogUws = getSectionCatalog(snap, "uws", "uw");
+  const catalogUwPlus = getSectionCatalog(snap, "uw_plus", "uw_plus");
   const catalogWorkshop = getSectionCatalog(snap, "workshop", "workshop");
 
   const counts = snap.counts || {};
@@ -1763,6 +1777,14 @@ function renderAccount(snap) {
     renderCatalogSection($("loadoutWorkshop"), catalogWorkshop, "workshop", membershipMaps, activePresets, snap);
   }
   renderCatalogSection($("loadoutUws"), catalogUws, "uw", membershipMaps, activePresets, snap);
+  if ($("loadoutUwPlus")) {
+    renderCatalogSection($("loadoutUwPlus"), catalogUwPlus, "uw_plus", membershipMaps, activePresets, snap);
+  }
+  if ($("uwPlusCount")) {
+    const upOwned = counts.uw_plus_owned ?? catalogUwPlus.filter((i) => i.owned).length;
+    const upTotal = counts.uw_plus_total ?? catalogUwPlus.length;
+    $("uwPlusCount").textContent = `${upOwned}/${upTotal}`;
+  }
   renderPresetSummary(snap, catalogCards, catalogModules, membershipMaps);
 
   const metaParts = [];
